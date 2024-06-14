@@ -290,7 +290,7 @@ namespace CPPGIF
 		auto CodeTable = CodeTableType(LZW_MinCodeSize);
 		bool IsFirstStep = true;
 		bool EOIReached = false;
-		bool ExpectCC = true;
+		bool ExpectCC = true; // 需要立刻获得一个 Clear Code
 
 		// 先把 LZW 的字节序列以动态位数长度的编码转变为定长的编码。
 		const auto FirstCodeSize = LZW_MinCodeSize + 1;
