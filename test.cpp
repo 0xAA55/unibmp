@@ -2,35 +2,22 @@
 #include "unibmp.hpp"
 
 using namespace CPPGIF;
-using namespace UniformBitmap;
+
+void test_gif(const std::string& gif_file, const std::string& png_file)
+{
+	using namespace CPPGIF;
+
+	std::cout << gif_file << "\n";
+	auto Gif = GIFLoader(gif_file);
+	Gif.ConvertToImageAnim().SaveSequencePNG(png_file, false);
+}
 
 int main(int argc, char** argv)
 {
-	auto Gif = GIFLoader("Rotating_earth_(large).gif");
-	auto Img = Image_RGBA8(Gif.GetWidth(), Gif.GetHeight());
-
-	size_t numColors;
-	auto& GifPalette = Gif.GetGlobalColorTable(numColors);
-
-	for(auto& GifSubImg: Gif.GraphicControlExtension[0].GetImageDescriptors())
-	{
-		int l = int(GifSubImg.GetLeft());
-		int t = int(GifSubImg.GetTop());
-		int w = int(GifSubImg.GetWidth());
-		int h = int(GifSubImg.GetHeight());
-		auto& bmp = GifSubImg.GetImageData();
-		for (int ly = 0; ly < h; ly++)
-		{
-			for (int lx = 0; lx < w; lx++)
-			{
-				auto& ci = GifPalette[bmp[ly * w + lx]];
-				auto c = Pixel_RGBA8(ci.R, ci.G, ci.B, 255);
-				Img.PutPixel(l + lx, t + ly, c);
-			}
-		}
-	}
-
-	Img.SaveToPNG("test.png");
+	test_gif("sample_1.gif", "test1.png");
+	test_gif("Rotating_earth_(large).gif", "test2.png");
+	test_gif("testre.gif", "test3.png");
+	test_gif("test.gif", "test4.png");
 	return 0;
 }
 
