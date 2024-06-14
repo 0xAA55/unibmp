@@ -937,7 +937,7 @@ namespace UniformBitmap
 	{
 		char buf[] = { 0, 0, 0, 0, 0 };
 		auto ret = std::tm();
-#define TIFFDateTime_Write(member, writeto, offset) do {memcpy(buf, &member, sizeof member); writeto = std::stod(buf) - (offset); } while (0)
+#define TIFFDateTime_Write(member, writeto, offset) do {memcpy(buf, &member, sizeof member); writeto = std::stoi(buf) - (offset); } while (0)
 		TIFFDateTime_Write(YYYY, ret.tm_year, 1900);
 		TIFFDateTime_Write(MM, ret.tm_mon, 1);
 		TIFFDateTime_Write(DD, ret.tm_mday, 0);
