@@ -221,8 +221,20 @@ namespace CPPGIF
 			LocalColorTable = std::make_shared<ColorTableArray>();
 			Read(is, &LocalColorTable.get()[0], SizeOfLocalColorTable());
 		}
-		// TODO
-		// 解码 LZW，得到 std::vector<DataSubBlock> ImageData
+		// https://giflib.sourceforge.net/whatsinagif/lzw_image_data.html
+		auto LZW_MinCodeSize = uint8_t(0);
+		Read(is, LZW_MinCodeSize);
+		ImageData = UncompressLZW(ReadDataSubBlock(is), LZW_MinCodeSize);
+	}
+
+	DataSubBlock ImageDescriptorType::UncompressLZW(const DataSubBlock& Compressed, uint8_t LZW_MinCodeSize)
+	{
+		auto ret = DataSubBlock();
+
+
+
+
+
 	}
 
 	const ColorTableArray& ImageDescriptorType::GetLocalColorTable() const
@@ -385,7 +397,7 @@ namespace CPPGIF
 	{
 		Version.resize(6);
 		Read(is, &Version[0], 6);
-		if (Version != "gif87a" && Version != "gif89a") throw UnexpectedData(std::string("GIF: Read error: Unknown version: ") + Version);
+		if (Version != "GIF87a" && Version != "GIF89a") throw UnexpectedData(std::string("GIF: Read error: Unknown version: ") + Version);
 		LogicalScreenDescriptor = LogicalScreenDescriptorType(is);
 
 		auto Introducer = uint8_t();

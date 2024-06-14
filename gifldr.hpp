@@ -90,6 +90,8 @@ namespace CPPGIF
 
 		const ColorTableArray& GetLocalColorTable() const;
 
+		static DataSubBlock UncompressLZW(const DataSubBlock& Compressed, uint8_t LZW_MinCodeSize);
+
 	public:
 		ImageDescriptorType(std::istream& is);
 	};
