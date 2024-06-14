@@ -36,7 +36,7 @@ namespace CPPGIF
 	};
 
 	struct LSD_Type
-	{
+	{ // LogicalScreenDescriptor
 	protected:
 		uint16_t LogicalScreenWidth = 0;
 		uint16_t LogicalScreenHeight = 0;
