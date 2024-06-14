@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*
+import json
+import xml.etree.ElementTree as ET
+
+def FlattenTagToText(tag, delim = ''):
+	text = [tag.text]
+	if tag.tag == 'br': text += ['\\n']
+	for child in tag:
+		text += [FlattenTagToText(child, delim)]
+		text += [child.tail]
+	text += [tag.tail]
+	return delim.join([t.strip() if t is not None else '' for t in text])
+
+def ParseExifHtmlTable(filepath):
+	exif = {}
+	# 对输入的文件的要求：
+	# - 提取于 https://exiftool.org/TagNames/EXIF.html 的主要 table
+	# - 必须先将所有的 &nbsp 替换为空格
+	# - 必须将所有的<br>替换为<br/>
+	table = ET.parse(filepath).getroot()
+	assert table.tag == 'table'
+	tbody = table[0]
+	assert tbody.tag == 'tbody'
+
+	# 开始解析 table
+	# 第一行为列名
+	colnames = []
+	first = True
+	for tr in tbody:
+		if first:
+			for th in tr:
+				assert th.tag == 'th'
+				colnames += [FlattenTagToText(th)]
+			first = False
+			continue
+		rowdata = []
+		for td in tr:
+			rowdata += [FlattenTagToText(td)]
+		print(rowdata)
+	#print(colnames)
+
+
+if __name__ == '__main__':
+	parsed = ParseExifHtmlTable('exif.xml')
+	print(parsed)
