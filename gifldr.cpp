@@ -276,6 +276,12 @@ namespace CPPGIF
 		{
 			std::cerr << "GIF: " << e.what() << "\n";
 		}
+		if (0)
+		{
+			auto RecompressedLZW = CompressLZW(ImageData, LZW_MinCodeSize);
+			if (RecompressedLZW != LZW_Data)
+				throw EncodeError("LZW Data recompressed not match.");
+		}
 	}
 
 	DataSubBlock ImageDescriptorType::CompressLZW(const DataSubBlock& Data, uint8_t LZW_MinCodeSize)
