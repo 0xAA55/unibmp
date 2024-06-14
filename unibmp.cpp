@@ -161,20 +161,25 @@ namespace UniformBitmap
 
 #pragma warning(default: 4293)
 
-	template<typename SrcI, typename DstI> requires std::is_integral_v<SrcI>&& std::is_floating_point_v<DstI>
+	template<typename SrcI, typename DstI> requires std::is_integral_v<SrcI> && std::is_floating_point_v<DstI>
 	DstI ChannelConvert(SrcI si)
 	{
 		return NormalizedIntegralToFloat<SrcI, DstI>(si);
 	}
-	template<typename SrcI, typename DstI> requires std::is_floating_point_v<SrcI>&& std::is_integral_v<DstI>
+	template<typename SrcI, typename DstI> requires std::is_floating_point_v<SrcI> && std::is_integral_v<DstI>
 	DstI ChannelConvert(SrcI si)
 	{
 		return FloatToNormalizedIntegral<SrcI, DstI>(si);
 	}
-	template<typename SrcI, typename DstI> requires std::is_integral_v<SrcI>&& std::is_integral_v<DstI>
+	template<typename SrcI, typename DstI> requires std::is_integral_v<SrcI> && std::is_integral_v<DstI> && (!std::is_same_v<SrcI, DstI>)
 	DstI ChannelConvert(SrcI si)
 	{
 		return NormalizedIntegralConvertion<SrcI, DstI>(si);
+	}
+	template<typename SrcI, typename DstI> requires std::is_same_v<SrcI, DstI>
+	DstI ChannelConvert(SrcI si)
+	{
+		return si;
 	}
 
 	template uint8_t ChannelConvert(uint8_t si);
@@ -190,8 +195,8 @@ namespace UniformBitmap
 	template float ChannelConvert(uint16_t si);
 	template float ChannelConvert(uint32_t si);
 	template uint8_t ChannelConvert(float si);
-	template uint8_t ChannelConvert(float si);
-	template uint8_t ChannelConvert(float si);
+	template uint16_t ChannelConvert(float si);
+	template uint32_t ChannelConvert(float si);
 
 	template<typename ChannelType_>
 	Pixel_RGBA<ChannelType_>::Pixel_RGBA() :
@@ -204,15 +209,6 @@ namespace UniformBitmap
 
 	template<typename ChannelType_>
 	Pixel_RGBA<ChannelType_>::Pixel_RGBA(ChannelType R, ChannelType G, ChannelType B, ChannelType A) : R(R), G(G), B(B), A(A) {}
-
-	template<typename ChannelType_>
-	Pixel_RGBA<ChannelType_>::Pixel_RGBA(const Pixel_RGBA& from) :
-		R(from.R),
-		G(from.G),
-		B(from.B),
-		A(from.A)
-	{
-	}
 
 	template<typename ChannelType_>
 	template<typename FromType>
@@ -256,10 +252,10 @@ namespace UniformBitmap
 		dst = src;
 	}
 
-	template Pixel_RGBA8;
-	template Pixel_RGBA16;
-	template Pixel_RGBA32;
-	template Pixel_RGBA32F;
+	template class Pixel_RGBA<uint8_t>;
+	template class Pixel_RGBA<uint16_t>;
+	template class Pixel_RGBA<uint32_t>;
+	template class Pixel_RGBA<float>;
 
 	template Pixel_RGBA8::Pixel_RGBA(const Pixel_RGBA8& from);
 	template Pixel_RGBA8::Pixel_RGBA(const Pixel_RGBA16& from);
@@ -305,15 +301,15 @@ namespace UniformBitmap
 		return reinterpret_cast<size_t>(&p.Pixel);
 	}
 
-	template Point<Pixel_RGBA8>;
-	template Point<Pixel_RGBA16>;
-	template Point<Pixel_RGBA32>;
-	template Point<Pixel_RGBA32F>;
+	template class Point<Pixel_RGBA8>;
+	template class Point<Pixel_RGBA16>;
+	template class Point<Pixel_RGBA32>;
+	template class Point<Pixel_RGBA32F>;
 
-	template PixelRef<Pixel_RGBA8>;
-	template PixelRef<Pixel_RGBA16>;
-	template PixelRef<Pixel_RGBA32>;
-	template PixelRef<Pixel_RGBA32F>;
+	template class PixelRef<Pixel_RGBA8>;
+	template class PixelRef<Pixel_RGBA16>;
+	template class PixelRef<Pixel_RGBA32>;
+	template class PixelRef<Pixel_RGBA32F>;
 
 	enum BitmapCompression
 	{
@@ -475,7 +471,7 @@ namespace UniformBitmap
 		XPelsPerMeter = BMIF.biXPelsPerMeter;
 		YPelsPerMeter = BMIF.biYPelsPerMeter;
 
-		BitmapData = std::make_unique<PixelType[]>(Width * Height);
+		BitmapData.resize(Width * Height);
 		RowPointers.resize(Height);
 		if (BMIF.biHeight < 0)
 		{
@@ -713,7 +709,7 @@ namespace UniformBitmap
 	{
 		Width = w;
 		Height = h;
-		BitmapData = std::make_unique<PixelType[]>(Width * Height);
+		BitmapData.resize(Width * Height);
 		RowPointers.resize(Height);
 		for (size_t y = 0; y < Height; y++)
 		{
@@ -730,24 +726,7 @@ namespace UniformBitmap
 	}
 
 	template<typename PixelType>
-	Image<PixelType>::Image(const Image& from) :
-		Image(from.GetWidth(), from.GetHeight(), from.XPelsPerMeter, from.YPelsPerMeter)
-	{
-		IsHDR = false;
-		for (size_t y = 0; y < Height; y++)
-		{
-			auto srow = from.GetBitmapRowPtr(y);
-			auto drow = RowPointers[y];
-			for (size_t x = 0; x < Width; x++)
-			{
-				drow[x] = srow[x];
-			}
-		}
-		if (std::is_floating_point_v<ChannelType>) IsHDR = from.GetIsHDR();
-	}
-
-	template<typename PixelType>
-	template<typename FromType>
+	template<typename FromType> requires (!std::is_same_v<PixelType, FromType>)
 	Image<PixelType>::Image(const Image<FromType>& from) :
 		Image(from.GetWidth(), from.GetHeight(), from.XPelsPerMeter, from.YPelsPerMeter)
 	{
@@ -761,7 +740,7 @@ namespace UniformBitmap
 				drow[x] = srow[x];
 			}
 		}
-		if (std::is_floating_point_v<ChannelType> && std::is_floating_point_v<FromType::ChannelType>) IsHDR = from.GetIsHDR();
+		if (std::is_floating_point_v<ChannelType>) IsHDR = from.GetIsHDR();
 	}
 
 	template<typename PixelType>
@@ -1057,33 +1036,29 @@ namespace UniformBitmap
 			return;
 		}
 
-		if (!stbi_write_hdr(FilePath.c_str(), Width, Height, 4, reinterpret_cast<float*>(GetBitmapDataPtr()))) throw SaveImageError(stbi_failure_reason());
+		if (!stbi_write_hdr(FilePath.c_str(), Width, Height, 4, reinterpret_cast<const float*>(GetBitmapDataPtr()))) throw SaveImageError(stbi_failure_reason());
 	}
 
-	template Image_RGBA8;
-	template Image_RGBA16;
-	template Image_RGBA32;
-	template Image_RGBA32F;
+	template class Image<Pixel_RGBA8>;
+	template class Image<Pixel_RGBA16>;
+	template class Image<Pixel_RGBA32>;
+	template class Image<Pixel_RGBA32F>;
 
-	template Image_RGBA8::Image(const Image_RGBA8& from);
 	template Image_RGBA8::Image(const Image_RGBA16& from);
 	template Image_RGBA8::Image(const Image_RGBA32& from);
 	template Image_RGBA8::Image(const Image_RGBA32F& from);
 
 	template Image_RGBA16::Image(const Image_RGBA8& from);
-	template Image_RGBA16::Image(const Image_RGBA16& from);
 	template Image_RGBA16::Image(const Image_RGBA32& from);
 	template Image_RGBA16::Image(const Image_RGBA32F& from);
 
 	template Image_RGBA32::Image(const Image_RGBA8& from);
 	template Image_RGBA32::Image(const Image_RGBA16& from);
-	template Image_RGBA32::Image(const Image_RGBA32& from);
 	template Image_RGBA32::Image(const Image_RGBA32F& from);
 
 	template Image_RGBA32F::Image(const Image_RGBA8& from);
 	template Image_RGBA32F::Image(const Image_RGBA16& from);
 	template Image_RGBA32F::Image(const Image_RGBA32& from);
-	template Image_RGBA32F::Image(const Image_RGBA32F& from);
 
 	bool IsImage16bpps(std::string FilePath)
 	{

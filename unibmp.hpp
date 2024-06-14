@@ -46,7 +46,6 @@ namespace UniformBitmap
 		ChannelType R, G, B, A;
 		Pixel_RGBA();
 		Pixel_RGBA(ChannelType R, ChannelType G, ChannelType B, ChannelType A);
-		Pixel_RGBA(const Pixel_RGBA& from);
 		template<typename FromType> Pixel_RGBA(const Pixel_RGBA<FromType>& from);
 
 		bool operator == (const Pixel_RGBA& c) const;
@@ -56,10 +55,10 @@ namespace UniformBitmap
 		static void SetPixel(Pixel_RGBA& dst, const Pixel_RGBA& src);
 	};
 
-	extern template Pixel_RGBA8;
-	extern template Pixel_RGBA16;
-	extern template Pixel_RGBA32;
-	extern template Pixel_RGBA32F;
+	extern template class Pixel_RGBA<uint8_t>;
+	extern template class Pixel_RGBA<uint16_t>;
+	extern template class Pixel_RGBA<uint32_t>;
+	extern template class Pixel_RGBA<float>;
 
 	extern template Pixel_RGBA8::Pixel_RGBA(const Pixel_RGBA8& from);
 	extern template Pixel_RGBA8::Pixel_RGBA(const Pixel_RGBA16& from);
@@ -95,10 +94,10 @@ namespace UniformBitmap
 		};
 	};
 
-	extern template Point<Pixel_RGBA8>;
-	extern template Point<Pixel_RGBA16>;
-	extern template Point<Pixel_RGBA32>;
-	extern template Point<Pixel_RGBA32F>;
+	extern template class Point<Pixel_RGBA8>;
+	extern template class Point<Pixel_RGBA16>;
+	extern template class Point<Pixel_RGBA32>;
+	extern template class Point<Pixel_RGBA32F>;
 
 	template<typename PixelType>
 	struct PixelRef
@@ -115,10 +114,10 @@ namespace UniformBitmap
 		};
 	};
 
-	extern template PixelRef<Pixel_RGBA8>;
-	extern template PixelRef<Pixel_RGBA16>;
-	extern template PixelRef<Pixel_RGBA32>;
-	extern template PixelRef<Pixel_RGBA32F>;
+	extern template class PixelRef<Pixel_RGBA8>;
+	extern template class PixelRef<Pixel_RGBA16>;
+	extern template class PixelRef<Pixel_RGBA32>;
+	extern template class PixelRef<Pixel_RGBA32F>;
 
 	template<typename PixelType> class Image;
 	using Image_RGBA8 = Image<Pixel_RGBA8>;
@@ -137,7 +136,7 @@ namespace UniformBitmap
 		bool IsHDR;
 
 		// 位图数据
-		std::unique_ptr<PixelType[]> BitmapData;
+		std::vector<PixelType> BitmapData;
 
 		// 位图数据的行指针
 		std::vector<PixelType*> RowPointers;
@@ -157,10 +156,10 @@ namespace UniformBitmap
 		inline uint32_t GetWidth() const { return Width; }
 		inline uint32_t GetHeight() const { return Height; }
 		inline bool GetIsHDR() const { return IsHDR; }
-		inline PixelType* GetBitmapDataPtr() { return BitmapData.get(); }
+		inline PixelType* GetBitmapDataPtr() { return &BitmapData[0]; }
 		inline PixelType* GetBitmapRowPtr(size_t i) { return RowPointers[i]; }
-		inline PixelType* GetBitmapDataPtr() const { return BitmapData.get(); }
-		inline PixelType* GetBitmapRowPtr(size_t i) const { return RowPointers[i]; }
+		inline const PixelType* GetBitmapDataPtr() const { return &BitmapData[0]; }
+		inline const PixelType* GetBitmapRowPtr(size_t i) const { return RowPointers[i]; }
 		inline PixelType GetPixel(uint32_t x, uint32_t y) const { return RowPointers[y][x]; }
 		inline PixelType& GetPixelRef(uint32_t x, uint32_t y) { return RowPointers[y][x]; }
 		inline void PutPixel(uint32_t x, uint32_t y, const PixelType& Color) { RowPointers[y][x] = Color; }
@@ -172,8 +171,9 @@ namespace UniformBitmap
 
 		Image(std::string FilePath);
 		Image(uint32_t Width, uint32_t Height, uint32_t XPelsPerMeter = 3000, uint32_t YPelsPerMeter = 3000);
-		Image(const Image& from);
-		template<typename FromType> Image(const Image<FromType>& from);
+		Image(const Image& from) = default;
+		template<typename FromType> requires (!std::is_same_v<PixelType, FromType>)
+		Image(const Image<FromType>& from);
 
 		void BGR2RGB();
 
@@ -186,30 +186,26 @@ namespace UniformBitmap
 		void SaveToHDR(std::string FilePath) const;
 	};
 
-	extern template Image_RGBA8;
-	extern template Image_RGBA16;
-	extern template Image_RGBA32;
-	extern template Image_RGBA32F;
+	extern template class Image<Pixel_RGBA8>;
+	extern template class Image<Pixel_RGBA16>;
+	extern template class Image<Pixel_RGBA32>;
+	extern template class Image<Pixel_RGBA32F>;
 
-	extern template Image_RGBA8::Image(const Image_RGBA8& from);
 	extern template Image_RGBA8::Image(const Image_RGBA16& from);
 	extern template Image_RGBA8::Image(const Image_RGBA32& from);
 	extern template Image_RGBA8::Image(const Image_RGBA32F& from);
 
 	extern template Image_RGBA16::Image(const Image_RGBA8& from);
-	extern template Image_RGBA16::Image(const Image_RGBA16& from);
 	extern template Image_RGBA16::Image(const Image_RGBA32& from);
 	extern template Image_RGBA16::Image(const Image_RGBA32F& from);
 
 	extern template Image_RGBA32::Image(const Image_RGBA8& from);
 	extern template Image_RGBA32::Image(const Image_RGBA16& from);
-	extern template Image_RGBA32::Image(const Image_RGBA32& from);
 	extern template Image_RGBA32::Image(const Image_RGBA32F& from);
 
 	extern template Image_RGBA32F::Image(const Image_RGBA8& from);
 	extern template Image_RGBA32F::Image(const Image_RGBA16& from);
 	extern template Image_RGBA32F::Image(const Image_RGBA32& from);
-	extern template Image_RGBA32F::Image(const Image_RGBA32F& from);
 
 	bool IsImage16bpps(std::string FilePath);
 }
