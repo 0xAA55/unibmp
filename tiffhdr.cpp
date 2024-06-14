@@ -1358,10 +1358,11 @@ namespace UniformBitmap
 						if (UBytes.size() > 16 &&
 							!memcmp(&UBytes[0], "HUAWEI\0\0", 8))
 						{
-							ret.MakerNoteSubIFD.push_back(ParseTIFFHeader(&UBytes[8], UBytes.size() - 8));
+							// ret.MakerNoteSubIFD.push_back(ParseTIFFHeader(&UBytes[8], UBytes.size() - 8));
+							// 华为它这玩意儿看起来像一个 TIFF 头，但 TagID 完全对应不上。
+							// 因此不读了。
 						}
 					}
-					catch (const BadDataError&) {}
 					catch (const ReadDataError&) {}
 					catch (const std::bad_cast&) {}
 				}
