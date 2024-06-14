@@ -1338,7 +1338,7 @@ namespace UniformBitmap
 	{
 		uint64_t w = 1; while (w < Width) w <<= 1;
 		uint64_t h = 1; while (h < Height) h <<= 1;
-		ExpandResizeLinear(w, h);
+		ExpandResizeLinear(uint32_t(w), uint32_t(h));
 	}
 
 	template<typename PixelType>
@@ -1348,7 +1348,7 @@ namespace UniformBitmap
 		uint64_t h = 1; while (h < Height) h <<= 1;
 		w >>= 1;
 		h >>= 1;
-		ShrinkResize(w, h);
+		ShrinkResize(uint32_t(w), uint32_t(h));
 	}
 
 	template<typename PixelType>
@@ -1418,6 +1418,7 @@ namespace UniformBitmap
 		for (int y = 0; y < int(NewHeight); y++)
 		{
 			float v = float(y) / NewHeight;
+			auto DstRow = PrevRPtr[y];
 			for (int x = 0; x < int(NewWidth); x++)
 			{
 				float u = float(x) / NewWidth;
@@ -1448,6 +1449,7 @@ namespace UniformBitmap
 		{
 			int y0 = int((int64_t(y) * OrigHeight + 0) / int(NewHeight));
 			int y1 = int((int64_t(y) * OrigHeight + 1) / int(NewHeight));
+			auto DstRow = PrevRPtr[y];
 			for (int x = 0; x < int(NewWidth); x++)
 			{
 				int x0 = int((int64_t(x) * OrigWidth + 0) / int(NewWidth));
@@ -1464,23 +1466,23 @@ namespace UniformBitmap
 	}
 
 	template<typename PixelType>
-	PixelType Image<PixelType>::LinearSample(uint32_t Width, uint32_t Height, const PixelType* RowPointer, float u, float v)
+	PixelType Image<PixelType>::LinearSample(uint32_t Width, uint32_t Height, const std::vector<PixelType*> RowPointers, float u, float v)
 	{
 		float TexelCoordX = u * Width;
-		float TexelCoordV = v * Height;
+		float TexelCoordY = v * Height;
 		int x0 = int(floor(TexelCoordX));
 		int y0 = int(floor(TexelCoordY));
-		int x1 = x0 + 1; if (x1 >= Width) x1 = Width - 1;
-		int y1 = y0 + 1; if (y1 >= Height) y1 = Height - 1;
+		int x1 = x0 + 1; if (x1 >= int(Width)) x1 = Width - 1;
+		int y1 = y0 + 1; if (y1 >= int(Height)) y1 = Height - 1;
 		return LinearInterpolate(
-			LinearInterpolate(x0, x1, TexelCoordX - x0),
-			LinearInterpolate(y0, y1, TexelCoordX - x0),
-			TexelCoordV - y0
+			LinearInterpolate(RowPointers[y0][x0], RowPointers[y0][x1], TexelCoordX - x0),
+			LinearInterpolate(RowPointers[y1][x0], RowPointers[y1][x1], TexelCoordX - x0),
+			TexelCoordY - y0
 		);
 	}
 
 	template<typename PixelType>
-	PixelType Image<PixelType>::GetAvreage(int x0, int y0, int x1, int y1, const PixelType* RowPointer)
+	PixelType Image<PixelType>::GetAvreage(int x0, int y0, int x1, int y1, const std::vector<PixelType*> RowPointers)
 	{
 		auto ret = Pixel_RGBA32F(0, 0, 0, 0);
 		size_t count = 0;
@@ -1489,24 +1491,40 @@ namespace UniformBitmap
 		{
 			for (int x = x0; x < x1; x++)
 			{
-				ret += RowPointer[y][x];
+				auto& c = RowPointers[y][x];
+				ret.R += c.R;
+				ret.G += c.G;
+				ret.B += c.B;
+				ret.A += c.A;
 				count++;
 			}
 		}
 
-		return PixelType(ret / count);
+		return PixelType
+		(
+			ChannelType(ret.R / count),
+			ChannelType(ret.G / count),
+			ChannelType(ret.B / count),
+			ChannelType(ret.A / count)
+		);
 	}
 
 	template<typename PixelType>
 	PixelType Image<PixelType>::LinearInterpolate(const PixelType& c1, const PixelType& c2, float s)
 	{
-		Pixel_RGBA32F Base = c2 - c1;
+		Pixel_RGBA32F Base
+		{
+			float(c2.R) - c1.R,
+			float(c2.G) - c1.G,
+			float(c2.B) - c1.B,
+			float(c2.A) - c1.A
+		};
 		return PixelType
 		(
-			ChannelType(float(c1.R) + Base * s),
-			ChannelType(float(c1.G) + Base * s),
-			ChannelType(float(c1.B) + Base * s),
-			ChannelType(float(c1.A) + Base * s)
+			ChannelType(float(c1.R) + Base.R * s),
+			ChannelType(float(c1.G) + Base.G * s),
+			ChannelType(float(c1.B) + Base.B * s),
+			ChannelType(float(c1.A) + Base.A * s)
 		);
 	}
 

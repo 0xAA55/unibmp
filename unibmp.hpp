@@ -304,8 +304,8 @@ namespace UniformBitmap
 		PixelType GetAvreage(int x0, int y0, int x1, int y1) const;
 
 	protected:
-		static PixelType LinearSample(uint32_t Width, uint32_t Height, const PixelType* RowPointer, float u, float v);
-		static PixelType GetAvreage(int x0, int y0, int x1, int y1, const PixelType* RowPointer);
+		static PixelType LinearSample(uint32_t Width, uint32_t Height, const std::vector<PixelType*> RowPointers, float u, float v);
+		static PixelType GetAvreage(int x0, int y0, int x1, int y1, const std::vector<PixelType*> RowPointers);
 	};
 
 	extern template class Image<Pixel_RGBA8>;
