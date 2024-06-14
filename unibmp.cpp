@@ -943,8 +943,77 @@ namespace UniformBitmap
 			auto dst_row = RowPointers[y];
 			for (int32_t x = 0; x < w; x++)
 			{
-				auto ps = &src_row[x];
-				dst_row[x] = PixelType(ps->B, ps->G, ps->R, ps->A);
+				auto& ps = src_row[x];
+				dst_row[x] = PixelType(ps.B, ps.G, ps.R, ps.A);
+			}
+		}
+	}
+
+	template<typename PixelType>
+	void Image<PixelType>::FillRect(int l, int t, int r, int b, const PixelType& Color)
+	{
+		const auto MaxX = Width - 1;
+		const auto MaxY = Height - 1;
+		if (l > r) { auto _t = l; l = r; r = _t; }
+		if (t > b) { auto _t = t; t = b; b = _t; }
+		if (l < 0) l = 0;
+		if (l > MaxX) return;
+		if (t < 0) t = 0;
+		if (t > MaxY) return;
+		if (r < 0) return;
+		if (r > MaxX) r = MaxX;
+		if (b < 0) return;
+		if (b > MaxY) b = MaxY;
+		auto FirstRow = RowPointers[t];
+		auto RowPixels = r + 1 - l;
+#pragma omp parallel for
+		for (int i = l; i <= r; i++) FirstRow[i] = Color;
+#pragma omp parallel for
+		for (int y = t + 1; y <= b; y++)
+		{
+			memcpy(RowPointers[y][l], &FirstRow[l], RowPixels * sizeof Color);
+		}
+	}
+
+	template<typename PixelType>
+	void Image<PixelType>::Paint(int x, int y, int w, int h, const Image& Src, int src_x, int src_y)
+	{
+		if (x < 0)
+		{
+			src_x -= x;
+			w += x;
+			x = 0;
+		}
+		if (y < 0)
+		{
+			src_y -= y;
+			h += y;
+			y = 0;
+		}
+		if (src_x < 0)
+		{
+			x -= src_x;
+			w += src_x;
+			src_x = 0;
+		}
+		if (src_y < 0)
+		{
+			y -= src_y;
+			h += src_y;
+			src_y = 0;
+		}
+		if (src_x + w > Src.Width) w = Src.Width - src_x;
+		if (src_y + h > Src.Height) h = Src.Height - src_y;
+		if (w <= 0 || h <= 0) return;
+		if (src_x >= Src.Width || src_y >= Src.Height) return;
+#pragma omp parallel for
+		for (int iy = 0; iy < h; iy++)
+		{
+			auto src_row = Src.RowPointers[src_y + iy];
+			auto dst_row = RowPointers[y + iy];
+			for (int ix = 0; ix < w; ix++)
+			{
+				dst_row[x + ix] = src_row[src_x + ix]
 			}
 		}
 	}
