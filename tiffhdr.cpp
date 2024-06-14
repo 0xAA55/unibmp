@@ -1,8 +1,6 @@
 #include "tiffhdr.hpp"
 
-#include <array>
 #include <sstream>
-#include <unordered_set>
 #include <cinttypes>
 
 #define DEBUG_TIFFHeader 1
@@ -640,39 +638,7 @@ namespace UniformBitmap
 		{"MoireFilter", 0xfe58},
 	};
 
-	template<typename TagType, size_t N>
-	const std::unordered_map<std::string, TagType> DataToMap(const std::pair<const char*, TagType>(&cdata)[N])
-	{
-		std::unordered_map<std::string, TagType> ret;
-		for (size_t i = 0; i < N; i++)
-		{
-			ret.insert({ cdata[i].first, cdata[i].second });
-		}
-		return ret;
-	}
-
-	template<typename TagType, size_t N>
-	const std::unordered_map<TagType, std::string> DataToMap(const std::pair<const char*, TagType>(&cdata)[N])
-	{
-		std::unordered_map<TagType, std::string> ret;
-		for (size_t i = 0; i < N; i++)
-		{
-			auto& k_v = cdata[i];
-			auto tag = k_v.first;
-			auto val = k_v.second;
-
-			if (ret.contains(tag))
-				ret[tag] += "|" + val;
-			else
-				ret[tag] = val;
-		}
-		return ret;
-	}
-
-	const std::unordered_map<uint16_t, std::string> IFDTagToStr = DataToMap(IFDTagData);
-	const std::unordered_map<std::string, uint16_t> IFDTagFromStr = DataToMap(IFDTagData);
-
-	const std::unordered_set<uint16_t> IFDPointerTags = {
+	constexpr uint16_t IFDPointerTagsData[] = {
 		0x0103, 0x014a, 0x0190, 0x02bc, 0x4748, 0x8290, 0x83bb, 0x8568,
 		0x8606, 0x8649, 0x8769, 0x8773, 0x8825, 0x888a, 0x9208, 0x9209,
 		0x927c, 0x935c, 0xa005, 0xc4a5, 0xc519, 0xc51b, 0xc634, 0xc65a,
@@ -680,24 +646,7 @@ namespace UniformBitmap
 		0xcd47, 0xfe00
 	};
 
-	const std::unordered_map<IFDFieldFormat, std::string> IFDFormatToStringMap =
-	{
-		{IFDFieldFormat::Unknown, "<unknown>"},
-		{IFDFieldFormat::SByte, "SByte"},
-		{IFDFieldFormat::SShort, "SShort"},
-		{IFDFieldFormat::SLong, "SLong"},
-		{IFDFieldFormat::SRational, "SRational"},
-		{IFDFieldFormat::UByte, "UByte"},
-		{IFDFieldFormat::UShort, "UShort"},
-		{IFDFieldFormat::ULong, "ULong"},
-		{IFDFieldFormat::URational, "URational"},
-		{IFDFieldFormat::Undefined, "Undefined"},
-		{IFDFieldFormat::AsciiString, "AsciiString"},
-		{IFDFieldFormat::Float, "Float"},
-		{IFDFieldFormat::Double, "Double"},
-	};
-
-	const std::unordered_map<std::string, IFDFieldFormat> StringToIFDFormatMap =
+	constexpr std::pair<const char*, IFDFieldFormat> IFDFormatStringData[] =
 	{
 		{"<unknown>", IFDFieldFormat::Unknown},
 		{"SByte", IFDFieldFormat::SByte},
@@ -713,6 +662,56 @@ namespace UniformBitmap
 		{"Float", IFDFieldFormat::Float},
 		{"Double", IFDFieldFormat::Double},
 	};
+
+	template<typename TagType, size_t N>
+	const std::unordered_map<std::string, TagType> DataToMapS2E(const std::pair<const char*, TagType>(&cdata)[N])
+	{
+		std::unordered_map<std::string, TagType> ret;
+		for (size_t i = 0; i < N; i++)
+		{
+			ret.insert({ cdata[i].first, cdata[i].second });
+		}
+		return ret;
+	}
+
+	template<typename TagType, size_t N>
+	const std::unordered_map<TagType, std::string> DataToMapE2S(const std::pair<const char*, TagType>(&cdata)[N])
+	{
+		std::unordered_map<TagType, std::string> ret;
+		for (size_t i = 0; i < N; i++)
+		{
+			auto& k_v = cdata[i];
+			auto val = k_v.first;
+			auto tag = k_v.second;
+
+			if (ret.contains(tag))
+			{
+				auto& s = ret[tag];
+				s += "|";
+				s += val;
+			}
+			else
+				ret[tag] = val;
+		}
+		return ret;
+	}
+
+	template<typename EnumType, size_t N>
+	const std::unordered_set<EnumType> DataToSet(const EnumType(&data)[N])
+	{
+		std::unordered_set<EnumType> ret;
+		for (size_t i = 0; i < N; i++)
+		{
+			ret.insert(data[i]);
+		}
+		return ret;
+	}
+
+	const std::unordered_map<uint16_t, std::string> IFDTagToStr = DataToMapE2S(IFDTagData);
+	const std::unordered_map<std::string, uint16_t> IFDTagFromStr = DataToMapS2E(IFDTagData);
+	const std::unordered_set<uint16_t> IFDPointerTags = DataToSet(IFDPointerTagsData);
+	const std::unordered_map<IFDFieldFormat, std::string> IFDFormatToStringMap = DataToMapE2S(IFDFormatStringData);
+	const std::unordered_map<std::string, IFDFieldFormat> StringToIFDFormatMap = DataToMapS2E(IFDFormatStringData);
 
 	template<typename T>
 	IFDFieldFormat IFDFieldType<T>::GetFormatValueByType()

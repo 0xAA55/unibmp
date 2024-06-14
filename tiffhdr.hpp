@@ -6,6 +6,7 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <unordered_set>
 #include <unordered_map>
 
 namespace UniformBitmap
@@ -189,6 +190,9 @@ namespace UniformBitmap
 
 	extern const std::unordered_map<uint16_t, std::string> IFDTagToStr;
 	extern const std::unordered_map<std::string, uint16_t> IFDTagFromStr;
+	extern const std::unordered_set<uint16_t> IFDPointerTags;
+	extern const std::unordered_map<IFDFieldFormat, std::string> IFDFormatToStringMap;
+	extern const std::unordered_map<std::string, IFDFieldFormat> StringToIFDFormatMap;
 
 	// 函数：建立默认的 TIFF 头
 	TIFFHeader ConstuctTIFFHeader
