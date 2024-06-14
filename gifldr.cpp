@@ -251,7 +251,7 @@ namespace CPPGIF
 
 	DataSubBlock ImageDescriptorType::UncompressLZW(const DataSubBlock& Compressed, uint8_t LZW_MinCodeSize)
 	{
-		auto ret = DataSubBlock();
+		auto Output = DataSubBlock();
 		using LZWCodeUnpackedType = uint16_t;
 		using LZWCodeUnpackedVectorType = std::vector<LZWCodeUnpackedType>;
 
@@ -259,34 +259,44 @@ namespace CPPGIF
 		struct CodeTableType : public std::vector<DataSubBlock>
 		{
 		public:
-			void InitCodeTable(uint8_t LZW_MinCodeSize)
-			{
-				clear();
+			LZWCodeUnpackedType ClearCode;
+			LZWCodeUnpackedType EOICode;
+			uint8_t LZW_MinCodeSize;
 
-				auto ClearCode = 1 << LZW_MinCodeSize;
-				auto EOI = ClearCode + 1;
-				
-				for (int i = 0; i <= EOI; i++)
+			void InitCodeTable()
+			{
+				ClearCode = 1 << LZW_MinCodeSize;
+				EOICode = ClearCode + 1;
+
+				clear();
+				for (int i = 0; i <= EOICode; i++)
 				{
 					push_back(DataSubBlock());
 					back().push_back(i);
 				}
 			}
 
-			CodeTableType(uint8_t LZW_MinCodeSize) : std::vector<DataSubBlock>()
+			CodeTableType(uint8_t LZW_MinCodeSize) :
+				std::vector<DataSubBlock>(),
+				LZW_MinCodeSize(LZW_MinCodeSize)
 			{
-				InitCodeTable(LZW_MinCodeSize);
+				ClearCode = LZWCodeUnpackedType(1) << LZW_MinCodeSize;
+				EOICode = ClearCode + 1;
 			}
 		};
 
+		auto UnpackedCodes = LZWCodeUnpackedVectorType();
+
 		auto CodeTable = CodeTableType(LZW_MinCodeSize);
+		bool IsFirstStep = true;
+		bool EOIReached = false;
 
 		// 先把 LZW 的字节序列以动态位数长度的编码转变为定长的编码。
-		auto LZWCodeUnpacked = LZWCodeUnpackedVectorType();
 		const auto FirstCodeSize = LZW_MinCodeSize + 1;
 		constexpr auto MaxCodeSize = 12;
 		constexpr auto MaxUnpackedBits = sizeof(LZWCodeUnpackedType) * 8;
 		auto CurCode = LZWCodeUnpackedType(0);
+		auto LastCode = CurCode;
 		auto CurCodeSize = FirstCodeSize;
 		auto CurCodeMaxVal = (1 << (CurCodeSize)) - 1;
 
@@ -296,7 +306,7 @@ namespace CPPGIF
 			auto CurByte = LZWCodeUnpackedType(Compressed[i]);
 			auto CurByteRemains = 8;
 			do
-			{
+			{ // 先做位数解码工作，获取到足够位数的数据后再做码表的工作
 				auto BitsToGet = CurCodeBitsNeeded;
 				if (BitsToGet > CurByteRemains) BitsToGet = CurByteRemains;
 				auto BitsMask = (1 << BitsToGet) - 1;
@@ -307,15 +317,50 @@ namespace CPPGIF
 				CurByteRemains -= BitsToGet;
 				CurCodeBitsNeeded -= BitsToGet;
 				if (!CurByteRemains)
-				{
+				{ // 用完一个字节
 					i++;
 					if (i >= Compressed.size()) break;
 				}
 				if (!CurCodeBitsNeeded)
-				{ // 全部位数获取完
+				{ // 全部位数获取完，此处获取到了一个 LZW 编码数值
 					CurCode >>= MaxUnpackedBits - CurCodeSize; // 将堆积到高位的数值移回本来的位置
-					LZWCodeUnpacked.push_back(CurCode);
-					if (CurCode == CurCodeMaxVal)
+
+					// 为调试：记录每个 Code 值
+					UnpackedCodes.push_back(CurCode);
+
+					if (CurCode == CodeTable.ClearCode)
+					{
+						CodeTable.InitCodeTable();
+					}
+					else if (CurCode == CodeTable.EOICode)
+					{
+						EOIReached = true;
+						break;
+					}
+					else if (IsFirstStep)
+					{
+						IsFirstStep = false;
+						auto& ToOutput = CodeTable[CurCode];
+						Output.insert(Output.end(), ToOutput.cbegin(), ToOutput.cend());
+					}
+					else if (CurCode < CodeTable.size())
+					{
+						auto& ToOutput = CodeTable[CurCode];
+						Output.insert(Output.end(), ToOutput.cbegin(), ToOutput.cend());
+						auto K = ToOutput[0];
+						CodeTable.push_back(CodeTable[LastCode]);
+						CodeTable.back().push_back(K);
+					}
+					else
+					{
+						DataSubBlock CodesToAdd = CodeTable[LastCode];
+						auto K = CodesToAdd.front();
+						CodesToAdd.push_back(K);
+						Output.insert(Output.end(), CodesToAdd.cbegin(), CodesToAdd.cend());
+						CodeTable.push_back(CodesToAdd);
+					}
+
+					if (CodeTable.size() == CurCodeMaxVal)
 					{
 						CurCodeSize++;
 						if (CurCodeSize > MaxCodeSize) 
@@ -325,9 +370,15 @@ namespace CPPGIF
 						CurCodeMaxVal = (1 << CurCodeSize) - 1;
 					}
 					CurCodeBitsNeeded = CurCodeSize;
+					LastCode = CurCode;
 					CurCode = 0;
 				}
 			} while (CurByteRemains);
+			if (EOIReached) break;
+		}
+		if (!EOIReached)
+		{
+			throw MoreDataNeeded("GIF: LZW decompressing: expected EOI.");
 		}
 		if (CurCodeBitsNeeded)
 		{
@@ -346,7 +397,7 @@ namespace CPPGIF
 
 
 
-		return ret;
+		return Output;
 	}
 
 	const ColorTableArray& ImageDescriptorType::GetLocalColorTable() const
