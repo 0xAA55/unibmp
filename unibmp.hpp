@@ -290,7 +290,19 @@ namespace UniformBitmap
 		bool HeightIs2N() const;
 		bool WidthHeightIs2N() const;
 
+		void ResizeNearest(uint32_t NewWidth, uint32_t NewHeight);
+		void ResizeLinear(uint32_t NewWidth, uint32_t NewHeight);
 
+		void ExpandResizeLinear(uint32_t NewWidth, uint32_t NewHeight);
+		void ShrinkResize(uint32_t NewWidth, uint32_t NewHeight);
+
+		PixelType LinearSample(float u, float v) const;
+		static PixelType LinearInterpolate(const PixelType& c1, const PixelType& c2, float s);
+		PixelType GetAvreage(int x0, int y0, int x1, int y1) const;
+
+	protected:
+		static PixelType LinearSample(uint32_t Width, uint32_t Height, const PixelType* RowPointer, float u, float v);
+		static PixelType GetAvreage(int x0, int y0, int x1, int y1, const PixelType* RowPointer);
 	};
 
 	extern template class Image<Pixel_RGBA8>;

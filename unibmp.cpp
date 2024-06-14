@@ -7,9 +7,16 @@
 #include <cstring>
 #include <algorithm>
 
+#ifndef PROFILE_MultithreadingImageRastering
+#define PROFILE_MultithreadingImageRastering 1
+#endif
+
+#ifndef PROFILE_MultithreadingComplexImageRastering
+#define PROFILE_MultithreadingComplexImageRastering 1
+#endif
+
 namespace UniformBitmap
 {
-
 	ReadBmpFileError::ReadBmpFileError(std::string what) noexcept :
 		std::runtime_error(what)
 	{
@@ -924,7 +931,9 @@ namespace UniformBitmap
 		XPelsPerMeter = from.XPelsPerMeter;
 		YPelsPerMeter = from.YPelsPerMeter;
 		IsHDR = false;
+#if PROFILE_MultithreadingImageRastering
 #pragma omp parallel for
+#endif
 		for (ptrdiff_t y = 0; y < ptrdiff_t(Height); y++)
 		{
 			auto srow = from.GetBitmapRowPtr(y);
@@ -945,7 +954,9 @@ namespace UniformBitmap
 		XPelsPerMeter = from.XPelsPerMeter;
 		YPelsPerMeter = from.YPelsPerMeter;
 		IsHDR = false;
+#if PROFILE_MultithreadingImageRastering
 #pragma omp parallel for
+#endif
 		for (ptrdiff_t y = 0; y < ptrdiff_t(Height); y++)
 		{
 			auto srow = from.GetBitmapRowPtr(y);
@@ -962,7 +973,9 @@ namespace UniformBitmap
 	void Image<PixelType>::BGR2RGB()
 	{
 		int32_t w = static_cast<int32_t>(Width), h = static_cast<int32_t>(Height);
+#if PROFILE_MultithreadingImageRastering
 #pragma omp parallel for
+#endif
 		for (ptrdiff_t y = 0; y < h; y++)
 		for (int32_t y = 0; y < h; y++)
 		{
@@ -993,9 +1006,13 @@ namespace UniformBitmap
 		if (b > MaxY) b = MaxY;
 		auto FirstRow = RowPointers[t];
 		auto RowPixels = r + 1 - l;
+#if PROFILE_MultithreadingImageRastering
 #pragma omp parallel for
+#endif
 		for (int i = l; i <= r; i++) FirstRow[i] = Color;
+#if PROFILE_MultithreadingImageRastering
 #pragma omp parallel for
+#endif
 		for (int y = t + 1; y <= b; y++)
 		{
 			memcpy(&RowPointers[y][l], &FirstRow[l], RowPixels * sizeof Color);
@@ -1035,7 +1052,9 @@ namespace UniformBitmap
 		if (src_y + h > src_h) h = src_h - src_y;
 		if (w <= 0 || h <= 0) return;
 		if (src_x >= src_w || src_y >= src_h) return;
+#if PROFILE_MultithreadingImageRastering
 #pragma omp parallel for
+#endif
 		for (int iy = 0; iy < h; iy++)
 		{
 			auto src_row = Src.RowPointers[src_y + iy];
@@ -1053,7 +1072,9 @@ namespace UniformBitmap
 		int HalfWidth = int(Width >> 1);
 		int MaxX = int(Width - 1);
 
+#if PROFILE_MultithreadingImageRastering
 #pragma omp parallel for
+#endif
 		for (int y = 0; y < int(Height); y++)
 		{
 			auto& row = RowPointers[y];
@@ -1072,7 +1093,9 @@ namespace UniformBitmap
 		auto RowBuffers = std::make_unique<PixelType[]>(int(Width) * HalfHeight);
 		auto RowLength = size_t(Width) * sizeof(PixelType);
 
+#if PROFILE_MultithreadingImageRastering
 #pragma omp parallel for
+#endif
 		for (int y = 0; y < HalfHeight; y++)
 		{
 			auto& row1 = RowPointers[y];
@@ -1101,7 +1124,9 @@ namespace UniformBitmap
 		const auto MaxX = int(Width - 1);
 		const auto MaxY = int(Height - 1);
 
+#if PROFILE_MultithreadingImageRastering
 #pragma omp parallel for
+#endif
 		for (int y = 0; y < int(Height); y++)
 		{
 			auto& row = RowPointers[y];
@@ -1122,7 +1147,9 @@ namespace UniformBitmap
 		const auto MaxX = int(Width - 1);
 		const auto MaxY = int(Height - 1);
 
+#if PROFILE_MultithreadingImageRastering
 #pragma omp parallel for
+#endif
 		for (int y = 0; y < int(Height); y++)
 		{
 			auto& row = RowPointers[y];
@@ -1304,6 +1331,171 @@ namespace UniformBitmap
 	bool Image<PixelType>::WidthHeightIs2N() const
 	{
 		return WidthIs2N() && HeightIs2N();
+	}
+
+	template<typename PixelType>
+	void Image<PixelType>::ResizeNearest(uint32_t NewWidth, uint32_t NewHeight)
+	{
+		if (NewWidth == Width && NewHeight == Height) return;
+
+		auto PrevBMP = std::move(BitmapData);
+		auto PrevRPtr = std::move(RowPointers);
+		auto OrigWidth = Width;
+		auto OrigHeight = Height;
+		CreateBuffer(NewWidth, NewHeight);
+
+#if PROFILE_MultithreadingImageRastering
+#pragma omp parallel for
+#endif
+		for (int y = 0; y < int(NewHeight); y++)
+		{
+			auto& DstRow = RowPointers[y];
+			auto& SrcRow = PrevRPtr[uint64_t(y) * OrigHeight / NewHeight];
+			for (int x = 0; x < int(NewWidth); x++)
+			{
+				DstRow[x] = SrcRow[uint64_t(x) * OrigWidth / NewWidth];
+			}
+		}
+	}
+
+	template<typename PixelType>
+	void Image<PixelType>::ResizeLinear(uint32_t NewWidth, uint32_t NewHeight)
+	{
+		int xset = NewWidth > Width ? 2 : NewWidth == Width ? 1 : 0;
+		int yset = NewHeight > Height ? 2 : NewHeight == Height ? 1 : 0;
+		int xyset = (xset << 4) + (yset << 0);
+		// 0: shrink; 1: keep; 2: expand
+		switch (xyset)
+		{
+		case 0x00:
+		case 0x01:
+		case 0x10: ShrinkResize(NewWidth, NewHeight); break;
+		case 0x11: break;
+		case 0x12:
+		case 0x21:
+		case 0x22: ExpandResizeLinear(NewWidth, NewHeight); break;
+		case 0x02: ShrinkResize(NewWidth, Height); ExpandResizeLinear(NewWidth, NewHeight); break;
+		case 0x20: ShrinkResize(Width, NewHeight); ExpandResizeLinear(NewWidth, NewHeight); break;
+		}
+	}
+
+	template<typename PixelType>
+	void Image<PixelType>::ExpandResizeLinear(uint32_t NewWidth, uint32_t NewHeight)
+	{
+		if (NewWidth == Width && NewHeight == Height) return;
+		if (NewWidth < Width || NewHeight < Height)
+		{
+			throw std::invalid_argument("Should not use `ExpandResizeLinear()` on shrinking an image.\n");
+		}
+
+		auto PrevBMP = std::move(BitmapData);
+		auto PrevRPtr = std::move(RowPointers);
+		auto OrigWidth = Width;
+		auto OrigHeight = Height;
+		CreateBuffer(NewWidth, NewHeight);
+
+#if PROFILE_MultithreadingComplexImageRastering
+#pragma omp parallel for
+#endif
+		for (int y = 0; y < int(NewHeight); y++)
+		{
+			float v = float(y) / NewHeight;
+			for (int x = 0; x < int(NewWidth); x++)
+			{
+				float u = float(x) / NewWidth;
+				DstRow[x] = LinearSample(OrigWidth, OrigHeight, PrevRPtr, u, v);
+			}
+		}
+	}
+
+	template<typename PixelType>
+	void Image<PixelType>::ShrinkResize(uint32_t NewWidth, uint32_t NewHeight)
+	{
+		if (NewWidth == Width && NewHeight == Height) return;
+		if (NewWidth > Width || NewHeight > Height)
+		{
+			throw std::invalid_argument("Should not use `ShrinkResize()` on expanding an image.\n");
+		}
+
+		auto PrevBMP = std::move(BitmapData);
+		auto PrevRPtr = std::move(RowPointers);
+		auto OrigWidth = Width;
+		auto OrigHeight = Height;
+		CreateBuffer(NewWidth, NewHeight);
+
+#if PROFILE_MultithreadingComplexImageRastering
+#pragma omp parallel for
+#endif
+		for (int y = 0; y < int(NewHeight); y++)
+		{
+			int y0 = int((int64_t(y) * OrigHeight + 0) / int(NewHeight));
+			int y1 = int((int64_t(y) * OrigHeight + 1) / int(NewHeight));
+			for (int x = 0; x < int(NewWidth); x++)
+			{
+				int x0 = int((int64_t(x) * OrigWidth + 0) / int(NewWidth));
+				int x1 = int((int64_t(x) * OrigWidth + 1) / int(NewWidth));
+				DstRow[x] = GetAvreage(x0, y0, x1, y1, PrevRPtr);
+			}
+		}
+	}
+
+	template<typename PixelType>
+	PixelType Image<PixelType>::LinearSample(float u, float v) const
+	{
+		return LinearSample(Width, Height, RowPointers, u, v);
+	}
+
+	template<typename PixelType>
+	PixelType Image<PixelType>::LinearSample(uint32_t Width, uint32_t Height, const PixelType* RowPointer, float u, float v)
+	{
+		float TexelCoordX = u * Width;
+		float TexelCoordV = v * Height;
+		int x0 = int(floor(TexelCoordX));
+		int y0 = int(floor(TexelCoordY));
+		int x1 = x0 + 1; if (x1 >= Width) x1 = Width - 1;
+		int y1 = y0 + 1; if (y1 >= Height) y1 = Height - 1;
+		return LinearInterpolate(
+			LinearInterpolate(x0, x1, TexelCoordX - x0),
+			LinearInterpolate(y0, y1, TexelCoordX - x0),
+			TexelCoordV - y0
+		);
+	}
+
+	template<typename PixelType>
+	PixelType Image<PixelType>::GetAvreage(int x0, int y0, int x1, int y1, const PixelType* RowPointer)
+	{
+		auto ret = Pixel_RGBA32F(0, 0, 0, 0);
+		size_t count = 0;
+
+		for (int y = y0; y < y1; y++)
+		{
+			for (int x = x0; x < x1; x++)
+			{
+				ret += RowPointer[y][x];
+				count++;
+			}
+		}
+
+		return PixelType(ret / count);
+	}
+
+	template<typename PixelType>
+	PixelType Image<PixelType>::LinearInterpolate(const PixelType& c1, const PixelType& c2, float s)
+	{
+		Pixel_RGBA32F Base = c2 - c1;
+		return PixelType
+		(
+			ChannelType(float(c1.R) + Base * s),
+			ChannelType(float(c1.G) + Base * s),
+			ChannelType(float(c1.B) + Base * s),
+			ChannelType(float(c1.A) + Base * s)
+		);
+	}
+
+	template<typename PixelType>
+	PixelType Image<PixelType>::GetAvreage(int x0, int y0, int x1, int y1) const
+	{
+		return GetAvreage(x0, y0, x1, y1, RowPointers);
 	}
 
 	template<typename PixelType, typename T>
@@ -1662,7 +1854,9 @@ namespace UniformBitmap
 		{
 			auto stbi = STBITakeOver<Pixel_RGBA32F>(w, h, stbi_loadf(FilePath.c_str(), &w, &h, &n, 4));
 			CreateBuffer(w, h);
+#if PROFILE_MultithreadingImageRastering
 #pragma omp parallel for
+#endif
 			for (ptrdiff_t y = 0; y < ptrdiff_t(Height); y++)
 			{
 				auto srow = &stbi.Pixels[y * Width];
@@ -1678,7 +1872,9 @@ namespace UniformBitmap
 		{
 			auto stbi = STBITakeOver<Pixel_RGBA8>(w, h, stbi_load(FilePath.c_str(), &w, &h, &n, 4));
 			CreateBuffer(w, h);
+#if PROFILE_MultithreadingImageRastering
 #pragma omp parallel for
+#endif
 			for (ptrdiff_t y = 0; y < ptrdiff_t(Height); y++)
 			{
 				auto srow = &stbi.Pixels[y * Width];
@@ -1695,7 +1891,9 @@ namespace UniformBitmap
 		{
 			auto stbi = STBITakeOver<Pixel_RGBA16>(w, h, stbi_load_16(FilePath.c_str(), &w, &h, &n, 4));
 			CreateBuffer(w, h);
+#if PROFILE_MultithreadingImageRastering
 #pragma omp parallel for
+#endif
 			for (ptrdiff_t y = 0; y < ptrdiff_t(Height); y++)
 			{
 				auto srow = &stbi.Pixels[y * Width];
@@ -1719,7 +1917,9 @@ namespace UniformBitmap
 		{
 			auto stbi = STBITakeOver<Pixel_RGBA32F>(w, h, stbi_loadf_from_memory(reinterpret_cast<const uint8_t*>(FileInMemory), FileSize, &w, &h, &n, 4));
 			CreateBuffer(w, h);
+#if PROFILE_MultithreadingImageRastering
 #pragma omp parallel for
+#endif
 			for (ptrdiff_t y = 0; y < ptrdiff_t(Height); y++)
 			{
 				auto srow = &stbi.Pixels[y * Width];
@@ -1735,7 +1935,9 @@ namespace UniformBitmap
 		{
 			auto stbi = STBITakeOver<Pixel_RGBA8>(w, h, stbi_load_from_memory(reinterpret_cast<const uint8_t*>(FileInMemory), FileSize, &w, &h, &n, 4));
 			CreateBuffer(w, h);
+#if PROFILE_MultithreadingImageRastering
 #pragma omp parallel for
+#endif
 			for (ptrdiff_t y = 0; y < ptrdiff_t(Height); y++)
 			{
 				auto srow = &stbi.Pixels[y * Width];
@@ -1752,7 +1954,9 @@ namespace UniformBitmap
 		{
 			auto stbi = STBITakeOver<Pixel_RGBA16>(w, h, stbi_load_16_from_memory(reinterpret_cast<const uint8_t*>(FileInMemory), FileSize, &w, &h, &n, 4));
 			CreateBuffer(w, h);
+#if PROFILE_MultithreadingImageRastering
 #pragma omp parallel for
+#endif
 			for (ptrdiff_t y = 0; y < ptrdiff_t(Height); y++)
 			{
 				auto srow = &stbi.Pixels[y * Width];
