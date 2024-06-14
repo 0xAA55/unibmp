@@ -21,12 +21,14 @@
   <ItemGroup>
     <ClInclude Include="gifldr.hpp" />
     <ClInclude Include="ImageAnim.hpp" />
+    <ClInclude Include="PaletteGen.hpp" />
     <ClInclude Include="tiffhdr.hpp" />
     <ClInclude Include="unibmp.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gifldr.cpp" />
     <ClCompile Include="ImageAnim.cpp" />
+    <ClCompile Include="PaletteGen.cpp" />
     <ClCompile Include="tiffhdr.cpp" />
     <ClCompile Include="unibmp.cpp" />
   </ItemGroup>
