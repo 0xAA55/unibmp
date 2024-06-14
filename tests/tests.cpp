@@ -5,10 +5,8 @@ using namespace CPPGIF;
 
 void test_gif(const std::string& gif_file, const std::string& png_file)
 {
-	using namespace CPPGIF;
-
 	std::cout << gif_file << "\n";
-	auto Gif = GIFLoader(gif_file);
+	auto Gif = GIFLoader(gif_file, true);
 	Gif.ConvertToImageAnim().SaveSequencePNG(png_file, false);
 }
 
