@@ -109,7 +109,7 @@ namespace CPPGIF
 		{ // 如果这个块有数据，它后面会有个 '\0'
 			auto Terminator = uint8_t();
 			Read(is, Terminator);
-			if (Terminator) throw UnexpectedData(std::string("DataSubBlock::DataSubBlock(): When reading: data terminator expected, got `") + std::to_string(Terminator) + "`");
+			if (Terminator) throw UnexpectedData(std::string("GIF DataSubBlock::DataSubBlock(): When reading: data terminator expected, got `") + std::to_string(Terminator) + "`");
 		}
 	}
 
@@ -146,7 +146,7 @@ namespace CPPGIF
 		if (HasGCT) ret = 0x80;
 		if (ColorResolution < 1 || ColorResolution > 8)
 		{
-			throw std::invalid_argument(std::string("LogicalScreenDescriptorType::MakeBitfields(): bad `ColorResolution` (") + std::to_string(ColorResolution) + "): should be in [1, 8].");
+			throw std::invalid_argument(std::string("GIF LogicalScreenDescriptorType::MakeBitfields(): bad `ColorResolution` (") + std::to_string(ColorResolution) + "): should be in [1, 8].");
 		}
 		ret |= ((ColorResolution - 1) << 4);
 		if (ColorIsSorted) ret |= 0x08;
@@ -156,7 +156,7 @@ namespace CPPGIF
 		}
 		catch (const std::out_of_range&)
 		{
-			throw std::invalid_argument(std::string("LogicalScreenDescriptorType::MakeBitfields(): bad `SizeOfGlobalColorTable` (") + std::to_string(ColorResolution) + "): should be one of 2, 4, 8, 16, 32, 64, 128, 256.");
+			throw std::invalid_argument(std::string("GIF LogicalScreenDescriptorType::MakeBitfields(): bad `SizeOfGlobalColorTable` (") + std::to_string(ColorResolution) + "): should be one of 2, 4, 8, 16, 32, 64, 128, 256.");
 		}
 		return;
 	}
@@ -217,13 +217,17 @@ namespace CPPGIF
 		Read(is, DelayTime);
 		Read(is, TransparentColorIndex);
 		SubBlock = DataSubBlock(is);
+		if (SubBlock.GetBlockSize() != 0)
+		{
+			throw UnexpectedData("GIF Graphic Control Extension should end with an zero, got some blocks of data.");
+		}
 	}
 
 	uint8_t GraphicControlExtensionType::MakeBitfields(DisposalMethodEnum DisposalMethod, bool ReactToUserInput, bool HasTransparency)
 	{
 		if (DisposalMethod < 0 || DisposalMethod >= 4)
 		{
-			throw std::invalid_argument(std::string("GraphicControlExtensionType::MakeBitfields(): Unknown frame disposal method `") + std::to_string(DisposalMethod) + "`.");
+			throw std::invalid_argument(std::string("GIF GraphicControlExtensionType::MakeBitfields(): Unknown frame disposal method `") + std::to_string(DisposalMethod) + "`.");
 		}
 		auto ret = uint8_t(0);
 		ret |= (uint8_t(DisposalMethod) << 2);
