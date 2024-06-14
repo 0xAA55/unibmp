@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <iostream>
 #include <stdexcept>
 #include <unordered_map>
 
@@ -126,10 +127,23 @@ namespace UniformBitmap
 		std::shared_ptr<IFD> SubIFD = nullptr
 	);
 
+	class ReadDataError : public std::ios::failure
+	{
+	public:
+		ReadDataError(const std::ios::failure& e) noexcept;
+		ReadDataError(const std::string& what) noexcept;
+	};
+
+	class BadDataError : public std::runtime_error
+	{
+	public:
+		BadDataError(const std::string& what) noexcept;
+	};
+
 	// 函数：解析 TIFF 头
 	// 参数：
 	//   TIFFData：一个指针指向内存中的图片文件中的 TIFF 数据部分（即开头是 II 或者 MM 的数据）
-	//   TIFFDataSize：TIFF 的数据的大小，如果给 0 表示不知道大小。
+	//   TIFFDataSize：TIFF 的数据的大小，这里实际用于限制读取的范围。
 	//     这个参数同时用于接收实际读取的 TIFF 数据的大小
 	// 返回值：经过初步解析的结构化的 TIFF 数据
 	TIFFHeader ParseTIFFHeader(const uint8_t* TIFFData, size_t& TIFFDataSize);

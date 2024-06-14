@@ -1,5 +1,8 @@
 #include "tiffhdr.hpp"
 
+#include <fstream>
+#include <sstream>
+
 namespace UniformBitmap
 {
 	const std::unordered_map<uint16_t, std::string> IFDTagToStr =
@@ -356,8 +359,125 @@ namespace UniformBitmap
 		return { IFD0 };
 	}
 
+	ReadDataError::ReadDataError(const std::ios::failure& e) noexcept :
+		std::ios::failure(e)
+	{
+	}
+	ReadDataError::ReadDataError(const std::string& what) noexcept :
+		std::ios::failure(what)
+	{
+	}
+	BadDataError::BadDataError(const std::string& what) noexcept :
+		std::runtime_error(what)
+	{
+	}
+
+	template<typename T>
+	T BSWAPW(T v)
+	{
+		auto ptr = reinterpret_cast<const uint8_t*>(&v);
+		uint8_t buf[2] = { ptr[1], ptr[0] };
+		return *reinterpret_cast<T*>(&buf);
+	}
+
+	template<typename T>
+	T BSWAPD(T v)
+	{
+		auto ptr = reinterpret_cast<const uint8_t*>(&v);
+		uint8_t buf[4] = { ptr[3], ptr[2], ptr[1], ptr[0] };
+		return *reinterpret_cast<T*>(&buf);
+	}
+
+	template<typename T>
+	T BSWAPQ(T v)
+	{
+		auto ptr = reinterpret_cast<const uint8_t*>(&v);
+		uint8_t buf[8] = { ptr[7], ptr[6], ptr[5], ptr[4], ptr[3], ptr[2], ptr[1], ptr[0] };
+		return *reinterpret_cast<T*>(&buf);
+	}
+
+	template<typename T>
+	T BSWAP(T v)
+	{
+		switch (sizeof v)
+		{
+		case 1: return v;
+		case 2: return BSWAPW(v);
+		case 4: return BSWAPD(v);
+		case 8: return BSWAPQ(v);
+		default: throw std::invalid_argument("Must only use `BSWAP` on literal numbers.");
+		}
+	}
+
+	class TIFFParser
+	{
+	protected:
+		std::istream& ifs;
+		bool IsMotorola = false;
+		size_t RB = 0;
+
+		template<typename T>
+		size_t ReadRaw(T& r)
+		{
+			ifs.read(reinterpret_cast<char*>(&r), sizeof r);
+			return (sizeof r);
+		}
+
+		template<typename T> requires std::is_integral_v<T> && (!std::is_same_v<T, bool>)
+		size_t Read(T& r)
+		{
+			auto ret = ReadRaw(r);
+			if (IsMotorola) r = BSWAP(r);
+			return ret;
+		}
+
+	public:
+		TIFFParser() = delete;
+		TIFFParser(std::istream& ifs) : ifs(ifs)
+		{
+			try
+			{
+				ifs.exceptions(std::ios::failbit | std::ios::badbit);
+			}
+			catch (const std::ios::failure& e)
+			{
+				throw ReadDataError("Invalid data input, " + e.what());
+			}
+		}
+
+		TIFFHeader Parse()
+		try
+		{
+			TIFFHeader ret;
+
+			uint32_t II_MM;
+			RB += ReadRaw(II_MM);
+			switch (RB)
+			{
+			case 0x2A004949: IsMotorola = false; break;
+			case 0x2A004D4D: IsMotorola = true; break;
+			}
+		}
+		catch (const std::ios::failure& e)
+		{
+			throw ReadDataError("Read data failed, " + e.what());
+		}
+	};
+
+	template<typename T>
+	size_t Read(std::istream& ifs, T& r)
+	{
+		ifs.read(reinterpret_cast<char*>(&r), sizeof r);
+		return (sizeof r);
+	}
+
 	TIFFHeader ParseTIFFHeader(const uint8_t* TIFFData, size_t& TIFFDataSize)
 	{
+		size_t RB = 0;
+		std::stringstream ss;
+		ss.rdbuf()->pubsetbuf(reinterpret_cast<char*>(const_cast<uint8_t*>(TIFFData)), TIFFDataSize);
+		auto parser = TIFFParser(ss);
 
+		return parser.Parse();
 	}
 }
