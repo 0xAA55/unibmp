@@ -11,6 +11,7 @@
 
 namespace CPPGIF
 {
+	// 文档
 	// https://giflib.sourceforge.net/gifstandard/GIF89a.html
 
 	class UnexpectedData : public std::runtime_error
@@ -172,11 +173,10 @@ namespace CPPGIF
 	public:
 		std::string Version; // gif87a / gif89a
 
-		// 逻辑屏幕描述符
-		LogicalScreenDescriptorType LogicalScreenDescriptor;
+		LogicalScreenDescriptorType LogicalScreenDescriptor; // 逻辑屏幕描述符
 
-		// 绘图控制描述符
-		std::vector<GraphicControlExtensionType> GraphicControlExtension;
+		
+		std::vector<GraphicControlExtensionType> GraphicControlExtension; // 绘图控制描述符
 
 		std::vector<PlainTextExtensionType> PlainTextExtension;
 		bool ReadToTrailer = false; // 是否一直读到文件结束符
