@@ -897,8 +897,13 @@ namespace UniformBitmap
 	}
 
 	void IFD::WriteField(const std::string& TagString, std::shared_ptr<IFDFieldBase> field)
+	try
 	{
 		Fields[IFDTagFromStr.at(TagString)] = field;
+	}
+	catch (const std::out_of_range&)
+	{
+		throw std::invalid_argument(TagString + ": unknown tag name.");
 	}
 
 	TIFFDateTime::TIFFDateTime(const std::tm& tm)
@@ -1004,8 +1009,8 @@ namespace UniformBitmap
 		if (YResolution) IFD0.WriteField("YResolution", std::make_shared<IFDFieldURationals>(*YResolution));
 		if (Software.length()) IFD0.WriteField("Software", std::make_shared<IFDFieldString>(Software));
 		if (Artist.length()) IFD0.WriteField("Artist", std::make_shared<IFDFieldString>(Artist));
-		if (DateTime) IFD0.WriteField("DateTime", std::make_shared<IFDFieldString>(*DateTime));
-		if (CopyRight.length()) IFD0.WriteField("CopyRight", std::make_shared<IFDFieldString>(CopyRight));
+		if (DateTime) IFD0.WriteField("ModifyDate", std::make_shared<IFDFieldString>(*DateTime));
+		if (CopyRight.length()) IFD0.WriteField("Copyright", std::make_shared<IFDFieldString>(CopyRight));
 		IFD0.ExifSubIFD = ExifSubIFD;
 		IFD0.GPSSubIFD = GPSSubIFD;
 
