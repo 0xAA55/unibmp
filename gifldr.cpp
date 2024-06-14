@@ -278,7 +278,7 @@ namespace CPPGIF
 		}
 	}
 
-	// DataSubBlock CompressLZW(const DataSubBlock& Data, uint8_t LZW_MinCodeSize)
+	// DataSubBlock ImageDescriptorType::CompressLZW(const DataSubBlock& Data, uint8_t LZW_MinCodeSize)
 	// {
 	// 	// https://giflib.sourceforge.net/whatsinagif/lzw_image_data.html
 	// }
