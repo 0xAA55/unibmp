@@ -247,11 +247,11 @@ namespace CPPGIF
 	DataSubBlock ImageDescriptorType::UncompressLZW(const DataSubBlock& Compressed, uint8_t LZW_MinCodeSize)
 	{
 		auto ret = DataSubBlock();
-		using LZWCodeIndices = std::vector<uint16_t>;
+		using LZWCodeUnpackedType = uint16_t;
+		using LZWCodeUnpackedVectorType = std::vector<LZWCodeUnpackedType>;
 
 		// https://giflib.sourceforge.net/whatsinagif/lzw_image_data.html
-
-		struct CodeTableType : public std::vector<LZWCodeIndices>
+		struct CodeTableType : public std::vector<DataSubBlock>
 		{
 		public:
 			void InitCodeTable(uint8_t LZW_MinCodeSize)
@@ -263,18 +263,39 @@ namespace CPPGIF
 				
 				for (int i = 0; i <= EOI; i++)
 				{
-					push_back(LZWCodeIndices());
+					push_back(DataSubBlock());
 					back().push_back(i);
 				}
 			}
 
-			CodeTableType(uint8_t LZW_MinCodeSize) : std::vector<LZWCodeIndices>()
+			CodeTableType(uint8_t LZW_MinCodeSize) : std::vector<DataSubBlock>()
 			{
 				InitCodeTable(LZW_MinCodeSize);
 			}
 		};
 
+		// 先把 LZW 的字节序列以动态位数长度的编码转变为定长的编码。
+		auto FirstCodeSize = LZW_MinCodeSize + 1;
+		auto CurCodeSize = FirstCodeSize;
+		auto MaxCodeSize = 12;
+		auto LZWCodeUnpacked = LZWCodeUnpackedVectorType();
+		auto CurCode = LZWCodeUnpackedType(0);
+		auto CurBitsNeeded = FirstCodeSize;
+		auto CurBitsAdded = 0;
+		for (size_t i = 0; i < Compressed.size(); i++)
+		{
+
+		}
+
 		auto CodeTable = CodeTableType(LZW_MinCodeSize);
+
+
+
+
+
+
+
+
 
 
 
