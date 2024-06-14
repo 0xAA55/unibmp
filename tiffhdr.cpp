@@ -674,7 +674,7 @@ namespace UniformBitmap
 		{"GPSHPositioningError", 0x001f},
 	};
 
-	// 这几个 Tag 的数据都是 TIFF 头内偏移，因此读取后不存回新文件（因为不好处理）
+	// 脮芒录赂赂枚 Tag 碌脛脢媒戮脻露录脢脟 TIFF 脥路脛脷脝芦脪脝拢卢脪貌麓脣露脕脠隆潞贸虏禄麓忙禄脴脨脗脦脛录镁拢篓脪貌脦陋虏禄潞脙麓娄脌铆拢漏
 	constexpr uint16_t IFDPointerTagsData[] = {
 		0x0103, 0x014a, 0x0190, 0x02bc, 0x4748, 0x8290, 0x83bb, 0x8568,
 		0x8606, 0x8649, 0x8769, 0x8773, 0x8825, 0x888a, 0x9208, 0x9209,
@@ -700,7 +700,7 @@ namespace UniformBitmap
 		{"Double", IFDFieldFormat::Double},
 	};
 
-	// 将 constexpr 方式存储的常量数组转换为 std::unordered_map，用字符串 TagName 对应 TagID
+	// 陆芦 constexpr 路陆脢陆麓忙麓垄碌脛鲁拢脕驴脢媒脳茅脳陋禄禄脦陋 std::unordered_map拢卢脫脙脳脰路没麓庐 TagName 露脭脫娄 TagID
 	template<typename TagType, size_t N>
 	const std::unordered_map<std::string, TagType> DataToMapS2E(const std::pair<const char*, TagType>(&cdata)[N])
 	{
@@ -712,7 +712,7 @@ namespace UniformBitmap
 		return ret;
 	}
 
-	// 找出两个字符串的共同前缀
+	// 脮脪鲁枚脕陆赂枚脳脰路没麓庐碌脛鹿虏脥卢脟掳脳潞
 	std::string FindPrefix(const std::string& a, const std::string& b)
 	{
 		size_t s = std::min(a.length(), b.length());
@@ -728,7 +728,7 @@ namespace UniformBitmap
 		return "";
 	}
 
-	// 将 constexpr 方式存储的常量数组转换为 std::unordered_map，用 TagID 对应字符串 TagName
+	// 陆芦 constexpr 路陆脢陆麓忙麓垄碌脛鲁拢脕驴脢媒脳茅脳陋禄禄脦陋 std::unordered_map拢卢脫脙 TagID 露脭脫娄脳脰路没麓庐 TagName
 	template<typename TagType, size_t N>
 	const std::unordered_map<TagType, std::string> DataToMapE2S(const std::pair<const char*, TagType>(&cdata)[N])
 	{
@@ -742,7 +742,7 @@ namespace UniformBitmap
 
 			if (ret.contains(tag))
 			{
-				// 发现相同的 TagID 有不同的字符串，存储以进行后续处理
+				// 路垄脧脰脧脿脥卢碌脛 TagID 脫脨虏禄脥卢碌脛脳脰路没麓庐拢卢麓忙麓垄脪脭陆酶脨脨潞贸脨酶麓娄脌铆
 				if (dup[tag].empty()) dup[tag].push_back(ret[tag]);
 				dup[tag].push_back(val);
 			}
@@ -751,7 +751,7 @@ namespace UniformBitmap
 				ret[tag] = val;
 			}
 		}
-		// 处理所有带有相同 TagID 的字符串，判断它是否拥有一个共同前缀
+		// 麓娄脌铆脣霉脫脨麓酶脫脨脧脿脥卢 TagID 碌脛脳脰路没麓庐拢卢脜脨露脧脣眉脢脟路帽脫碌脫脨脪禄赂枚鹿虏脥卢脟掳脳潞
 		for (auto& kv : dup)
 		{
 			auto tag = kv.first;
@@ -765,14 +765,14 @@ namespace UniformBitmap
 				if (Sum.length()) Sum += "|";
 				Sum += s;
 			}
-			// 有共同前缀则使用这个前缀，否则使用“|”字符拼接所有字符串
+			// 脫脨鹿虏脥卢脟掳脳潞脭貌脢鹿脫脙脮芒赂枚脟掳脳潞拢卢路帽脭貌脢鹿脫脙隆掳|隆卤脳脰路没脝麓陆脫脣霉脫脨脳脰路没麓庐
 			if (Prefix.length()) ret[tag] = Prefix;
 			else ret[tag] = Sum;
 		}
 		return ret;
 	}
 
-	// 将 constexpr 方式存储的数值数组转换为集合
+	// 陆芦 constexpr 路陆脢陆麓忙麓垄碌脛脢媒脰碌脢媒脳茅脳陋禄禄脦陋录炉潞脧
 	template<typename EnumType, size_t N>
 	const std::unordered_set<EnumType> DataToSet(const EnumType(&data)[N])
 	{
@@ -792,7 +792,7 @@ namespace UniformBitmap
 	const std::unordered_map<IFDFieldFormat, std::string> IFDFormatToStringMap = DataToMapE2S(IFDFormatStringData);
 	const std::unordered_map<std::string, IFDFieldFormat> StringToIFDFormatMap = DataToMapS2E(IFDFormatStringData);
 
-	// 根据数据类型盲猜存储格式
+	// 赂霉戮脻脢媒戮脻脌脿脨脥脙陇虏脗麓忙麓垄赂帽脢陆
 	template<typename T>
 	IFDFieldFormat IFDFieldType<T>::GetFormatValueByType()
 	{
@@ -825,7 +825,7 @@ namespace UniformBitmap
 	IFDFieldType<T>::IFDFieldType(IFDFieldFormat Type, T Value) :
 		IFDFieldBase(Type)
 	{
-		// 只有单个数值的情况
+		// 脰禄脫脨碌楼赂枚脢媒脰碌碌脛脟茅驴枚
 		Components.push_back(Value);
 	}
 
@@ -856,14 +856,14 @@ namespace UniformBitmap
 		return buf;
 	}
 
-	// 粗略判断一个数据是不是长得像字符串
-	// 不判断是否合法 UTF-8 字符串
+	// 麓脰脗脭脜脨露脧脪禄赂枚脢媒戮脻脢脟虏禄脢脟鲁陇碌脙脧帽脳脰路没麓庐
+	// 虏禄脜脨露脧脢脟路帽潞脧路篓 UTF-8 脳脰路没麓庐
 	bool IsLookLikeString(const std::vector<uint8_t>& data)
 	{
 		bool has0 = false;
 		for (auto i = data.cbegin(); i != data.cend(); i++)
 		{
-			// 判断控制字符
+			// 脜脨露脧驴脴脰脝脳脰路没
 			if (*i < 0x20)
 			{
 				switch (*i)
@@ -873,13 +873,13 @@ namespace UniformBitmap
 				case '\n':
 				case '\r':
 				case '\t':
-					// 这些都是正常字符（JSON 认的常见控制字符）
+					// 脮芒脨漏露录脢脟脮媒鲁拢脳脰路没拢篓JSON 脠脧碌脛鲁拢录没驴脴脰脝脳脰路没拢漏
 					continue;
 				case 0:
-					// 允许最后一个字符是 '\0' 空字符结尾
+					// 脭脢脨铆脳卯潞贸脪禄赂枚脳脰路没脢脟 '\0' 驴脮脳脰路没陆谩脦虏
 					if (std::distance(i, data.cend()) == 1) continue;
 				default:
-					// 出现了别的控制字符，判定为不是字符串
+					// 鲁枚脧脰脕脣卤冒碌脛驴脴脰脝脳脰路没拢卢脜脨露篓脦陋虏禄脢脟脳脰路没麓庐
 					return false;
 				}
 			}
@@ -887,7 +887,7 @@ namespace UniformBitmap
 		return true;
 	}
 
-	// 单个 Component 转换为字符串
+	// 碌楼赂枚 Component 脳陋禄禄脦陋脳脰路没麓庐
 	template<typename T> requires std::is_integral_v<T>
 	std::string ComponentToString(const T& v)
 	{
@@ -901,7 +901,7 @@ namespace UniformBitmap
 		return buf;
 	}
 
-	// 浮点数转换为字符串
+	// 赂隆碌茫脢媒脳陋禄禄脦陋脳脰路没麓庐
 	template<typename T> requires std::is_floating_point_v<T>
 	std::string ComponentToString(const T& v)
 	{
@@ -910,17 +910,17 @@ namespace UniformBitmap
 		return buf;
 	}
 
-	// 数组转换为字符串
+	// 脢媒脳茅脳陋禄禄脦陋脳脰路没麓庐
 	template<typename T>
 	std::string ComponentsToString(const std::vector<T>& Components, size_t limit = 16)
 	{
 		if (Components.size() == 1)
-		{ // 单个元素直接转换
+		{ // 碌楼赂枚脭陋脣脴脰卤陆脫脳陋禄禄
 			return ComponentToString(Components[0]);
 		}
 		else
 		{
-			// 对于 uint8_t 数组类型，判断是否像字符串，并按字符串方式展示
+			// 露脭脫脷 uint8_t 脢媒脳茅脌脿脨脥拢卢脜脨露脧脢脟路帽脧帽脳脰路没麓庐拢卢虏垄掳麓脳脰路没麓庐路陆脢陆脮鹿脢戮
 			if constexpr (std::is_same_v<T, uint8_t>)
 			{
 				if (IsLookLikeString(Components))
@@ -928,16 +928,16 @@ namespace UniformBitmap
 					auto* beg = reinterpret_cast<const char*>(&Components.front());
 					auto str = std::string(beg, Components.size());
 					if (str.back() == '\0')
-					{ // 有 '\0' 结尾，突出显示这个结尾
+					{ // 脫脨 '\0' 陆谩脦虏拢卢脥禄鲁枚脧脭脢戮脮芒赂枚陆谩脦虏
 						return std::string("\"") + str + "\\0\"";
 					}
 					else
-					{ // 无'\0' 结尾
+					{ // 脦脼'\0' 陆谩脦虏
 						return std::string("\"") + str + "\"";
 					}
 				}
 			}
-			// 不像字符串的形式/别的格式，按数值数组形式打印
+			// 虏禄脧帽脳脰路没麓庐碌脛脨脦脢陆/卤冒碌脛赂帽脢陆拢卢掳麓脢媒脰碌脢媒脳茅脨脦脢陆麓貌脫隆
 			std::stringstream ss;
 			ss << "[";
 			for (size_t i = 0; i < Components.size(); i++)
@@ -945,7 +945,7 @@ namespace UniformBitmap
 				if(i) ss << ", ";
 				ss << ComponentToString(Components[i]);
 				if (i >= limit)
-				{ // 省略超限个数的数组元素
+				{ // 脢隆脗脭鲁卢脧脼赂枚脢媒碌脛脢媒脳茅脭陋脣脴
 					ss << ", ...(" << Components.size() << " items)";
 					break;
 				}
@@ -955,7 +955,7 @@ namespace UniformBitmap
 		}
 	}
 
-	// 非字符串类型的 IFD 字段转字符串
+	// 路脟脳脰路没麓庐脌脿脨脥碌脛 IFD 脳脰露脦脳陋脳脰路没麓庐
 	template<typename T>
 	std::string IFDFieldType<T>::ToString() const
 	{
@@ -973,7 +973,7 @@ namespace UniformBitmap
 		return ss.str();
 	}
 
-	// 字符串类型的 IFD 字段转字符串
+	// 脳脰路没麓庐脌脿脨脥碌脛 IFD 脳脰露脦脳陋脳脰路没麓庐
 	std::string IFDFieldString::ToString() const
 	{
 		std::stringstream ss;
@@ -1122,7 +1122,7 @@ namespace UniformBitmap
 	const IFDFieldUndefined& IFDFieldBase::AsUndefined() const { return static_cast<const IFDFieldUndefined&>(*this); }
 	const IFDFieldString& IFDFieldBase::AsString() const { return static_cast<const IFDFieldString&>(*this); }
 
-	// 构建一个简单的 TIFF 头
+	// 鹿鹿陆篓脪禄赂枚录貌碌楼碌脛 TIFF 脥路
 	TIFFHeader ConstuctTIFFHeader
 	(
 		const std::string& ImageDescription,
@@ -1168,7 +1168,7 @@ namespace UniformBitmap
 	{
 	}
 	
-	// 读取 Motorola 格式的 TIFF 头部的时候，需要改变字节顺序
+	// 露脕脠隆 Motorola 赂帽脢陆碌脛 TIFF 脥路虏驴碌脛脢卤潞貌拢卢脨猫脪陋赂脛卤盲脳脰陆脷脣鲁脨貌
 	template<typename T>
 	T BSWAPW(T v)
 	{
@@ -1232,7 +1232,7 @@ namespace UniformBitmap
 		{
 			SeekToOffset(Offset);
 
-			// 判断跳转死循环
+			// 脜脨露脧脤酶脳陋脣脌脩颅禄路
 			if (UsedOffsets.insert(ifs.tellg()).second == false)
 			{
 				char buf[256];
@@ -1241,7 +1241,7 @@ namespace UniformBitmap
 			}
 		}
 
-		// 底层读
+		// 碌脳虏茫露脕
 		template<typename T>
 		size_t ReadRaw(T& r)
 		{
@@ -1249,14 +1249,14 @@ namespace UniformBitmap
 			return (sizeof r);
 		}
 
-		// 读字节数组
+		// 露脕脳脰陆脷脢媒脳茅
 		size_t ReadBytes(std::vector<uint8_t>& r, size_t BytesToRead)
 		{
 			ifs.read(reinterpret_cast<char*>(&r[0]), BytesToRead);
 			return BytesToRead;
 		}
 
-		// 读数值，并做字节顺序转换
+		// 露脕脢媒脰碌拢卢虏垄脳枚脳脰陆脷脣鲁脨貌脳陋禄禄
 		template<typename T> requires (std::is_integral_v<T> || std::is_floating_point_v<T>) && (!std::is_same_v<T, bool>)
 		size_t Read(T& r)
 		{
@@ -1265,7 +1265,7 @@ namespace UniformBitmap
 			return ret;
 		}
 
-		// 读 Rational/URational （分子分母形式的分数）
+		// 露脕 Rational/URational 拢篓路脰脳脫路脰脛赂脨脦脢陆碌脛路脰脢媒拢漏
 		template<typename T> requires std::is_same_v<T, Rational> || std::is_same_v<T, URational>
 		size_t Read(T& r)
 		{
@@ -1274,7 +1274,7 @@ namespace UniformBitmap
 				Read(r.Denominator);
 		}
 
-		// 读数据，大于 4 字节的 Component 需要跳转到偏移量去读取
+		// 露脕脢媒戮脻拢卢麓贸脫脷 4 脳脰陆脷碌脛 Component 脨猫脪陋脤酶脳陋碌陆脝芦脪脝脕驴脠楼露脕脠隆
 		template<typename T>
 		size_t ReadComponents(std::vector<T>& ReadInto, uint32_t NumComponents)
 		{
@@ -1294,7 +1294,7 @@ namespace UniformBitmap
 				return ret;
 			}
 			else
-			{ // 小于 4 字节的 Component 直接读取
+			{ // 脨隆脫脷 4 脳脰陆脷碌脛 Component 脰卤陆脫露脕脠隆
 				size_t ret = 0;
 				auto CurPos = ifs.tellg();
 				for (size_t i = 0; i < NumComponents; i++)
@@ -1307,7 +1307,7 @@ namespace UniformBitmap
 			}
 		}
 
-		// 按照指定长度读取字符串
+		// 掳麓脮脮脰赂露篓鲁陇露脠露脕脠隆脳脰路没麓庐
 		size_t ReadComponents(std::string& s, size_t Length)
 		{
 			s.resize(Length);
@@ -1332,7 +1332,7 @@ namespace UniformBitmap
 			return Length;
 		}
 
-		// 根据 IFD 字段格式读取一个 IFD 字段
+		// 赂霉戮脻 IFD 脳脰露脦赂帽脢陆露脕脠隆脪禄赂枚 IFD 脳脰露脦
 		std::shared_ptr<IFDFieldBase> ReadIFDField(IFDFieldFormat Format, uint32_t NumComponents)
 		{
 			switch (Format)
@@ -1357,7 +1357,7 @@ namespace UniformBitmap
 			throw BadDataError(buf);
 		}
 
-		// 有的 IFD 字段就是一个偏移量，此处跳转到这个偏移量上
+		// 脫脨碌脛 IFD 脳脰露脦戮脥脢脟脪禄赂枚脝芦脪脝脕驴拢卢麓脣麓娄脤酶脳陋碌陆脮芒赂枚脝芦脪脝脕驴脡脧
 		void GetToOffsetIndicatedByIFDField(const IFDFieldBase& Field)
 		try
 		{
@@ -1370,18 +1370,18 @@ namespace UniformBitmap
 			throw BadDataError("Bad SubIFD offset field: wrong data type.");
 		}
 
-		// 读取一整个 IFD 子表
+		// 露脕脠隆脪禄脮没赂枚 IFD 脳脫卤铆
 		void ParseSubIFD(uint16_t TagID, IFD& Ifd, std::shared_ptr<IFD>& ReadTo)
 		{
 			bool found;
 			do
-			{ // 按情况开发：可能要允许循环读取多个相同 TagID 的不同子表到一起
+			{ // 掳麓脟茅驴枚驴陋路垄拢潞驴脡脛脺脪陋脭脢脨铆脩颅禄路露脕脠隆露脿赂枚脧脿脥卢 TagID 碌脛虏禄脥卢脳脫卤铆碌陆脪禄脝冒
 				found = false;
 				for (auto i = Ifd.Fields.begin(); i != Ifd.Fields.end(); i++)
 				{
 					if (i->first == TagID)
 					{
-						// 目前不读取到一起
+						// 脛驴脟掳虏禄露脕脠隆碌陆脪禄脝冒
 						if (ReadTo)
 						{
 							std::cerr << "Duplicated IFD tag.\n";
@@ -1389,12 +1389,12 @@ namespace UniformBitmap
 						}
 						auto CurOffset = ifs.tellg();
 
-						// 跳转到指定偏移量进行读取
+						// 脤酶脳陋碌陆脰赂露篓脝芦脪脝脕驴陆酶脨脨露脕脠隆
 						GetToOffsetIndicatedByIFDField(*i->second);
 						ReadTo = std::make_shared<IFD>(ParseIFD());
 
-						// 读完后恢复之前的读取位置
-						// 因为数据已经读取到了 ReadTo 了，因此从 Fields 里面擦除当前这个字段。
+						// 露脕脥锚潞贸禄脰赂麓脰庐脟掳碌脛露脕脠隆脦禄脰脙
+						// 脪貌脦陋脢媒戮脻脪脩戮颅露脕脠隆碌陆脕脣 ReadTo 脕脣拢卢脪貌麓脣麓脫 Fields 脌茂脙忙虏脕鲁媒碌卤脟掳脮芒赂枚脳脰露脦隆拢
 						ifs.seekg(CurOffset);
 						found = true;
 						Ifd.Fields.erase(i);
@@ -1404,7 +1404,7 @@ namespace UniformBitmap
 			} while (found);
 		}
 
-		// 读取整个 IFD 表和它的子表
+		// 露脕脠隆脮没赂枚 IFD 卤铆潞脥脣眉碌脛脳脫卤铆
 		IFD ParseIFD()
 		{
 			IFD ret;
@@ -1412,13 +1412,13 @@ namespace UniformBitmap
 			uint16_t NumFields;
 			Read(NumFields);
 
-			// 读取每个字段
+			// 露脕脠隆脙驴赂枚脳脰露脦
 			for (size_t i = 0; i < NumFields; i++)
 			{
 				uint16_t TagID;
 				Read(TagID);
 
-				uint16_t TagFormat; // 对应IFDFieldFormat
+				uint16_t TagFormat; // 露脭脫娄IFDFieldFormat
 				Read(TagFormat);
 
 				uint32_t NumComponents;
@@ -1427,12 +1427,12 @@ namespace UniformBitmap
 				ret.Fields.push_back({ TagID, ReadIFDField(IFDFieldFormat(TagFormat), NumComponents) });
 			}
 
-			// 拆读子表
+			// 虏冒露脕脳脫卤铆
 			ParseSubIFD(0x8769, ret, ret.ExifSubIFD);
 			ParseSubIFD(0x8825, ret, ret.GPSSubIFD);
 			ParseSubIFD(0xa005, ret, ret.InteroperabilityIFD);
 
-			// 尝试解析 MakerNote 里包含的 TIFF 头
+			// 鲁垄脢脭陆芒脦枚 MakerNote 脌茂掳眉潞卢碌脛 TIFF 脥路
 			for (auto& kv : ret.Fields)
 			{
 				if (kv.first == 0x927c)
@@ -1445,8 +1445,8 @@ namespace UniformBitmap
 							!memcmp(&UBytes[0], "HUAWEI\0\0", 8))
 						{
 							// ret.MakerNoteSubIFD.push_back(ParseTIFFHeader(&UBytes[8], UBytes.size() - 8));
-							// 华为它这玩意儿看起来像一个 TIFF 头，但 TagID 完全对应不上。
-							// 因此不读了。
+							// 禄陋脦陋脣眉脮芒脥忙脪芒露霉驴麓脝冒脌麓脧帽脪禄赂枚 TIFF 脥路拢卢碌芦 TagID 脥锚脠芦露脭脫娄虏禄脡脧隆拢
+							// 脪貌麓脣虏禄露脕脕脣隆拢
 						}
 					}
 					catch (const ReadDataError&) {}
@@ -1456,7 +1456,7 @@ namespace UniformBitmap
 			return ret;
 		}
 
-		// 读取整个 TIFF 头
+		// 露脕脠隆脮没赂枚 TIFF 脥路
 		void Parse()
 		try
 		{
@@ -1466,22 +1466,22 @@ namespace UniformBitmap
 			ReadRaw(II_MM);
 			switch (II_MM)
 			{
-			case 0x002A4949: IsMotorola = false; break; // Intel 字节序
-			case 0x2A004D4D: IsMotorola = true; break; // Motorola 字节序
+			case 0x002A4949: IsMotorola = false; break; // Intel 脳脰陆脷脨貌
+			case 0x2A004D4D: IsMotorola = true; break; // Motorola 脳脰陆脷脨貌
 			default: throw BadDataError("Bad TIFF header signature.");
 			}
 
-			// 跳转到 IFD 表开头
+			// 脤酶脳陋碌陆 IFD 卤铆驴陋脥路
 			uint32_t OffsetOfIFD;
 			Read(OffsetOfIFD);
 			SeekToOffset(OffsetOfIFD);
 
-			// 挨个读取 IFD 表
+			// 掳陇赂枚露脕脠隆 IFD 卤铆
 			for (;;)
 			{
 				Parsed.push_back(ParseIFD());
 
-				// 跳转到下一个 IFD 表开头
+				// 脤酶脳陋碌陆脧脗脪禄赂枚 IFD 卤铆驴陋脥路
 				uint32_t OffsetOfNextIFD;
 				Read(OffsetOfNextIFD);
 				if (!OffsetOfNextIFD) break;
@@ -1505,7 +1505,7 @@ namespace UniformBitmap
 			{
 				throw ReadDataError(std::string("Invalid data input, ") + e.what());
 			}
-			Parse(); // 它自己会抛出 ReadDataError
+			Parse(); // 脣眉脳脭录潞禄谩脜脳鲁枚 ReadDataError
 #if DEBUG_TIFFHeader
 			std::cout << TIFFHeaderToString(Parsed);
 #endif
@@ -1517,20 +1517,20 @@ namespace UniformBitmap
 		}
 	};
 
-	// 从输入文件流读取 TIFF 头
+	// 麓脫脢盲脠毛脦脛录镁脕梅露脕脠隆 TIFF 脥路
 	TIFFHeader ParseTIFFHeader(std::istream& ifs)
 	{
 		return TIFFParser(ifs).GetParsed();
 	}
 
-	// 从内存地址和字节数读取 TIFF 头
+	// 麓脫脛脷麓忙碌脴脰路潞脥脳脰陆脷脢媒露脕脠隆 TIFF 脥路
 	TIFFHeader ParseTIFFHeader(const uint8_t* TIFFData, size_t TIFFDataSize)
 	{
 		auto ss = std::stringstream(std::string(reinterpret_cast<char*>(const_cast<uint8_t*>(TIFFData)), TIFFDataSize));
 		return ParseTIFFHeader(ss);
 	}
 
-	// 将 GPS 子表打印出来看
+	// 陆芦 GPS 脳脫卤铆麓貌脫隆鲁枚脌麓驴麓
 	static void ShowGPSFields(std::stringstream& ss, const IFDData& GPSFields, int indent, int cur_indent)
 	{
 		auto IndentStr = std::string(cur_indent * indent, ' ');
@@ -1549,7 +1549,7 @@ namespace UniformBitmap
 		}
 	}
 
-	// 将 IFD 表和子表打印出来看
+	// 陆芦 IFD 卤铆潞脥脳脫卤铆麓貌脫隆鲁枚脌麓驴麓
 	static void ShowIFDFields(std::stringstream& ss, const IFD& Ifd, int indent, int cur_indent)
 	{
 		auto IndentStr = std::string(cur_indent * indent, ' ');
@@ -1573,7 +1573,7 @@ namespace UniformBitmap
 		}
 		if (Ifd.GPSSubIFD)
 		{
-			// GPS 的因为 ID 名字不同，必须用专门的函数来打印。
+			// GPS 碌脛脪貌脦陋 ID 脙没脳脰虏禄脥卢拢卢卤脴脨毛脫脙脳篓脙脜碌脛潞炉脢媒脌麓麓貌脫隆隆拢
 			ss << IndentStr << "- GPS SubIFD:\n";
 			ShowGPSFields(ss, Ifd.GPSSubIFD->Fields, indent, cur_indent + 1);
 		}
@@ -1643,7 +1643,7 @@ namespace UniformBitmap
 		size_t GetSerializedSize() const
 		{
 			size_t SizeOfExtras = Extra.size();
-			return FieldsBytesTotal + SizeOfExtras + 2; // 两字节的字段数
+			return FieldsBytesTotal + SizeOfExtras + 2; // 脕陆脳脰陆脷碌脛脳脰露脦脢媒
 		}
 		std::vector<uint8_t> Serialize() const
 		{
@@ -1665,7 +1665,7 @@ namespace UniformBitmap
 			size_t SizeUsage = FT.Components.size() * sizeof(FT.Components[0]);
 			if (!SizeUsage)
 			{
-				// 无成员情况
+				// 脦脼鲁脡脭卤脟茅驴枚
 				CurItem.ValueField = 0;
 			}
 			else if (SizeUsage <= 4)
@@ -1729,8 +1729,8 @@ namespace UniformBitmap
 				found = false;
 				for (auto i = IfdToAdd.Fields.begin(); i != IfdToAdd.Fields.end(); i++)
 				{
-					// 删除先前读取的任何包含指针偏移量的字段
-					// 因为指针偏移量在现在都是无效的了
+					// 脡戮鲁媒脧脠脟掳露脕脠隆碌脛脠脦潞脦掳眉潞卢脰赂脮毛脝芦脪脝脕驴碌脛脳脰露脦
+					// 脪貌脦陋脰赂脮毛脝芦脪脝脕驴脭脷脧脰脭脷露录脢脟脦脼脨搂碌脛脕脣
 					if (IFDPointerTags.contains(i->first))
 					{
 						IfdToAdd.Fields.erase(i);
@@ -1740,7 +1740,7 @@ namespace UniformBitmap
 				}
 			} while (found);
 
-			// 根据子表需要算出总的表项数，来计算偏移量
+			// 赂霉戮脻脳脫卤铆脨猫脪陋脣茫鲁枚脳脺碌脛卤铆脧卯脢媒拢卢脌麓录脝脣茫脝芦脪脝脕驴
 			FieldsCountTotal = IfdToAdd.Fields.size();
 			if (IfdToAdd.ExifSubIFD) FieldsCountTotal++;
 			if (IfdToAdd.GPSSubIFD) FieldsCountTotal++;
@@ -1775,14 +1775,14 @@ namespace UniformBitmap
 
 	std::vector<uint8_t> StoreTIFFHeader(const TIFFHeader& TIFFHdr)
 	{
-		// TIFF 头
-		// 我们只存 Intel 字节序的数据
+		// TIFF 脥路
+		// 脦脪脙脟脰禄麓忙 Intel 脳脰陆脷脨貌碌脛脢媒戮脻
 		std::vector<uint8_t> ret = {
 			'I', 'I', 0x2A, 0x00,
 			0x08, 0x00, 0x00, 0x00
 		};
 
-		// 按顺序插入一个个的 IFD
+		// 掳麓脣鲁脨貌虏氓脠毛脪禄赂枚赂枚碌脛 IFD
 		for (auto& ifd : TIFFHdr)
 		{
 			StoreIFD(ret, ifd);
