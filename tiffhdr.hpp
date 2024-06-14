@@ -164,7 +164,8 @@ namespace UniformBitmap
 	{
 		IFDData Fields;
 
-		std::shared_ptr<IFD> SubIFD;
+		std::shared_ptr<IFD> ExifSubIFD;
+		std::shared_ptr<IFD> GPSSubIFD;
 		std::shared_ptr<IFD> InteroperabilityIFD;
 
 		IFD() = default;

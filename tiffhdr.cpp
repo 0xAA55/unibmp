@@ -639,6 +639,21 @@ namespace UniformBitmap
 			throw BadDataError("Bad SubIFD offset field: wrong data type.");
 		}
 
+		void ParseSubIFD(uint16_t TagNumber, IFD& Ifd, std::shared_ptr<IFD>& ReadTo)
+		{
+			if (Ifd.Fields.contains(TagNumber))
+			{
+				if (ReadTo) throw BadDataError("Duplicated IFD tag.");
+				auto CurOffset = ifs.tellg();
+
+				GetToOffsetIndicatedByIFDField(*Ifd.Fields.at(TagNumber));
+				ReadTo = std::make_shared<IFD>(ParseIFD());
+				Ifd.Fields.erase(TagNumber); // 已经读过后，将其移除
+
+				ifs.seekg(CurOffset);
+			}
+		}
+
 		IFD ParseIFD()
 		{
 			IFD ret;
@@ -662,25 +677,9 @@ namespace UniformBitmap
 					throw BadDataError("Duplicated IFD tag.");
 				}
 			}
-			if (ret.Fields.contains(0x8769))
-			{
-				auto CurOffset = ifs.tellg();
-
-				GetToOffsetIndicatedByIFDField(*ret.Fields.at(0x8769));
-				ret.SubIFD = std::make_shared<IFD>(ParseIFD());
-
-				ifs.seekg(CurOffset);
-			}
-			if (ret.Fields.contains(0xa005))
-			{
-				auto CurOffset = ifs.tellg();
-
-				GetToOffsetIndicatedByIFDField(*ret.Fields.at(0x8769));
-				ret.InteroperabilityIFD = std::make_shared<IFD>(ParseIFD());
-
-				ifs.seekg(CurOffset);
-			}
-			return ret;
+			ParseSubIFD(0x8769, ret, ret.ExifSubIFD);
+			ParseSubIFD(0x8825, ret, ret.GPSSubIFD);
+			ParseSubIFD(0xa005, ret, ret.InteroperabilityIFD);
 		}
 
 		void Parse()
@@ -755,5 +754,35 @@ namespace UniformBitmap
 		std::stringstream ss;
 		ss.rdbuf()->pubsetbuf(reinterpret_cast<char*>(const_cast<uint8_t*>(TIFFData)), TIFFDataSize);
 		return ParseTIFFHeader(ss);
+	}
+
+	template<typename T>
+	static void ConcatBytes(std::vector<uint8_t>& Dst, const std::vector<T>& Src)
+	{
+		size_t Pos = Dst.size();
+		size_t Len = Src.size() * sizeof(T);
+		Dst.resize(Pos + Len);
+		memcpy(&Dst[Pos], &Src[0], Len);
+	}
+
+
+
+	static void StoreIFD(std::vector<uint8_t>& Bytes, const IFD& ifd)
+	{
+		std::vector<uint8_t> Extra;
+
+
+
+	}
+
+	std::vector<uint8_t> StoreTIFFHeader(const TIFFHeader& TIFFHdr)
+	{
+		std::vector<uint8_t> ret;
+
+
+
+
+
+		return ret;
 	}
 }
