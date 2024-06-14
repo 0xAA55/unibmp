@@ -1060,6 +1060,13 @@ namespace UniformBitmap
 	}
 
 	template<typename PixelType>
+	void Image<PixelType>::Rotate180()
+	{
+		FlipH();
+		FlipV()
+	}
+
+	template<typename PixelType>
 	void Image<PixelType>::FlipV_RowPtrs()
 	{
 		std::reverse(RowPointers.cbegin(), RowPointers.cend());
