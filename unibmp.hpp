@@ -201,19 +201,22 @@ namespace UniformBitmap
 		FloodFillEdgeType FloodFill(uint32_t x, uint32_t y, const PixelType& Color, bool RetrieveEdge = false, bool(*IsSamePixel)(const PixelType& a, const PixelType& b) = PixelType::IsSame, void (*SetPixel)(PixelType& dst, const PixelType& src) = PixelType::SetPixel);
 
 		// 位图DPI信息
-		uint32_t XPelsPerMeter;
-		uint32_t YPelsPerMeter;
+		uint32_t XPelsPerMeter = 3000;
+		uint32_t YPelsPerMeter = 3000;
 
 		// TIFF 头部信息
 		std::shared_ptr<TIFFHeader> ExifData;
 
 		Image(const std::string& FilePath);
 		Image(const void* FileInMemory, size_t FileSize);
-		Image(uint32_t Width, uint32_t Height, uint32_t XPelsPerMeter = 3000, uint32_t YPelsPerMeter = 3000);
-		Image(uint32_t Width, uint32_t Height, const PixelType& DefaultColor = PixelType(0, 0, 0, 0));
+		Image(uint32_t Width, uint32_t Height);
+		Image(uint32_t Width, uint32_t Height, const PixelType& DefaultColor);
 		Image(const Image& from);
 		template<typename FromType> requires (!std::is_same_v<PixelType, FromType>)
 		Image(const Image<FromType>& from);
+
+		template<typename FromType> requires (!std::is_same_v<PixelType, FromType>)
+		Image(uint32_t Width, uint32_t Height, const FromType& c) = delete;
 
 		void BGR2RGB();
 
