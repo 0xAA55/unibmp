@@ -1,6 +1,8 @@
 #include "tiffhdr.hpp"
 
 #include <sstream>
+#include <unordered_set>
+#include <cinttypes>
 
 namespace UniformBitmap
 {
@@ -440,6 +442,7 @@ namespace UniformBitmap
 		std::streampos BaseOffset;
 		bool IsMotorola = false;
 		TIFFHeader Parsed;
+		std::unordered_set<uint64_t> UsedOffsets;
 
 		void RewindToBase()
 		{
@@ -451,6 +454,19 @@ namespace UniformBitmap
 		{
 			RewindToBase();
 			ifs.seekg(Offset, std::ios::cur);
+		}
+
+		template<typename T>
+		void SeekToOffsetSafe(const T& Offset)
+		{
+			SeekToOffset(Offset);
+
+			if (UsedOffsets.insert(ifs.tellg()).second == false)
+			{
+				char buf[256];
+				snprintf(buf, sizeof buf, "Recursive referenced to a same offset of data at 0x%llx", uint64_t(Offset));
+				throw BadDataError(buf);
+			}
 		}
 
 		template<typename T>
@@ -620,6 +636,25 @@ namespace UniformBitmap
 
 				ret.Fields[TagType] = ReadIFDField(IFDFieldFormat(TagVarType), NumComponents);
 			}
+			if (ret.Fields.contains(0x8769))
+			{
+				auto CurOffset = ifs.tellg();
+
+				try
+				{
+					auto& ExifSubIFDOffset = ret.Fields.at(0x8769);
+					auto& Components = ExifSubIFDOffset->AsULongs().Components;
+					if (Components.size() != 1) throw BadDataError("Bad SubIFD offset field: the offset shouldn't be an array.");
+					SeekToOffsetSafe(Components[0]);
+					ret.SubIFD = std::make_shared<IFD>(ParseIFD());
+				}
+				catch (const std::bad_cast&)
+				{
+					throw BadDataError("Bad SubIFD offset field: wrong data type.");
+				}
+
+				ifs.seekg(CurOffset);
+			}
 			return ret;
 		}
 
@@ -649,7 +684,7 @@ namespace UniformBitmap
 				uint32_t OffsetOfNextIFD;
 				Read(OffsetOfNextIFD);
 				if (!OffsetOfNextIFD) break;
-				SeekToOffset(OffsetOfNextIFD);
+				SeekToOffsetSafe(OffsetOfNextIFD);
 			}
 		}
 		catch (const std::ios::failure& e)
