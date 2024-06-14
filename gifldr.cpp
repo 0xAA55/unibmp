@@ -347,5 +347,19 @@ namespace CPPGIF
 		return (Bitfields & 1) == 1;
 	}
 
+	uint16_t GraphicControlExtensionType::GetDelayTime() const
+	{
+		return DelayTime;
+	}
+
+	uint8_t GraphicControlExtensionType::GetTransparentColorIndex() const
+	{
+		return TransparentColorIndex;
+	}
+
+	const std::vector<ImageDescriptorType>& GraphicControlExtensionType::GetImageDescriptors() const
+	{
+		return ImageDescriptors;
+	}
 
 }
