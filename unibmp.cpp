@@ -502,7 +502,8 @@ namespace UniformBitmap
 		ifs.read(&Buffer[0], size);
 		LoadNonBmp(&Buffer[0], size);
 		ifs.seekg(0, std::ios::beg);
-		FindExifDataFromJpeg(ifs);
+		ExifData = FindExifDataFromJpeg(ifs);
+		RotateByExifData(true, true);
 	}
 
 	template<typename PixelType>
@@ -1644,6 +1645,7 @@ namespace UniformBitmap
 				}
 			}
 			ExifData = FindExifDataFromJpeg(FilePath);
+			RotateByExifData(true, true);
 		}
 		else
 		{
@@ -1699,7 +1701,8 @@ namespace UniformBitmap
 					drow[x] = srow[x];
 				}
 			}
-			FindExifDataFromJpeg(FileInMemory, FileSize);
+			ExifData = FindExifDataFromJpeg(FileInMemory, FileSize);
+			RotateByExifData(true, true);
 		}
 		else
 		{
