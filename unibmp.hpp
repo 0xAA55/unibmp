@@ -33,15 +33,16 @@ namespace UniformBitmap
 		SaveImageError(std::string what) noexcept;
 	};
 
-	template<typename ChannelType_> struct Pixel_RGBA;
+	template<typename ChannelType_> class Pixel_RGBA;
 	using Pixel_RGBA8 = Pixel_RGBA<uint8_t>;
 	using Pixel_RGBA16 = Pixel_RGBA<uint16_t>;
 	using Pixel_RGBA32 = Pixel_RGBA<uint32_t>;
 	using Pixel_RGBA32F = Pixel_RGBA<float>;
 
 	template<typename ChannelType_>
-	struct Pixel_RGBA
+	class Pixel_RGBA
 	{
+	public:
 		using ChannelType = ChannelType_;
 		ChannelType R, G, B, A;
 		Pixel_RGBA();
@@ -81,8 +82,9 @@ namespace UniformBitmap
 	extern template Pixel_RGBA32F::Pixel_RGBA(const Pixel_RGBA32F& from);
 
 	template<typename PixelType>
-	struct Point
+	class Point
 	{
+	public:
 		uint32_t x, y;
 		Point() = delete;
 		Point(uint32_t x, uint32_t y);
@@ -100,8 +102,9 @@ namespace UniformBitmap
 	extern template class Point<Pixel_RGBA32F>;
 
 	template<typename PixelType>
-	struct PixelRef
+	class PixelRef
 	{
+	public:
 		uint32_t x, y;
 		PixelType& Pixel;
 		PixelRef() = delete;
