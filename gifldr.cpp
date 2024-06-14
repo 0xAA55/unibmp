@@ -295,11 +295,11 @@ namespace CPPGIF
 
 		// 编码流，以及其哈希类
 		using CodeType = uint16_t;
-		using CodeStream = std::vector<CodeType>;
-		struct Hasher_CodeStream
+		using CodeStreamType = std::vector<CodeType>;
+		struct Hasher_CodeStreamType
 		{
 			const int Shifts = 4;
-			size_t operator() (const CodeStream& cs) const
+			size_t operator() (const CodeStreamType& cs) const
 			{
 				size_t ret = 0;
 				for (auto& c : cs)
@@ -320,6 +320,7 @@ namespace CPPGIF
 
 		public:
 			uint8_t CurCodeSize;
+			CodeStreamType Debug_CodeStream;
 
 			CodeStreamEncoder() = delete;
 			CodeStreamEncoder(int InitCodeSize) : CurCodeSize(InitCodeSize)
@@ -348,6 +349,7 @@ namespace CPPGIF
 			void Encode(CodeType Code)
 			{
 				if (Code > CurCodeMaxValue()) throw EncodeError(std::string("Unexpected code ") + std::to_string(Code) + " that's beyond the current max value of " + std::to_string(CurCodeMaxValue()));
+				Debug_CodeStream.push_back(Code); 
 				int BitsToEncode = CurCodeSize;
 				while (BitsToEncode)
 				{
@@ -369,7 +371,7 @@ namespace CPPGIF
 				}
 			}
 
-			void Encode(const CodeStream& cs)
+			void Encode(const CodeStreamType& cs)
 			{
 				for (auto& c : cs) Encode(c);
 			}
@@ -380,7 +382,7 @@ namespace CPPGIF
 			}
 		};
 
-		using CodeTableMapType = std::unordered_map<CodeStream, CodeType, Hasher_CodeStream>;
+		using CodeTableMapType = std::unordered_map<CodeStreamType, CodeType, Hasher_CodeStreamType>;
 
 		struct CodaTableType : public CodeTableMapType
 		{
@@ -415,7 +417,7 @@ namespace CPPGIF
 		CodeTable.InitCodeTable();
 		Encoder.Encode(CodeTable.ClearCode);
 
-		auto CurIndexBuffer = CodeStream();
+		auto CurIndexBuffer = CodeStreamType();
 		CurIndexBuffer.push_back(Data.front());
 
 		for (size_t i = 1; i < Data.size(); i ++)
@@ -428,9 +430,9 @@ namespace CPPGIF
 			}
 			else
 			{
-				auto Code = CodeType(CodeTable.size());
-				CodeTable[CurIndexBuffer] = Code;
-				Encoder.Encode(Code);
+				CodeTable[CurIndexBuffer] = CodeType(CodeTable.size());
+				CurIndexBuffer.pop_back();
+				Encoder.Encode(CodeTable.at(CurIndexBuffer));
 				auto MaxCode = (1 << Encoder.CurCodeSize) - 1;
 				if (CodeTable.size() == MaxCode)
 				{
