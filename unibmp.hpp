@@ -214,6 +214,8 @@ namespace UniformBitmap
 		inline PixelType& GetPixelRef(uint32_t x, uint32_t y) { return RowPointers[y][x]; }
 		inline void PutPixel(uint32_t x, uint32_t y, const PixelType& Color) { RowPointers[y][x] = Color; }
 		inline bool IsOutOfBound(const Point& pt) const { return pt.x >= Width || pt.y >= Height; }
+		inline size_t GetPitch() const { return size_t(Width) * sizeof(PixelType); }
+		inline size_t GetBitmapSizeInTotal() const { return GetPitch() * Height; }
 		FloodFillEdgeType FloodFill(uint32_t x, uint32_t y, const PixelType& Color, bool RetrieveEdge = false, bool(*IsSamePixel)(const PixelType& a, const PixelType& b) = PixelType::IsSame, void (*SetPixel)(PixelType& dst, const PixelType& src) = PixelType::SetPixel);
 
 		// 位图DPI信息
