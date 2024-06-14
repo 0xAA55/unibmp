@@ -55,6 +55,11 @@ namespace UniformBitmap
 		Double = 12
 	};
 
+	extern const std::unordered_map<uint16_t, std::string> IFDTagToStr;
+	extern const std::unordered_map<std::string, uint16_t> IFDTagFromStr;
+	extern const std::unordered_map<uint16_t, std::string> GPSTagToStr;
+	extern const std::unordered_map<std::string, uint16_t> GPSTagFromStr;
+	extern const std::unordered_set<uint16_t> IFDPointerTags;
 	extern const std::unordered_map<IFDFieldFormat, std::string> IFDFormatToStringMap;
 	extern const std::unordered_map<std::string, IFDFieldFormat> StringToIFDFormatMap;
 
@@ -202,12 +207,6 @@ namespace UniformBitmap
 	};
 
 	using TIFFHeader = std::vector<IFD>;
-
-	extern const std::unordered_map<uint16_t, std::string> IFDTagToStr;
-	extern const std::unordered_map<std::string, uint16_t> IFDTagFromStr;
-	extern const std::unordered_set<uint16_t> IFDPointerTags;
-	extern const std::unordered_map<IFDFieldFormat, std::string> IFDFormatToStringMap;
-	extern const std::unordered_map<std::string, IFDFieldFormat> StringToIFDFormatMap;
 
 	// 函数：建立默认的 TIFF 头
 	TIFFHeader ConstuctTIFFHeader
