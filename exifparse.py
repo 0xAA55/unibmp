@@ -37,10 +37,17 @@ def ParseExifHtmlTable(filepath):
 		rowdata = []
 		for td in tr:
 			rowdata += [FlattenTagToText(td)]
-		print(rowdata)
-	#print(colnames)
-
+		item = {}
+		for i in range(max(len(colnames), len(rowdata))):
+			if i >= len(colnames):
+				colname = f'Key{i}'
+			else:
+				colname = colnames[i]
+			item[colname] = rowdata[i].replace('\\n', '\n')
+		exif[item['Tag ID']] = item
+	return exif
 
 if __name__ == '__main__':
 	parsed = ParseExifHtmlTable('exif.xml')
-	print(parsed)
+	with open('exif.json', 'w', encoding='utf-8') as f:
+		json.dump(parsed, f, indent=4)
