@@ -115,6 +115,7 @@ namespace CPPGIF
 		const ColorTableArray& GetLocalColorTable(size_t& numColorsOut) const;
 		const DataSubBlock& GetImageData() const;
 
+		static DataSubBlock CompressLZW(const DataSubBlock& Data, uint8_t LZW_MinCodeSize);
 		static DataSubBlock UncompressLZW(const DataSubBlock& Compressed, uint8_t LZW_MinCodeSize);
 
 	public:
