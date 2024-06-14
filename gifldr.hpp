@@ -29,21 +29,24 @@ namespace CPPGIF
 	constexpr size_t MaxColorTableItems = 256;
 	using ColorTableArray = std::array<ColorTableItem, MaxColorTableItems>;
 
-	struct DataSubBlock : public std::array<uint8_t, 255>
+	struct DataSubBlock : public std::vector<uint8_t>
 	{
-	protected:
-		uint8_t BlockSize = 0;
-
 	public:
-		DataSubBlock() = default;
-		DataSubBlock(const DataSubBlock& c) = default;
+		using std::vector<uint8_t>::vector;
+
 		DataSubBlock(const uint8_t* src, uint8_t count);
 
 		uint8_t GetBlockSize() const;
 
 	public:
 		DataSubBlock(std::istream& is);
+		DataSubBlock(std::istream& is, uint8_t BlockSize);
+
+		using DataSubBlocks = std::vector<DataSubBlock>;
+		static DataSubBlocks ReadDataSubBlocks(std::istream& is);
 	};
+
+	using DataSubBlocks = DataSubBlock::DataSubBlocks;
 
 	struct LogicalScreenDescriptorType
 	{ // LogicalScreenDescriptor
@@ -83,6 +86,7 @@ namespace CPPGIF
 		uint16_t Height = 0;
 		uint8_t Bitfields = 0;
 		std::shared_ptr<ColorTableArray> LocalColorTable = nullptr;
+		DataSubBlocks ImageData;
 
 	public:
 		ImageDescriptorType() = default;
@@ -114,7 +118,7 @@ namespace CPPGIF
 		uint8_t Bitfields = 0;
 		uint16_t DelayTime = 0;
 		uint8_t TransparentColorIndex = 0;
-		DataSubBlock SubBlock;
+		DataSubBlocks SubBlocks;
 		std::vector<ImageDescriptorType> ImageDescriptors;
 
 	public:
@@ -146,9 +150,22 @@ namespace CPPGIF
 
 	struct ApplicationExtensionType
 	{
+	protected:
 		char Identifier[8];
 		char AuthenticationCode[3];
-		DataSubBlock ApplicationData;
+		std::vector<DataSubBlock> ApplicationData;
+
+	public:
+		ApplicationExtensionType() = default;
+		ApplicationExtensionType(char Identifier[8], char AuthenticationCode[3], std::vector<DataSubBlock> ApplicationData);
+	
+	public:
+		ApplicationExtensionType(std::istream& is);
+	};
+
+	struct CommentExtensionType
+	{
+		std::vector<DataSubBlock> Data;
 	};
 
 	class GIFLoader
