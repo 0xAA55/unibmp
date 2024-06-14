@@ -285,7 +285,14 @@ namespace CPPGIF
 		{
 			auto RecompressedLZW = CompressLZW(ImageData, LZW_MinCodeSize);
 			if (RecompressedLZW != LZW_Data)
+			{
 				throw EncodeError("LZW Data recompressed not match.");
+			}
+			auto ReuncompressedLZW = UncompressLZW(RecompressedLZW, LZW_MinCodeSize);
+			if (ReuncompressedLZW != ImageData)
+			{
+				throw EncodeError("LZW Data reuncompressed not match.");
+			}
 		}
 	}
 
@@ -444,6 +451,8 @@ namespace CPPGIF
 			}
 		}
 
+		// 输出最后一步的编码
+		Encoder.Encode(CodeTable.at(CurIndexBuffer));
 		Encoder.Encode(CodeTable.EOICode);
 
 		return Encoder.GetEncodedBytes();
