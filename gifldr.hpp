@@ -11,6 +11,8 @@
 
 namespace CPPGIF
 {
+	using namespace UniformBitmap;
+
 	// 文档
 	// https://giflib.sourceforge.net/gifstandard/GIF89a.html
 
@@ -31,6 +33,10 @@ namespace CPPGIF
 	public:
 		MoreDataNeeded(const std::string& what) noexcept;
 	};
+
+	// GIF 加载器的转换目标类
+	class ImageAnim;
+	class ImageAnimFrame;
 
 	struct ColorTableItem
 	{
@@ -109,6 +115,8 @@ namespace CPPGIF
 
 	public:
 		ImageDescriptorType(std::istream& is);
+
+
 	};
 
 	struct GraphicControlExtensionType
@@ -186,12 +194,8 @@ namespace CPPGIF
 	{
 	public:
 		std::string Version; // gif87a / gif89a
-
 		LogicalScreenDescriptorType LogicalScreenDescriptor; // 逻辑屏幕描述符
-
-		
 		std::vector<GraphicControlExtensionType> GraphicControlExtension; // 绘图控制描述符
-
 		std::vector<PlainTextExtensionType> PlainTextExtension;
 		bool ReadToTrailer = false; // 是否一直读到文件结束符
 		std::vector<CommentExtensionType> CommentExtension;
@@ -205,11 +209,31 @@ namespace CPPGIF
 		const uint16_t GetWidth() const;
 		const uint16_t GetHeight() const;
 		const ColorTableArray& GetGlobalColorTable(size_t& numColorsOut) const;
-
 		const LogicalScreenDescriptorType& GetLogicalScreenDescriptor() const;
 		
+	public:
+		ImageAnim ConvertToImageAnim() const;
+
 	protected:
 		void LoadGIF(std::istream& is);
+	};
+
+	class ImageAnimFrame : public Image_RGBA8
+	{
+	protected:
+		int Duration;
+
+	public:
+		int GetDuration() const;
+	};
+
+	class ImageAnim
+	{
+	public:
+		uint32_t Width;
+		uint32_t Height;
+
+		std::vector<ImageAnimFrame> Frames;
 	};
 }
 
