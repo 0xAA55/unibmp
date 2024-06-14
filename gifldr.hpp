@@ -14,13 +14,19 @@ namespace CPPGIF
 	// 文档
 	// https://giflib.sourceforge.net/gifstandard/GIF89a.html
 
-	class UnexpectedData : public std::runtime_error
+	class DecodeError : public std::runtime_error
+	{
+	public:
+		DecodeError(const std::string& what) noexcept;
+	};
+
+	class UnexpectedData : public DecodeError
 	{
 	public:
 		UnexpectedData(const std::string& what) noexcept;
 	};
 
-	class MoreDataNeeded : public std::runtime_error
+	class MoreDataNeeded : public DecodeError
 	{
 	public:
 		MoreDataNeeded(const std::string& what) noexcept;
