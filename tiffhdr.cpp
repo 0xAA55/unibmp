@@ -1341,6 +1341,14 @@ namespace UniformBitmap
 		return ss.str();
 	}
 
+	static void ConcatBytes(std::vector<uint8_t>& Dst, const std::string& Src)
+	{
+		size_t Pos = Dst.size();
+		size_t Len = Src.length();
+		Dst.resize(Pos + Len);
+		memcpy(&Dst[Pos], &Src[0], Len);
+	}
+
 	template<typename T>
 	static void ConcatBytes(std::vector<uint8_t>& Dst, const std::vector<T>& Src)
 	{
@@ -1391,13 +1399,18 @@ namespace UniformBitmap
 		void AddField(IFDBinItem& CurItem, const IFDFT& FT)
 		{
 			size_t SizeUsage = FT.Components.size() * sizeof(FT.Components[0]);
-			if (SizeUsage <= 4)
+			if (!SizeUsage)
+			{
+				// 无成员情况
+				CurItem.ValueField = 0;
+			}
+			else if (SizeUsage <= 4)
 			{
 				memcpy(&CurItem.ValueField, &FT.Components[0], SizeUsage);
 			}
 			else
 			{
-				CurItem.ValueField = BeginOfExtra + Tail;
+				CurItem.ValueField = uint32_t(BeginOfExtra + Extra.size());
 				ConcatBytes(Extra, FT.Components);
 			}
 		}
@@ -1411,18 +1424,18 @@ namespace UniformBitmap
 			CurItem.VarType = uint16_t(f.Type);
 			switch (f.Type)
 			{
-			case IFDFieldFormat::SByte:       AddField(CurItem, f.AsBytes());
-			case IFDFieldFormat::SShort:      AddField(CurItem, f.AsShorts());
-			case IFDFieldFormat::SLong:       AddField(CurItem, f.AsLongs());
-			case IFDFieldFormat::UByte:       AddField(CurItem, f.AsUBytes());
-			case IFDFieldFormat::UShort:      AddField(CurItem, f.AsUShorts());
-			case IFDFieldFormat::ULong:       AddField(CurItem, f.AsULongs());
-			case IFDFieldFormat::Float:       AddField(CurItem, f.AsFloats());
-			case IFDFieldFormat::SRational:   AddField(CurItem, f.AsRationals());
-			case IFDFieldFormat::URational:   AddField(CurItem, f.AsURationals());
-			case IFDFieldFormat::Double:      AddField(CurItem, f.AsDoubles());
-			case IFDFieldFormat::Undefined:   AddField(CurItem, f.AsUBytes());
-			case IFDFieldFormat::AsciiString: AddField(CurItem, f.AsString());
+			case IFDFieldFormat::SByte:       AddField(CurItem, f.AsBytes()); break;
+			case IFDFieldFormat::SShort:      AddField(CurItem, f.AsShorts()); break;
+			case IFDFieldFormat::SLong:       AddField(CurItem, f.AsLongs()); break;
+			case IFDFieldFormat::UByte:       AddField(CurItem, f.AsUBytes()); break;
+			case IFDFieldFormat::UShort:      AddField(CurItem, f.AsUShorts()); break;
+			case IFDFieldFormat::ULong:       AddField(CurItem, f.AsULongs()); break;
+			case IFDFieldFormat::Float:       AddField(CurItem, f.AsFloats()); break;
+			case IFDFieldFormat::SRational:   AddField(CurItem, f.AsRationals()); break;
+			case IFDFieldFormat::URational:   AddField(CurItem, f.AsURationals()); break;
+			case IFDFieldFormat::Double:      AddField(CurItem, f.AsDoubles()); break;
+			case IFDFieldFormat::Undefined:   AddField(CurItem, f.AsUBytes()); break;
+			case IFDFieldFormat::AsciiString: AddField(CurItem, f.AsString()); break;
 			default:
 				if (1)
 				{
