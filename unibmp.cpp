@@ -888,6 +888,13 @@ namespace UniformBitmap
 	}
 
 	template<typename PixelType>
+	Image<PixelType>::Image(uint32_t Width, uint32_t Height, const PixelType& DefaultColor) :
+		Image(Width, Height, 3000, 3000)
+	{
+		FillRect(0, 0, Width - 1, Height - 1, DefaultColor);
+	}
+
+	template<typename PixelType>
 		Image<PixelType>::Image(const Image& from) :
 		Image(from.GetWidth(), from.GetHeight(), from.XPelsPerMeter, from.YPelsPerMeter)
 	{

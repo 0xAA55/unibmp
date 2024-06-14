@@ -210,6 +210,7 @@ namespace UniformBitmap
 		Image(const std::string& FilePath);
 		Image(const void* FileInMemory, size_t FileSize);
 		Image(uint32_t Width, uint32_t Height, uint32_t XPelsPerMeter = 3000, uint32_t YPelsPerMeter = 3000);
+		Image(uint32_t Width, uint32_t Height, const PixelType& DefaultColor = PixelType(0, 0, 0, 0));
 		Image(const Image& from);
 		template<typename FromType> requires (!std::is_same_v<PixelType, FromType>)
 		Image(const Image<FromType>& from);
