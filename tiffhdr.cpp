@@ -1418,6 +1418,7 @@ namespace UniformBitmap
 		}
 		if (Ifd.GPSSubIFD)
 		{
+			// GPS 的因为 ID 名字不同，必须用专门的函数来打印。
 			ss << "- GPS SubIFD:\n";
 			ShowGPSFields(ss, Ifd.GPSSubIFD->Fields);
 		}
