@@ -442,8 +442,9 @@ namespace CPPGIF
 		return Output;
 	}
 
-	const ColorTableArray& ImageDescriptorType::GetLocalColorTable() const
+	const ColorTableArray& ImageDescriptorType::GetLocalColorTable(size_t& numColorsOut) const
 	{
+		numColorsOut = SizeOfLocalColorTable();
 		return *LocalColorTable;
 	}
 
@@ -480,7 +481,7 @@ namespace CPPGIF
 		// 每一个帧是由多个子图像构成的
 		for (auto& ImgDesc : ImageDescriptors)
 		{
-			DrawImageDesc(Img, ImgDesc);
+			DrawImageDesc(Img, ImgDesc, ldr);
 		}
 
 		// 设置帧属性
@@ -490,9 +491,41 @@ namespace CPPGIF
 		return Img;
 	}
 
-	void GraphicControlExtensionType::DrawImageDesc(Image_RGBA8& DrawTo, const ImageDescriptorType& ImgDesc) const
+	void GraphicControlExtensionType::DrawImageDesc(Image_RGBA8& DrawTo, const ImageDescriptorType& ImgDesc, const GIFLoader& ldr) const
 	{
-		// TODO
+		auto& ImgData = ImgDesc.GetImageData();
+
+		// 空位图 == LZW 解压失败的块，无视之
+		if (!ImgData.size()) return;
+
+		// 透明色
+		int KeyColor = HasTransparency() ? TransparentColorIndex : -1;
+
+		// 颜色数
+		size_t numColors = 0;
+
+		// 调色板
+		auto& ColorTable = ImgDesc.HasLocalColorTable() ?
+			ImgDesc.GetLocalColorTable(numColors) :
+			ldr.GetGlobalColorTable(numColors);
+
+		// 画图位置
+		int dx = ImgDesc.GetLeft();
+		int dy = ImgDesc.GetTop();
+
+		// 并发画图
+#pragma omp parallel for
+		for (int y = 0; y < int(ImgDesc.GetHeight()); y++)
+		{
+			int row = y * ImgDesc.GetWidth();
+			for (int x = 0; x < int(ImgDesc.GetWidth()); x++)
+			{
+				int ci = ImgData.at(row + x);
+				if (ci == KeyColor) continue; // 跳过透明色
+				auto& c = ColorTable.at(ci); // 色表取色
+				DrawTo.PutPixel(x + dx, y + dy, Pixel_RGBA8(c.R, c.G, c.B, 255));
+			}
+		}
 	}
 
 	PlainTextExtensionType::PlainTextExtensionType(std::istream& is)

@@ -109,7 +109,7 @@ namespace CPPGIF
 		uint16_t GetWidth() const;
 		uint16_t GetHeight() const;
 
-		const ColorTableArray& GetLocalColorTable() const;
+		const ColorTableArray& GetLocalColorTable(size_t& numColorsOut) const;
 		const DataSubBlock& GetImageData() const;
 
 		static DataSubBlock UncompressLZW(const DataSubBlock& Compressed, uint8_t LZW_MinCodeSize);
@@ -154,10 +154,10 @@ namespace CPPGIF
 	public:
 		GraphicControlExtensionType(std::istream& is);
 
-		Image_RGBA8 ConvertToImage(const GIFLoader& ldr) const;
+		ImageAnimFrame ConvertToFrame(const GIFLoader& ldr) const;
 
 	protected:
-		void DrawImageDesc(Image_RGBA8& DrawTo, const ImageDescriptorType& ImgDesc) const;
+		void DrawImageDesc(Image_RGBA8& DrawTo, const ImageDescriptorType& ImgDesc, const GIFLoader& ldr) const;
 	};
 
 	struct PlainTextExtensionType
