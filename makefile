@@ -3,7 +3,7 @@ CXX=g++
 LD=gcc
 AR=ar
 RANLIB=ranlib
-CFLAGS=-static -fPIC -std=c++20 -O3 -I. -Iinclude
+CFLAGS=-static -fPIC -fopenmp -std=c++20 -O3 -I. -Iinclude
 CXXFLAGS=$(CFLAGS) -fmax-errors=5
 LDFLAGS=-s -g -L.
 LDLIBS=-lstdc++ -lm -lunibmp
