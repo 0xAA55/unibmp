@@ -154,6 +154,7 @@ namespace CPPGIF
 	public:
 		GraphicControlExtensionType(std::istream& is);
 
+		void DrawToFrame(ImageAnimFrame& DrawTo, const GIFLoader& ldr) const;
 		ImageAnimFrame ConvertToFrame(const GIFLoader& ldr) const;
 
 	protected:
