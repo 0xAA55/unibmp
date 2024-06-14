@@ -376,7 +376,7 @@ namespace CPPGIF
 
 		using CodeTableMapType = std::unordered_map<CodeStream, CodeType, Hasher_CodeStream>;
 
-		struct CodaTable : public CodeTableMapType
+		struct CodaTableType : public CodeTableMapType
 		{
 			CodeType ClearCode;
 			CodeType EOICode;
@@ -394,7 +394,7 @@ namespace CPPGIF
 				}
 			}
 
-			CodaTable(uint8_t CodeSize) :
+			CodaTableType(uint8_t CodeSize) :
 				CodeTableMapType(),
 				CodeSize(CodeSize)
 			{
@@ -403,14 +403,44 @@ namespace CPPGIF
 			}
 		};
 
+		auto Encoder = CodeStreamEncoder(LZW_MinCodeSize);
+		auto CodeTable = CodaTableType(LZW_MinCodeSize);
+		CodeTable.InitCodeTable();
+		Encoder.Encode(CodeTable.ClearCode);
 
+		auto CurIndexBuffer = CodeStream();
+		CurIndexBuffer.push_back(Data.front());
 
-
-
-		if (1)
+		for (size_t i = 1; i < Data.size(); i ++)
 		{
-			return DataSubBlock(Data); // 临时代码，仅用于确保项目编译通过
+			auto Index = CodeType(Data[i]);
+			CurIndexBuffer.push_back(Index);
+			if (CodeTable.contains(CurIndexBuffer))
+			{
+				continue;
+			}
+			else
+			{
+				auto Code = CodeType(CodeTable.size());
+				CodeTable[CurIndexBuffer] = Code;
+				Encoder.Encode(Code);
+				auto MaxCode = (1 << Encoder.CurCodeSize) - 1;
+				if (CodeTable.size() == MaxCode)
+				{
+					Encoder.IncreaseCodeSize();
+					if (Encoder.CurCodeSize > 12)
+					{
+						Encoder.CurCodeSize = 12;
+						Encoder.Encode(CodeTable.ClearCode);
+						Encoder.CurCodeSize = LZW_MinCodeSize;
+						CodeTable.InitCodeTable();
+					}
+				}
+				CurIndexBuffer = { Index };
+			}
 		}
+
+		return Encoder.GetEncodedBytes();
 	}
 
 	DataSubBlock ImageDescriptorType::UncompressLZW(const DataSubBlock& Compressed, uint8_t LZW_MinCodeSize)
