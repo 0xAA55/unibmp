@@ -9,7 +9,7 @@ namespace CPPGIF
 	{
 	}
 
-	static const auto GoodGCTColors = std::unordered_map<size_t, size_t>
+	static const auto GoodColorNumbers = std::unordered_map<size_t, size_t>
 	{
 		{ 2, 0 },
 		{ 4, 1 },
@@ -133,17 +133,17 @@ namespace CPPGIF
 		Read(LoadFrom, LogicalScreenHeight);
 		Read(LoadFrom, Bitfields);
 		Read(LoadFrom, BackgroundColorIndex);
-		if (HasGCT())
+		if (HasGlobalColorTable())
 		{
 			GlobalColorTable = std::make_shared<ColorTableArray>();
 			Read(LoadFrom, &GlobalColorTable.get()[0], SizeOfGlobalColorTable());
 		}
 	}
 
-	uint8_t LogicalScreenDescriptorType::MakeBitfields(bool HasGCT, uint8_t ColorResolution, bool ColorIsSorted, size_t SizeOfGlobalColorTable)
+	uint8_t LogicalScreenDescriptorType::MakeBitfields(bool HasGlobalColorTable, uint8_t ColorResolution, bool ColorIsSorted, size_t SizeOfGlobalColorTable)
 	{
 		uint8_t ret = 0;
-		if (HasGCT) ret = 0x80;
+		if (HasGlobalColorTable) ret = 0x80;
 		if (ColorResolution < 1 || ColorResolution > 8)
 		{
 			throw std::invalid_argument(std::string("GIF LogicalScreenDescriptorType::MakeBitfields(): bad `ColorResolution` (") + std::to_string(ColorResolution) + "): should be in [1, 8].");
@@ -152,16 +152,16 @@ namespace CPPGIF
 		if (ColorIsSorted) ret |= 0x08;
 		try
 		{
-			ret |= GoodGCTColors.at(SizeOfGlobalColorTable);
+			ret |= GoodColorNumbers.at(SizeOfGlobalColorTable);
 		}
 		catch (const std::out_of_range&)
 		{
-			throw std::invalid_argument(std::string("GIF LogicalScreenDescriptorType::MakeBitfields(): bad `SizeOfGlobalColorTable` (") + std::to_string(ColorResolution) + "): should be one of 2, 4, 8, 16, 32, 64, 128, 256.");
+			throw std::invalid_argument(std::string("GIF LogicalScreenDescriptorType::MakeBitfields(): bad `SizeOfGlobalColorTable` (") + std::to_string(SizeOfGlobalColorTable) + "): should be one of 2, 4, 8, 16, 32, 64, 128, 256.");
 		}
-		return;
+		return ret;
 	}
 
-	bool LogicalScreenDescriptorType::HasGCT() const
+	bool LogicalScreenDescriptorType::HasGlobalColorTable() const
 	{
 		return ((Bitfields & 0x80) == 0x80) ? true : false;
 	}
@@ -178,12 +178,12 @@ namespace CPPGIF
 
 	size_t LogicalScreenDescriptorType::SizeOfGlobalColorTable() const
 	{
-		return 1 << (Bitfields & 0x07);
+		return size_t(1) << (Bitfields & 0x07);
 	}
 
-	void LogicalScreenDescriptorType::BreakBitfields(bool& HasGCT, uint8_t& ColorResolution, bool& ColorIsSorted, size_t& SizeOfGlobalColorTable) const
+	void LogicalScreenDescriptorType::BreakBitfields(bool& HasGlobalColorTable, uint8_t& ColorResolution, bool& ColorIsSorted, size_t& SizeOfGlobalColorTable) const
 	{
-		HasGCT = this->HasGCT();
+		HasGlobalColorTable = this->HasGlobalColorTable();
 		ColorResolution = this->ColorResolution();
 		ColorIsSorted = this->ColorIsSorted();
 		SizeOfGlobalColorTable = this->SizeOfGlobalColorTable();
@@ -202,6 +202,95 @@ namespace CPPGIF
 	const ColorTableArray& LogicalScreenDescriptorType::GetGlobalColorTable() const
 	{
 		return *GlobalColorTable;
+	}
+
+	ImageDescriptorType::ImageDescriptorType(uint16_t Left, uint16_t Top, uint16_t Width, uint16_t Height, uint8_t Bitfields, std::shared_ptr<ColorTableArray> LocalColorTable):
+		Left(Left), Top(Top), Width(Width), Height(Height), Bitfields(Bitfields), LocalColorTable(LocalColorTable)
+	{
+	}
+
+	uint8_t ImageDescriptorType::MakeBitfields(bool HasLocalColorTable, bool IsInterlaced, bool ColorTableSorted, size_t SizeOfLocalColorTable)
+	{
+		auto ret = uint8_t(0);
+		if (HasLocalColorTable) ret |= 0x80;
+		if (IsInterlaced) ret |= 0x40;
+		if (ColorTableSorted) ret |= 0x20;
+		try
+		{
+			ret |= GoodColorNumbers.at(SizeOfLocalColorTable);
+		}
+		catch (const std::out_of_range&)
+		{
+			throw std::invalid_argument(std::string("GIF LogicalScreenDescriptorType::MakeBitfields(): bad `SizeOfLocalColorTable` (") + std::to_string(SizeOfLocalColorTable) + "): should be one of 2, 4, 8, 16, 32, 64, 128, 256.");
+		}
+		return ret;
+	}
+
+	void ImageDescriptorType::BreakBitfields(bool& HasLocalColorTable, bool& IsInterlaced, bool& ColorTableSorted, size_t& SizeOfLocalColorTable) const
+	{
+		HasLocalColorTable = this->HasLocalColorTable();
+		IsInterlaced = this->IsInterlaced();
+		ColorTableSorted = this->ColorTableSorted();
+		SizeOfLocalColorTable = this->SizeOfLocalColorTable();
+	}
+
+	bool ImageDescriptorType::HasLocalColorTable() const
+	{
+		return (Bitfields & 0x80) ? true : false;
+	}
+
+	bool ImageDescriptorType::IsInterlaced() const
+	{
+		return (Bitfields & 0x40) ? true : false;
+	}
+
+	bool ImageDescriptorType::ColorTableSorted() const
+	{
+		return (Bitfields & 0x20) ? true : false;
+	}
+
+	size_t ImageDescriptorType::SizeOfLocalColorTable() const
+	{
+		return size_t(1) << (Bitfields & 0x07);
+	}
+
+	uint16_t ImageDescriptorType::GetLeft() const
+	{
+		return Left;
+	}
+
+	uint16_t ImageDescriptorType::GetTop() const
+	{
+		return Top;
+	}
+
+	uint16_t ImageDescriptorType::GetWidth() const
+	{
+		return Width;
+	}
+
+	uint16_t ImageDescriptorType::GetHeight() const
+	{
+		return Height;
+	}
+
+	ImageDescriptorType::ImageDescriptorType(std::istream& is)
+	{
+		Read(is, Left);
+		Read(is, Top);
+		Read(is, Width);
+		Read(is, Height);
+		Read(is, Bitfields);
+		if (HasLocalColorTable())
+		{
+			LocalColorTable = std::make_shared<ColorTableArray>();
+			Read(is, &LocalColorTable.get()[0], SizeOfLocalColorTable());
+		}
+	}
+
+	const ColorTableArray& ImageDescriptorType::GetLocalColorTable() const
+	{
+		return *LocalColorTable;
 	}
 
 	GraphicControlExtensionType::GraphicControlExtensionType(uint8_t BlockSize, uint8_t Bitfields, uint16_t DelayTime, uint8_t TransparentColorIndex, DataSubBlock* SubBlock_Optional) :

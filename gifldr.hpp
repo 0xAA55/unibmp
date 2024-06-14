@@ -58,10 +58,10 @@ namespace CPPGIF
 		LogicalScreenDescriptorType() = default;
 		LogicalScreenDescriptorType(uint16_t LogicalScreenWidth, uint16_t LogicalScreenHeight, uint8_t Bitfields, uint8_t BackgroundColorIndex, std::shared_ptr<ColorTableArray> GlobalColorTable);
 
-		static uint8_t MakeBitfields(bool HasGCT, uint8_t ColorResolution, bool ColorIsSorted, size_t SizeOfGlobalColorTable);
-		void BreakBitfields(bool& HasGCT, uint8_t& ColorResolution, bool& ColorIsSorted, size_t& SizeOfGlobalColorTable);
+		static uint8_t MakeBitfields(bool HasGlobalColorTable, uint8_t ColorResolution, bool ColorIsSorted, size_t SizeOfGlobalColorTable);
+		void BreakBitfields(bool& HasGlobalColorTable, uint8_t& ColorResolution, bool& ColorIsSorted, size_t& SizeOfGlobalColorTable) const;
 
-		bool HasGCT() const;
+		bool HasGlobalColorTable() const;
 		uint8_t ColorResolution() const;
 		bool ColorIsSorted() const;
 		size_t SizeOfGlobalColorTable() const;
@@ -74,6 +74,39 @@ namespace CPPGIF
 		LogicalScreenDescriptorType(std::istream& LoadFrom);
 	};
 
+	struct ImageDescriptorType
+	{
+	protected:
+		uint16_t Left = 0;
+		uint16_t Top = 0;
+		uint16_t Width = 0;
+		uint16_t Height = 0;
+		uint8_t Bitfields = 0;
+		std::shared_ptr<ColorTableArray> LocalColorTable = nullptr;
+
+	public:
+		ImageDescriptorType() = default;
+		ImageDescriptorType(uint16_t Left, uint16_t Top, uint16_t Width, uint16_t Height, uint8_t Bitfields, std::shared_ptr<ColorTableArray> LocalColorTable);
+
+		static uint8_t MakeBitfields(bool HasLocalColorTable, bool IsInterlaced, bool ColorTableSorted, size_t SizeOfLocalColorTable);
+		void BreakBitfields(bool& HasLocalColorTable, bool& IsInterlaced, bool& ColorTableSorted, size_t& SizeOfLocalColorTable) const;
+
+		bool HasLocalColorTable() const;
+		bool IsInterlaced() const;
+		bool ColorTableSorted() const;
+		size_t SizeOfLocalColorTable() const;
+
+		uint16_t GetLeft() const;
+		uint16_t GetTop() const;
+		uint16_t GetWidth() const;
+		uint16_t GetHeight() const;
+
+		const ColorTableArray& GetLocalColorTable() const;
+
+	public:
+		ImageDescriptorType(std::istream& is);
+	};
+
 	struct GraphicControlExtensionType
 	{
 	protected:
@@ -82,6 +115,7 @@ namespace CPPGIF
 		uint16_t DelayTime = 0;
 		uint8_t TransparentColorIndex = 0;
 		DataSubBlock SubBlock;
+		std::vector<ImageDescriptorType> ImageDescriptors;
 
 	public:
 		GraphicControlExtensionType() = default;
@@ -96,11 +130,15 @@ namespace CPPGIF
 		};
 
 		static uint8_t MakeBitfields(DisposalMethodEnum DisposalMethod, bool ReactToUserInput, bool HasTransparency);
-		void BreakBitfields(DisposalMethodEnum DisposalMethod, bool ReactToUserInput, bool HasTransparency);
+		void BreakBitfields(DisposalMethodEnum& DisposalMethod, bool& ReactToUserInput, bool& HasTransparency) const;
 
 		DisposalMethodEnum GetDisposalMethod() const;
 		bool ShouldReactToUserInput() const;
 		bool HasTransparency() const;
+
+		uint16_t GetDelayTime() const;
+		uint8_t GetTransparentColorIndex() const;
+		const std::vector<ImageDescriptorType>& GetImageDescriptors() const;
 
 	public:
 		GraphicControlExtensionType(std::istream& is);
