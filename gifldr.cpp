@@ -253,7 +253,15 @@ namespace CPPGIF
 		Read(is, LZW_MinCodeSize);
 		std::cout << "LZW: 0x" << std::hex << is.tellg() << "\n";
 		auto LZW_Data = ReadDataSubBlock(is);
-		ImageData = UncompressLZW(LZW_Data, LZW_MinCodeSize);
+		try
+		{
+			ImageData = UncompressLZW(LZW_Data, LZW_MinCodeSize);
+		}
+		catch (const DecodeError& e)
+		{
+			std::cerr << "GIF: " << e.what() << "\n";
+			ImageData.resize(Width * Height);
+		}
 	}
 
 	DataSubBlock ImageDescriptorType::UncompressLZW(const DataSubBlock& Compressed, uint8_t LZW_MinCodeSize)
@@ -379,21 +387,21 @@ namespace CPPGIF
 						else if (DoFirstStep)
 						{
 							DoFirstStep = false;
-							auto& ToOutput = CodeTable[CurCode];
+							auto& ToOutput = CodeTable.at(CurCode);
 							Output.insert(Output.end(), ToOutput.cbegin(), ToOutput.cend());
 						}
 						else if (CurCode < CodeTable.size())
 						{
-							auto& ToOutput = CodeTable[CurCode];
+							auto& ToOutput = CodeTable.at(CurCode);
 							Output.insert(Output.end(), ToOutput.cbegin(), ToOutput.cend());
-							auto K = ToOutput[0];
-							CodeTable.push_back(CodeTable[LastCode]);
+							auto K = ToOutput.at(0);
+							CodeTable.push_back(CodeTable.at(LastCode));
 							CodeTable.back().push_back(K);
 						}
 						else
 						{
-							DataSubBlock CodesToAdd = CodeTable[LastCode];
-							auto K = CodesToAdd.front();
+							DataSubBlock CodesToAdd = CodeTable.at(LastCode);
+							auto K = CodesToAdd.at(0);
 							CodesToAdd.push_back(K);
 							Output.insert(Output.end(), CodesToAdd.cbegin(), CodesToAdd.cend());
 							CodeTable.push_back(CodesToAdd);
