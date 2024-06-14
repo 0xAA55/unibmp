@@ -12,6 +12,9 @@
 
 namespace UniformBitmap
 {
+	// ²Î¿¼×ÊÁÏ
+	// https://exiftool.org/TagNames/EXIF.html
+	// http://www.fifi.org/doc/jhead/exif-e.html
 	// https://web.archive.org/web/20111025004429/http://park2.wakwak.com/~tsuruzoh/Computer/Digicams/exif-e.html
 
 	struct Rational
@@ -204,6 +207,7 @@ namespace UniformBitmap
 		const URational* XResolution = nullptr,
 		const URational* YResolution = nullptr,
 		const std::string& Software = "",
+		const std::string& Artist = "",
 		const TIFFDateTime* DateTime = nullptr,
 		const std::string& CopyRight = "",
 		std::shared_ptr<IFD> ExifSubIFD = nullptr,
