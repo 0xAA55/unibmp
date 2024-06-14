@@ -75,7 +75,7 @@ namespace UniformBitmap
 	using IFDFieldURationals = IFDFieldType<URational>;
 	using IFDFieldFloats = IFDFieldType<float>;
 	using IFDFieldDoubles = IFDFieldType<double>;
-	using IFDFieldUndefined = IFDFieldBytes;
+	using IFDFieldUndefined = IFDFieldUBytes;
 
 	class IFDFieldString;
 
@@ -159,7 +159,7 @@ namespace UniformBitmap
 		std::string Components;
 
 		IFDFieldString();
-		IFDFieldString(IFDFieldFormat Type, const std::string& Value);
+		IFDFieldString(IFDFieldFormat Type, const std::string& Value = "");
 		IFDFieldString(const std::string& Value);
 		IFDFieldString(const TIFFDateTime& Value);
 

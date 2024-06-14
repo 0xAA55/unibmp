@@ -4,6 +4,8 @@
 #include <unordered_set>
 #include <cinttypes>
 
+#define DEBUG_TIFFHeader 1
+
 namespace UniformBitmap
 {
 	const std::unordered_map<uint16_t, std::string> IFDTagToStr =
@@ -97,6 +99,11 @@ namespace UniformBitmap
 		{0x9290, "SubsecTime"},
 		{0x9291, "SubsecTimeOriginal"},
 		{0x9292, "SubsecTimeDigitized"},
+		{0x9c9b, "XPTitle"},
+		{0x9c9c, "XPComment"},
+		{0x9c9d, "XPAuthor"},
+		{0x9c9e, "XPKeywords"},
+		{0x9c9f, "XPSubject"},
 		{0xa000, "FlashPixVersion"},
 		{0xa001, "ColorSpace"},
 		{0xa002, "ExifImageWidth"},
@@ -114,6 +121,8 @@ namespace UniformBitmap
 		{0xa300, "FileSource"},
 		{0xa301, "SceneType"},
 		{0xa302, "CFAPattern"},
+		{0xa406, "SceneCaptureType"},
+		{0xea1c, "Padding"},
 	};
 
 	const std::unordered_map<std::string, uint16_t> IFDTagFromStr =
@@ -207,6 +216,11 @@ namespace UniformBitmap
 		{"SubsecTime", 0x9290},
 		{"SubsecTimeOriginal", 0x9291},
 		{"SubsecTimeDigitized", 0x9292},
+		{"XPTitle", 0x9c9b},
+		{"XPComment", 0x9c9c},
+		{"XPAuthor", 0x9c9d},
+		{"XPKeywords", 0x9c9e},
+		{"XPSubject", 0x9c9f},
 		{"FlashPixVersion", 0xa000},
 		{"ColorSpace", 0xa001},
 		{"ExifImageWidth", 0xa002},
@@ -224,6 +238,8 @@ namespace UniformBitmap
 		{"FileSource", 0xa300},
 		{"SceneType", 0xa301},
 		{"CFAPattern", 0xa302},
+		{"SceneCaptureType", 0xa406},
+		{"Padding", 0xea1c},
 	};
 
 	const std::unordered_map<IFDFieldFormat, std::string> IFDFormatToStringMap =
@@ -702,7 +718,7 @@ namespace UniformBitmap
 			case IFDFieldFormat::URational:   ConstructByType(IFDFieldURationals);
 			case IFDFieldFormat::Float:       ConstructByType(IFDFieldFloats);
 			case IFDFieldFormat::Double:      ConstructByType(IFDFieldDoubles);
-			case IFDFieldFormat::Undefined:   ConstructByType(IFDFieldBytes);
+			case IFDFieldFormat::Undefined:   ConstructByType(IFDFieldUBytes);
 			case IFDFieldFormat::AsciiString: ConstructByType(IFDFieldString);
 #undef ConstructByType
 			}
@@ -813,7 +829,9 @@ namespace UniformBitmap
 				throw ReadDataError(std::string("Invalid data input, ") + e.what());
 			}
 			Parse(); // 它自己会抛出 ReadDataError
-
+#if DEBUG_TIFFHeader
+			std::cout << TIFFHeaderToString(Parsed);
+#endif
 		}
 
 		const TIFFHeader& GetParsed() const
@@ -828,7 +846,6 @@ namespace UniformBitmap
 		ifs.read(reinterpret_cast<char*>(&r), sizeof r);
 		return (sizeof r);
 	}
-
 
 	TIFFHeader ParseTIFFHeader(std::istream& ifs)
 	{
@@ -849,9 +866,9 @@ namespace UniformBitmap
 			char buf[256];
 			try
 			{
-				snprintf(buf, sizeof buf, "  %s:\t", IFDTagToStr.at(field.first));
+				snprintf(buf, sizeof buf, "  %s:\t", IFDTagToStr.at(field.first).c_str());
 			}
-			catch (const std::out_of_range& e)
+			catch (const std::out_of_range&)
 			{
 				snprintf(buf, sizeof buf, "  <Unknown tag 0x%04X>:\t", field.first);
 			}
