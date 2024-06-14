@@ -9,6 +9,11 @@ namespace CPPGIF
 	{
 	}
 
+	MoreDataNeeded::MoreDataNeeded(const std::string& what) noexcept :
+		std::runtime_error(what)
+	{
+	}
+
 	static const auto GoodColorNumbers = std::unordered_map<size_t, size_t>
 	{
 		{ 2, 0 },

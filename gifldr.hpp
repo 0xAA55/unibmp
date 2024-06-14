@@ -20,6 +20,12 @@ namespace CPPGIF
 		UnexpectedData(const std::string& what) noexcept;
 	};
 
+	class MoreDataNeeded : public std::runtime_error
+	{
+	public:
+		MoreDataNeeded(const std::string& what) noexcept;
+	};
+
 	struct ColorTableItem
 	{
 		uint8_t R;
