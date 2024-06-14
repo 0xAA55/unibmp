@@ -1334,6 +1334,24 @@ namespace UniformBitmap
 	}
 
 	template<typename PixelType>
+	void Image<PixelType>::ExpandTo2N()
+	{
+		uint64_t w = 1; while (w < Width) w <<= 1;
+		uint64_t h = 1; while (h < Height) h <<= 1;
+		ExpandResizeLinear(w, h);
+	}
+
+	template<typename PixelType>
+	void Image<PixelType>::ShrinkTo2N()
+	{
+		uint64_t w = 1; while (w < Width) w <<= 1;
+		uint64_t h = 1; while (h < Height) h <<= 1;
+		w >>= 1;
+		h >>= 1;
+		ShrinkResize(w, h);
+	}
+
+	template<typename PixelType>
 	void Image<PixelType>::ResizeNearest(uint32_t NewWidth, uint32_t NewHeight)
 	{
 		if (NewWidth == Width && NewHeight == Height) return;

@@ -290,6 +290,9 @@ namespace UniformBitmap
 		bool HeightIs2N() const;
 		bool WidthHeightIs2N() const;
 
+		void ExpandTo2N();
+		void ShrinkTo2N();
+
 		void ResizeNearest(uint32_t NewWidth, uint32_t NewHeight);
 		void ResizeLinear(uint32_t NewWidth, uint32_t NewHeight);
 
