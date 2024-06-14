@@ -53,5 +53,11 @@ if __name__ == '__main__':
 		json.dump(parsed, f, indent=4)
 
 	for tid, tdata in parsed.items():
-		if '-->' in tdata['Values /Notes']:
-			print(tid)
+		tname = tdata['Tag Name']
+		tname = '|'.join(sorted(list(set(tname.split('\n')))))
+		print('{' + f'{tid}, "{tname}"' + '},')
+
+	#for tid, tdata in parsed.items():
+	#	tname = tdata['Tag Name']
+	#	for tncname in sorted(list(set(tname.split('\n')))):
+	#		print('{' + f'"{tncname}", {tid}' + '},')
