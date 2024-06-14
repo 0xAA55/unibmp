@@ -332,10 +332,11 @@ namespace CPPGIF
 					if (ExpectCC && CurCode != CodeTable.ClearCode)
 					{
 						char buf[256];
-						snprintf(buf, sizeof buf, "[WARN] GIF decompression: expect Clear Code, got 0x%04X\n", CurCode);
-						throw UnexpectedData(buf);
+						snprintf(buf, sizeof buf, "GIF decompression: expect Clear Code, got 0x%04X\n", CurCode);
+						// throw UnexpectedData(buf);
+						std::cerr << buf;
 					}
-					if (CurCode == CodeTable.ClearCode)
+					if (CurCode == CodeTable.ClearCode || ExpectCC)
 					{
 						CodeTable.InitCodeTable();
 						CurCodeSize = FirstCodeSize;
@@ -343,7 +344,7 @@ namespace CPPGIF
 						IsFirstStep = true;
 						ExpectCC = false;
 					}
-					else if (CurCode == CodeTable.EOICode)
+					if (CurCode == CodeTable.EOICode)
 					{
 						EOIReached = true;
 						break;
@@ -376,7 +377,6 @@ namespace CPPGIF
 						CurCodeSize++;
 						if (CurCodeSize > MaxCodeSize) 
 						{
-							// CodeTable.InitCodeTable();
 							ExpectCC = true;
 							CurCodeSize = FirstCodeSize;
 						}
