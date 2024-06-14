@@ -115,8 +115,6 @@ namespace CPPGIF
 
 	public:
 		ImageDescriptorType(std::istream& is);
-
-
 	};
 
 	struct GraphicControlExtensionType
@@ -154,6 +152,11 @@ namespace CPPGIF
 
 	public:
 		GraphicControlExtensionType(std::istream& is);
+
+		Image_RGBA8 ConvertToImage() const;
+
+	protected:
+		void DrawImageDesc(Image_RGBA8& DrawTo, const ImageDescriptorType& ImgDesc) const;
 	};
 
 	struct PlainTextExtensionType
@@ -221,7 +224,7 @@ namespace CPPGIF
 	class ImageAnimFrame : public Image_RGBA8
 	{
 	protected:
-		int Duration;
+		int Duration = 0;
 
 	public:
 		int GetDuration() const;
@@ -229,11 +232,15 @@ namespace CPPGIF
 
 	class ImageAnim
 	{
-	public:
-		uint32_t Width;
-		uint32_t Height;
+	protected:
+		uint32_t Width = 0;
+		uint32_t Height = 0;
 
+	public:
 		std::vector<ImageAnimFrame> Frames;
+
+	public:
+		ImageAnim(uint32_t Width, uint32_t Height);
 	};
 }
 
