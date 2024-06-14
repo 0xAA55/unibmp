@@ -261,6 +261,9 @@ namespace UniformBitmap
 		FileInMemoryType SaveToJPG(int Quality) const;
 		FileInMemoryType SaveToHDR() const;
 
+		Image& operator=(const Image& rhs) = default;
+		Image& operator=(Image&& rhs) = default;
+
 	public:
 		void FlipH();
 		void FlipV();
