@@ -407,14 +407,17 @@ namespace UniformBitmap
 	void Image<PixelType>::LoadBmp(const std::string& FilePath)
 	{
 		std::ifstream ifs(FilePath, std::ios::binary);
-		ifs.exceptions(std::ios::badbit | std::ios::failbit);
-		if (ifs.fail())
+		try
+		{
+			ifs.exceptions(std::ios::badbit | std::ios::failbit);
+			return LoadBmp(ifs);
+		}
+		catch (const std::ios::failure&)
 		{
 			std::stringstream sserr;
 			sserr << "Could not open `" << FilePath << "` for read.";
 			throw ReadBmpFileError(sserr.str());
 		}
-		return LoadBmp(ifs);
 	}
 
 	// ´ÓÄÚ´æ¼ÓÔØ Bmp
@@ -423,7 +426,6 @@ namespace UniformBitmap
 	{
 		std::istringstream str;
 		str.rdbuf()->pubsetbuf(reinterpret_cast<char*>(const_cast<void*>(FileInMemory)), FileSize);
-		str.exceptions(std::ios::badbit | std::ios::failbit);
 		LoadBmp(str);
 	}
 
@@ -1004,16 +1006,34 @@ namespace UniformBitmap
 	size_t Image<PixelType>::SaveToBmp24(const std::string& FilePath, bool InverseLineOrder) const
 	{
 		std::ofstream ofs(FilePath, std::ios::binary);
-		ofs.exceptions(std::ios::badbit | std::ios::failbit);
-		return SaveToBmp24(ofs, InverseLineOrder);
+		try
+		{
+			ofs.exceptions(std::ios::badbit | std::ios::failbit);
+			return SaveToBmp24(ofs, InverseLineOrder);
+		}
+		catch (const std::ios::failure&)
+		{
+			std::stringstream sserr;
+			sserr << "Could not open `" << FilePath << "` for write.";
+			throw ExceptionType(sserr.str());
+		}
 	}
 
 	template<typename PixelType>
 	size_t Image<PixelType>::SaveToBmp32(const std::string& FilePath, bool InverseLineOrder) const
 	{
 		std::ofstream ofs(FilePath, std::ios::binary);
-		ofs.exceptions(std::ios::badbit | std::ios::failbit);
-		return SaveToBmp32(ofs, InverseLineOrder);
+		try
+		{
+			ofs.exceptions(std::ios::badbit | std::ios::failbit);
+			return SaveToBmp32(ofs, InverseLineOrder);
+		}
+		catch (const std::ios::failure&)
+		{
+			std::stringstream sserr;
+			sserr << "Could not open `" << FilePath << "` for write.";
+			throw ExceptionType(sserr.str());
+		}
 	}
 
 	template<typename PixelType>
@@ -1269,9 +1289,9 @@ namespace UniformBitmap
 	static size_t WriteFileFromMemory(const std::string& FilePath, const FileInMemoryType& fm)
 	{
 		auto ofs = std::ofstream(FilePath, std::ios::binary);
-		ofs.exceptions(std::ios::badbit | std::ios::failbit);
 		try
 		{
+			ofs.exceptions(std::ios::badbit | std::ios::failbit);
 			return WriteData(ofs, fm);
 		}
 		catch (const std::ios::failure&)
