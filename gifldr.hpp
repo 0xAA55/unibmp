@@ -131,7 +131,7 @@ namespace CPPGIF
 		GraphicControlExtensionType(std::istream& is);
 	};
 
-	struct PlainTextExtension
+	struct PlainTextExtensionType
 	{
 		uint8_t BlockSize = 0x0C;
 		uint16_t TextGridLeftPosition = 0;
@@ -144,7 +144,7 @@ namespace CPPGIF
 		uint8_t TextBackgroundColorIndex = 0;
 		DataSubBlock PlainTextData;
 
-		PlainTextExtension(std::istream& is);
+		PlainTextExtensionType(std::istream& is);
 	};
 
 	struct CommentExtensionType
@@ -167,18 +167,18 @@ namespace CPPGIF
 	class GIFLoader
 	{
 	public:
-
-
-	protected:
 		std::string Version; // gif87a / gif89a
 
 		// 逻辑屏幕描述符
 		LogicalScreenDescriptorType LogicalScreenDescriptor;
 
-		std::shared_ptr<GraphicControlExtensionType> GraphicControlExtension;
+		// 绘图控制描述符
+		std::vector<GraphicControlExtensionType> GraphicControlExtension;
 
-		std::shared_ptr<CommentExtensionType> CommentExtension;
-		std::shared_ptr<ApplicationExtensionType> ApplicationExtension;
+		std::vector<PlainTextExtensionType> PlainTextExtension;
+		bool ReadToTrailer = false; // 是否一直读到文件结束符
+		std::vector<CommentExtensionType> CommentExtension;
+		std::vector<ApplicationExtensionType> ApplicationExtension;
 
 	public:
 		GIFLoader(const std::string& LoadFrom);
