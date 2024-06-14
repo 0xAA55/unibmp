@@ -279,26 +279,30 @@ namespace CPPGIF
 			}
 		};
 
+		auto CodeTable = CodeTableType(LZW_MinCodeSize);
+
 		// 先把 LZW 的字节序列以动态位数长度的编码转变为定长的编码。
 		auto LZWCodeUnpacked = LZWCodeUnpackedVectorType();
-		auto FirstCodeSize = LZW_MinCodeSize + 1;
-		auto MaxCodeSize = 12;
+		const auto FirstCodeSize = LZW_MinCodeSize + 1;
+		constexpr auto MaxCodeSize = 12;
+		constexpr auto MaxUnpackedBits = sizeof(LZWCodeUnpackedType) * 8;
 		auto CurCode = LZWCodeUnpackedType(0);
 		auto CurCodeSize = FirstCodeSize;
-		auto CurCodeMaxVal = (1 << CurCodeSize) - 1;
+		auto CurCodeMaxVal = (1 << (CurCodeSize)) - 1;
 
 		auto CurCodeBitsNeeded = CurCodeSize;
 		for (size_t i = 0; i < Compressed.size();)
 		{
 			auto CurByte = LZWCodeUnpackedType(Compressed[i]);
 			auto CurByteRemains = 8;
-			while(CurByteRemains)
+			do
 			{
 				auto BitsToGet = CurCodeBitsNeeded;
 				if (BitsToGet > CurByteRemains) BitsToGet = CurByteRemains;
 				auto BitsMask = (1 << BitsToGet) - 1;
-				CurCode <<= BitsToGet;
-				CurCode |= (CurByte & BitsMask);
+				// 新获取到的 bits 放到 CurCode 的高位，由高处向低处生长
+				CurCode >>= BitsToGet;
+				CurCode |= (CurByte & BitsMask) << (MaxUnpackedBits - BitsToGet);
 				CurByte >>= BitsToGet;
 				CurByteRemains -= BitsToGet;
 				CurCodeBitsNeeded -= BitsToGet;
@@ -309,24 +313,27 @@ namespace CPPGIF
 				}
 				if (!CurCodeBitsNeeded)
 				{ // 全部位数获取完
+					CurCode >>= MaxUnpackedBits - CurCodeSize; // 将堆积到高位的数值移回本来的位置
 					LZWCodeUnpacked.push_back(CurCode);
 					if (CurCode == CurCodeMaxVal)
 					{
 						CurCodeSize++;
-						if (CurCodeSize > MaxCodeSize) CurCodeSize = FirstCodeSize;
+						if (CurCodeSize > MaxCodeSize) 
+						{
+							CurCodeSize = FirstCodeSize;
+						}
 						CurCodeMaxVal = (1 << CurCodeSize) - 1;
 					}
 					CurCodeBitsNeeded = CurCodeSize;
 					CurCode = 0;
 				}
-			}
+			} while (CurByteRemains);
 		}
 		if (CurCodeBitsNeeded)
 		{
 			throw MoreDataNeeded("GIF: LZW decompressing: expected more bytes/bits to read, got end of data.");
 		}
 
-		auto CodeTable = CodeTableType(LZW_MinCodeSize);
 
 
 
