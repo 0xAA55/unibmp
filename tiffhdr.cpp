@@ -457,7 +457,6 @@ namespace UniformBitmap
 		size_t ReadRaw(T& r)
 		{
 			ifs.read(reinterpret_cast<char*>(&r), sizeof r);
-			RB += sizeof r;
 			return (sizeof r);
 		}
 
