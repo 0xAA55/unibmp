@@ -1174,7 +1174,7 @@ namespace UniformBitmap
 		{
 			if (Verbose)
 			{
-				std::cout << "No exif data for `RotateByExifData()`.\n";
+				std::cout << "[INFO] No exif data for `RotateByExifData()`.\n";
 			}
 			return;
 		}
