@@ -518,7 +518,13 @@ namespace UniformBitmap
 
 			if (Length > 4)
 			{
-
+				uint32_t Offset;
+				auto ret = Read(Offset);
+				auto CurPos = ifs.tellg();
+				ifs.seekg(Offset, std::ios::beg);
+				ifs.read(reinterpret_cast<char*>(&s[0]), Length);
+				ifs.seekg(CurPos, std::ios::beg);
+				return ret;
 			}
 			else
 			{
@@ -526,6 +532,19 @@ namespace UniformBitmap
 				RB += Length;
 			}
 			return Length;
+		}
+
+		size_t ReadComponents(std::string& s)
+		{
+			uint32_t Offset;
+			auto ret = Read(Offset);
+			auto CurPos = ifs.tellg();
+			auto CurRB = RB;
+			ifs.seekg(Offset, std::ios::beg);
+			ReadSZ(s);
+			ifs.seekg(CurPos, std::ios::beg);
+			RB = CurRB;
+			return ret;
 		}
 
 		std::shared_ptr<IFDFieldBase> ReadIFDField(IFDFieldFormat Format, uint32_t NumComponents)
@@ -551,7 +570,7 @@ namespace UniformBitmap
 					auto ret = std::make_shared<IFDFieldString>(Format);
 					if (!NumComponents || NumComponents == 1)
 					{
-						ReadSZ(ret->Components);
+						ReadComponents(ret->Components);
 					}
 					else
 					{
