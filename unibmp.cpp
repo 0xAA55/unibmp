@@ -60,6 +60,41 @@ namespace UniformBitmap
 
 #pragma pack(pop)
 
+	static bool IsLikelyBmp(const void* Memory, size_t Size)
+	{
+		constexpr size_t HeaderSize = sizeof(BitmapFileHeader) + sizeof(BitmapInfoHeader);
+		if (Size < HeaderSize) return false;
+
+		const BitmapFileHeader& BMFH = *reinterpret_cast<const BitmapFileHeader*>(Memory);
+		const BitmapInfoHeader& BMIF = *reinterpret_cast<const BitmapInfoHeader*>(&(&BMFH)[1]);
+
+		if (BMFH.bfType == 0x4D42 &&
+			BMFH.bfSize > HeaderSize &&
+			BMFH.bfReserved1 == 0 &&
+			BMFH.bfReserved2 == 0 &&
+			BMIF.biSize >= sizeof(BitmapInfoHeader))
+			return true;
+		else
+			return false;
+	}
+
+	static bool IsLikelyBmp(const std::string& FilePath)
+	{
+		constexpr size_t HeaderSize = sizeof(BitmapFileHeader) + sizeof(BitmapInfoHeader);
+		char buf[HeaderSize];
+		try
+		{
+			auto ifs = std::ifstream(FilePath, std::ios::binary);
+			ifs.exceptions(std::ios::failbit | std::ios::badbit);
+			ifs.read(buf, sizeof buf);
+			return IsLikelyBmp(buf, sizeof buf);
+		}
+		catch (const std::ios::failure&)
+		{ // 不能读的情况认作路径不是 BMP 文件路径
+			return false;
+		}
+	}
+
 	template<typename SrcI, typename DstI> requires std::is_integral_v<SrcI>&& std::is_floating_point_v<DstI>
 	DstI NormalizedIntegralToFloat(SrcI si)
 	{
@@ -406,9 +441,9 @@ namespace UniformBitmap
 	template<typename PixelType>
 	void Image<PixelType>::LoadBmp(const std::string& FilePath)
 	{
-		std::ifstream ifs(FilePath, std::ios::binary);
 		try
 		{
+			std::ifstream ifs(FilePath, std::ios::binary);
 			ifs.exceptions(std::ios::badbit | std::ios::failbit);
 			return LoadBmp(ifs);
 		}
@@ -445,11 +480,18 @@ namespace UniformBitmap
 	Image<PixelType>::Image(const std::string& FilePath) :
 		IsHDR(false)
 	{
-		try
+		if (IsLikelyBmp(FilePath))
 		{
-			LoadBmp(FilePath);
+			try
+			{
+				LoadBmp(FilePath);
+			}
+			catch (const ReadBmpFileError&)
+			{
+				LoadNonBmp(FilePath);
+			}
 		}
-		catch (const ReadBmpFileError&)
+		else
 		{
 			LoadNonBmp(FilePath);
 		}
@@ -459,11 +501,18 @@ namespace UniformBitmap
 	Image<PixelType>::Image(const void* FileInMemory, size_t FileSize) :
 		IsHDR(false)
 	{
-		try
+		if (IsLikelyBmp(FileInMemory, FileSize))
 		{
-			LoadBmp(FileInMemory, FileSize);
+			try
+			{
+				LoadBmp(FileInMemory, FileSize);
+			}
+			catch (const ReadBmpFileError&)
+			{
+				LoadNonBmp(FileInMemory, FileSize);
+			}
 		}
-		catch (const ReadBmpFileError&)
+		else
 		{
 			LoadNonBmp(FileInMemory, FileSize);
 		}
