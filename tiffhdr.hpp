@@ -132,7 +132,7 @@ namespace UniformBitmap
 		virtual std::string ToString() const = 0;
 	};
 
-	using IFDData = std::map<uint16_t, std::shared_ptr<IFDFieldBase>>;
+	using IFDData = std::list<std::pair<uint16_t, std::shared_ptr<IFDFieldBase>>>;
 
 	template<typename T>
 	class IFDFieldType : public IFDFieldBase

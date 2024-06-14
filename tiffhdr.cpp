@@ -932,13 +932,14 @@ namespace UniformBitmap
 
 	void IFD::WriteField(uint16_t Tag, std::shared_ptr<IFDFieldBase> field)
 	{
-		Fields[Tag] = field;
+		// Fields[Tag] = field;
+		Fields.push_back({Tag, field});
 	}
 
 	void IFD::WriteField(const std::string& TagString, std::shared_ptr<IFDFieldBase> field)
 	try
 	{
-		Fields[IFDTagFromStr.at(TagString)] = field;
+		WriteField(IFDTagFromStr.at(TagString), field);
 	}
 	catch (const std::out_of_range&)
 	{
@@ -1263,17 +1264,27 @@ namespace UniformBitmap
 
 		void ParseSubIFD(uint16_t TagNumber, IFD& Ifd, std::shared_ptr<IFD>& ReadTo)
 		{
-			if (Ifd.Fields.contains(TagNumber))
+			bool found;
+			do
 			{
-				if (ReadTo) throw BadDataError("Duplicated IFD tag.");
-				auto CurOffset = ifs.tellg();
+				found = false;
+				for (auto i = Ifd.Fields.begin(); i != Ifd.Fields.end(); i++)
+				{
+					if (i->first == TagNumber)
+					{
+						if (ReadTo) throw BadDataError("Duplicated IFD tag.");
+						auto CurOffset = ifs.tellg();
 
-				GetToOffsetIndicatedByIFDField(*Ifd.Fields.at(TagNumber));
-				ReadTo = std::make_shared<IFD>(ParseIFD());
-				Ifd.Fields.erase(TagNumber); // 已经读过后，将其移除
+						GetToOffsetIndicatedByIFDField(*i->second);
+						ReadTo = std::make_shared<IFD>(ParseIFD());
 
-				ifs.seekg(CurOffset);
-			}
+						ifs.seekg(CurOffset);
+						found = true;
+						Ifd.Fields.erase(i);
+						break;
+					}
+				}
+			} while (found);
 		}
 
 		IFD ParseIFD()
@@ -1293,10 +1304,12 @@ namespace UniformBitmap
 				uint32_t NumComponents;
 				Read(NumComponents);
 
-				if (ret.Fields.try_emplace(TagType, ReadIFDField(IFDFieldFormat(TagVarType), NumComponents)).second == false)
-				{
-					throw BadDataError("Duplicated IFD tag.");
-				}
+				//if (ret.Fields.try_emplace(TagType, ReadIFDField(IFDFieldFormat(TagVarType), NumComponents)).second == false)
+				//{
+				//	throw BadDataError("Duplicated IFD tag.");
+				//}
+
+				ret.Fields.push_back({ TagType, ReadIFDField(IFDFieldFormat(TagVarType), NumComponents) });
 			}
 			ParseSubIFD(0x8769, ret, ret.ExifSubIFD);
 			ParseSubIFD(0x8825, ret, ret.GPSSubIFD);
@@ -1563,12 +1576,26 @@ namespace UniformBitmap
 			BaseOffset(BaseOffset)
 		{
 			IFD IfdToAdd = ifd;
-			for (auto PointerTags : IFDPointerTags)
+			bool found;
+			do
 			{
-				// 删除先前读取的任何包含指针偏移量的字段
-				// 因为指针偏移量在现在都是无效的了
-				IfdToAdd.Fields.erase(PointerTags);
-			}
+				found = false;
+				for (auto i = IfdToAdd.Fields.begin(); i != IfdToAdd.Fields.end(); i++)
+				{
+					// 删除先前读取的任何包含指针偏移量的字段
+					// 因为指针偏移量在现在都是无效的了
+					if (IFDPointerTags.contains(i->first))
+					{
+						IfdToAdd.Fields.erase(i);
+						found = true;
+						break;
+					}
+				}
+			} while (found);
+			// for (auto PointerTags : IFDPointerTags)
+			// {
+			// 	IfdToAdd.Fields.erase(PointerTags);
+			// }
 
 			// 根据子表需要算出总的表项数，来计算偏移量
 			FieldsCountTotal = IfdToAdd.Fields.size();
