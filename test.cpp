@@ -31,7 +31,6 @@ int main(int argc, char** argv)
 	}
 
 	Img.SaveToPNG("test.png");
-
 	return 0;
 }
 
