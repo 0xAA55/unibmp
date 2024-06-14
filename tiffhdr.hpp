@@ -192,7 +192,8 @@ namespace UniformBitmap
 		const std::string& Software = "",
 		const TIFFDateTime* DateTime = nullptr,
 		const std::string& CopyRight = "",
-		std::shared_ptr<IFD> SubIFD = nullptr
+		std::shared_ptr<IFD> ExifSubIFD = nullptr,
+		std::shared_ptr<IFD> GPSSubIFD = nullptr
 	);
 
 	class ReadDataError : public std::ios::failure
