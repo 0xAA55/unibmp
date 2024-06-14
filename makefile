@@ -29,5 +29,5 @@ test:
 	./ubtest
 
 clean:
-	rm -f ubtest *.a *.o
+	rm -f ubtest *.a *.o *.so
 
