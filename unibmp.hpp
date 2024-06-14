@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <cstdint>
 #include <vector>
@@ -157,44 +157,44 @@ namespace UniformBitmap
 		using FloodFillEdgeType = std::unordered_set<PXR, PXRHash>;
 
 	protected:
-		// Î»Í¼ĞÅÏ¢
+		// ä½å›¾ä¿¡æ¯
 		uint32_t Width;
 		uint32_t Height;
 
 		bool IsHDR;
 
-		// Î»Í¼Êı¾İ
+		// ä½å›¾æ•°æ®
 		std::vector<PixelType> BitmapData;
 
-		// Î»Í¼Êı¾İµÄĞĞÖ¸Õë
+		// ä½å›¾æ•°æ®çš„è¡ŒæŒ‡é’ˆ
 		std::vector<PixelType*> RowPointers;
 
-		// ´´½¨¿ÕµÄ»º³åÇø
+		// åˆ›å»ºç©ºçš„ç¼“å†²åŒº
 		void CreateBuffer(uint32_t w, uint32_t h);
 
-		// ´ÓÍ¼ÏñÎÄ¼ş¼ÓÔØ Bmp ¸ñÊ½Í¼Æ¬
+		// ä»å›¾åƒæ–‡ä»¶åŠ è½½ Bmp æ ¼å¼å›¾ç‰‡
 		void LoadBmp(const std::string& FilePath);
 
-		// ´ÓÊäÈëÁ÷¼ÓÔØ Bmp
+		// ä»è¾“å…¥æµåŠ è½½ Bmp
 		void LoadBmp(std::istream& ifs);
 
-		// ´ÓÄÚ´æ¼ÓÔØ Bmp
+		// ä»å†…å­˜åŠ è½½ Bmp
 		void LoadBmp(const void* FileInMemory, size_t FileSize);
 
-		// ´ÓÍ¼ÏñÎÄ¼ş¼ÓÔØ·Ç Bmp ¸ñÊ½Í¼Æ¬
+		// ä»å›¾åƒæ–‡ä»¶åŠ è½½é Bmp æ ¼å¼å›¾ç‰‡
 		void LoadNonBmp(const std::string& FilePath);
 
-		// ´ÓÊäÈëÁ÷¼ÓÔØ·Ç Bmp ¸ñÊ½Í¼Æ¬
+		// ä»è¾“å…¥æµåŠ è½½é Bmp æ ¼å¼å›¾ç‰‡
 		void LoadNonBmp(std::istream& ifs);
 
-		// ´ÓÄÚ´æ¼ÓÔØ·Ç Bmp ¸ñÊ½Í¼Æ¬
+		// ä»å†…å­˜åŠ è½½é Bmp æ ¼å¼å›¾ç‰‡
 		void LoadNonBmp(const void* FileInMemory, size_t FileSize);
 
-		// ´æ´¢ Bmp µ½ÎÄ¼şÁ÷
+		// å­˜å‚¨ Bmp åˆ°æ–‡ä»¶æµ
 		size_t SaveToBmp24(std::ostream& ofs, bool InverseLineOrder) const;
 		size_t SaveToBmp32(std::ostream& ofs, bool InverseLineOrder) const;
 
-		// ´æ´¢ Bmp µ½×Ö½ÚÊı×é
+		// å­˜å‚¨ Bmp åˆ°å­—èŠ‚æ•°ç»„
 		size_t SaveToBmp24(FileInMemoryType& mf, bool InverseLineOrder) const;
 		size_t SaveToBmp32(FileInMemoryType& mf, bool InverseLineOrder) const;
 
@@ -214,11 +214,11 @@ namespace UniformBitmap
 		inline bool IsOutOfBound(const Point& pt) const { return pt.x >= Width || pt.y >= Height; }
 		FloodFillEdgeType FloodFill(uint32_t x, uint32_t y, const PixelType& Color, bool RetrieveEdge = false, bool(*IsSamePixel)(const PixelType& a, const PixelType& b) = PixelType::IsSame, void (*SetPixel)(PixelType& dst, const PixelType& src) = PixelType::SetPixel);
 
-		// Î»Í¼DPIĞÅÏ¢
+		// ä½å›¾DPIä¿¡æ¯
 		uint32_t XPelsPerMeter = 3000;
 		uint32_t YPelsPerMeter = 3000;
 
-		// TIFF Í·²¿ĞÅÏ¢
+		// TIFF å¤´éƒ¨ä¿¡æ¯
 		std::shared_ptr<TIFFHeader> ExifData;
 
 		Image(const std::string& FilePath);
@@ -304,12 +304,12 @@ namespace UniformBitmap
 	extern template Image_RGBA32F::Image(const Image_RGBA16& from);
 	extern template Image_RGBA32F::Image(const Image_RGBA32& from);
 
-	// ´Ó Jpeg ÎÄ¼şÀï²éÕÒ Exif ĞÅÏ¢¿é£¬¸üĞÂµ½ ExifData ³ÉÔ±Àï
+	// ä» Jpeg æ–‡ä»¶é‡ŒæŸ¥æ‰¾ Exif ä¿¡æ¯å—ï¼Œæ›´æ–°åˆ° ExifData æˆå‘˜é‡Œ
 	std::shared_ptr<TIFFHeader> FindExifDataFromJpeg(FileInMemoryType& JpegFile);
 	std::shared_ptr<TIFFHeader> FindExifDataFromJpeg(const std::string& FilePath);
 	std::shared_ptr<TIFFHeader> FindExifDataFromJpeg(std::istream& ifs);
 	std::shared_ptr<TIFFHeader> FindExifDataFromJpeg(const void* FileInMemory, size_t FileSize);
 
-	// ²åÈëExifData µ½ÒÑ¾­Éú³É³öÀ´µÄ JPEG ÎÄ¼ş×Ö½ÚÀï
+	// æ’å…¥ExifData åˆ°å·²ç»ç”Ÿæˆå‡ºæ¥çš„ JPEG æ–‡ä»¶å­—èŠ‚é‡Œ
 	void ModifyJpegToInsertExif(FileInMemoryType& JpegFile, const TIFFHeader& ExifData);
 }

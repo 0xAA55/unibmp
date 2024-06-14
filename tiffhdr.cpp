@@ -1,4 +1,4 @@
-#include "tiffhdr.hpp"
+﻿#include "tiffhdr.hpp"
 
 #include <sstream>
 #include <algorithm>

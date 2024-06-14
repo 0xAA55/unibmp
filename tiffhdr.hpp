@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <ctime>
 #include <cstdint>
 #include <string>
@@ -14,7 +14,7 @@
 
 namespace UniformBitmap
 {
-	// ²Î¿¼×ÊÁÏ
+	// å‚è€ƒèµ„æ–™
 	// https://exiftool.org/TagNames/EXIF.html
 	// http://www.fifi.org/doc/jhead/exif-e.html
 	// https://www.media.mit.edu/pia/Research/deepview/exif.html
@@ -209,7 +209,7 @@ namespace UniformBitmap
 
 	using TIFFHeader = std::vector<IFD>;
 
-	// º¯Êı£º½¨Á¢Ä¬ÈÏµÄ TIFF Í·
+	// å‡½æ•°ï¼šå»ºç«‹é»˜è®¤çš„ TIFF å¤´
 	TIFFHeader ConstuctTIFFHeader
 	(
 		const std::string& ImageDescription = "",
@@ -238,21 +238,21 @@ namespace UniformBitmap
 		BadDataError(const std::string& what) noexcept;
 	};
 
-	// º¯Êı£º½âÎö TIFF Í·
-	// ²ÎÊı£º
-	//   ifs£ºÊäÈëÎÄ¼şÁ÷
-	//   - »òÕß
-	//   TIFFData£ºÒ»¸öÖ¸ÕëÖ¸ÏòÄÚ´æÖĞµÄÍ¼Æ¬ÎÄ¼şÖĞµÄ TIFF Êı¾İ²¿·Ö£¨¼´¿ªÍ·ÊÇ II »òÕß MM µÄÊı¾İ£©
-	//   TIFFDataSize£ºTIFF µÄÊı¾İµÄ´óĞ¡£¬ÕâÀïÊµ¼ÊÓÃÓÚÏŞÖÆ¶ÁÈ¡µÄ·¶Î§¡£
-	//     Õâ¸ö²ÎÊıÍ¬Ê±ÓÃÓÚ½ÓÊÕÊµ¼Ê¶ÁÈ¡µÄ TIFF Êı¾İµÄ´óĞ¡
-	// ·µ»ØÖµ£º¾­¹ı³õ²½½âÎöµÄ½á¹¹»¯µÄ TIFF Êı¾İ
+	// å‡½æ•°ï¼šè§£æ TIFF å¤´
+	// å‚æ•°ï¼š
+	//   ifsï¼šè¾“å…¥æ–‡ä»¶æµ
+	//   - æˆ–è€…
+	//   TIFFDataï¼šä¸€ä¸ªæŒ‡é’ˆæŒ‡å‘å†…å­˜ä¸­çš„å›¾ç‰‡æ–‡ä»¶ä¸­çš„ TIFF æ•°æ®éƒ¨åˆ†ï¼ˆå³å¼€å¤´æ˜¯ II æˆ–è€… MM çš„æ•°æ®ï¼‰
+	//   TIFFDataSizeï¼šTIFF çš„æ•°æ®çš„å¤§å°ï¼Œè¿™é‡Œå®é™…ç”¨äºé™åˆ¶è¯»å–çš„èŒƒå›´ã€‚
+	//     è¿™ä¸ªå‚æ•°åŒæ—¶ç”¨äºæ¥æ”¶å®é™…è¯»å–çš„ TIFF æ•°æ®çš„å¤§å°
+	// è¿”å›å€¼ï¼šç»è¿‡åˆæ­¥è§£æçš„ç»“æ„åŒ–çš„ TIFF æ•°æ®
 	TIFFHeader ParseTIFFHeader(std::istream& ifs);
 	TIFFHeader ParseTIFFHeader(const uint8_t* TIFFData, size_t TIFFDataSize);
 
 	std::string TIFFHeaderToString(const TIFFHeader& TIFFHdr, int indent = 2, int cur_indent = 0);
 
-	// º¯Êı£º½«½âÎöºÃµÄ TIFF Í·ÔÙ×ö³É×Ö½ÚÊı×é
-	// ²ÎÊı£º
-	//   TIFFHdr£ºÓÉ ParseTIFFHeader ·µ»ØµÄ½âÎöºÃµÄ TIFF Í·¡£
+	// å‡½æ•°ï¼šå°†è§£æå¥½çš„ TIFF å¤´å†åšæˆå­—èŠ‚æ•°ç»„
+	// å‚æ•°ï¼š
+	//   TIFFHdrï¼šç”± ParseTIFFHeader è¿”å›çš„è§£æå¥½çš„ TIFF å¤´ã€‚
 	std::vector<uint8_t> StoreTIFFHeader(const TIFFHeader& TIFFHdr);
 }

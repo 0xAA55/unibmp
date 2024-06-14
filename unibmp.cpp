@@ -1,4 +1,4 @@
-#include "unibmp.hpp"
+﻿#include "unibmp.hpp"
 
 #include <fstream>
 #include <sstream>
