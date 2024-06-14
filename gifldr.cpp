@@ -338,51 +338,53 @@ namespace CPPGIF
 					}
 					if (CurCode == CodeTable.ClearCode || ExpectCC)
 					{
+						ExpectCC = false;
 						CodeTable.InitCodeTable();
 						CurCodeSize = FirstCodeSize;
 						CurCodeMaxVal = (1 << CurCodeSize) - 1;
 						DoFirstStep = true;
-						ExpectCC = false;
-					}
-					if (CurCode == CodeTable.EOICode)
-					{
-						EOIReached = true;
-						break;
-					}
-					else if (DoFirstStep)
-					{
-						DoFirstStep = false;
-						auto& ToOutput = CodeTable[CurCode];
-						Output.insert(Output.end(), ToOutput.cbegin(), ToOutput.cend());
-					}
-					else if (CurCode < CodeTable.size())
-					{
-						auto& ToOutput = CodeTable[CurCode];
-						Output.insert(Output.end(), ToOutput.cbegin(), ToOutput.cend());
-						auto K = ToOutput[0];
-						CodeTable.push_back(CodeTable[LastCode]);
-						CodeTable.back().push_back(K);
 					}
 					else
 					{
-						DataSubBlock CodesToAdd = CodeTable[LastCode];
-						auto K = CodesToAdd.front();
-						CodesToAdd.push_back(K);
-						Output.insert(Output.end(), CodesToAdd.cbegin(), CodesToAdd.cend());
-						CodeTable.push_back(CodesToAdd);
+						if (CurCode == CodeTable.EOICode)
+						{
+							EOIReached = true;
+							break;
+						}
+						else if (DoFirstStep)
+						{
+							DoFirstStep = false;
+							auto& ToOutput = CodeTable[CurCode];
+							Output.insert(Output.end(), ToOutput.cbegin(), ToOutput.cend());
+						}
+						else if (CurCode < CodeTable.size())
+						{
+							auto& ToOutput = CodeTable[CurCode];
+							Output.insert(Output.end(), ToOutput.cbegin(), ToOutput.cend());
+							auto K = ToOutput[0];
+							CodeTable.push_back(CodeTable[LastCode]);
+							CodeTable.back().push_back(K);
+						}
+						else
+						{
+							DataSubBlock CodesToAdd = CodeTable[LastCode];
+							auto K = CodesToAdd.front();
+							CodesToAdd.push_back(K);
+							Output.insert(Output.end(), CodesToAdd.cbegin(), CodesToAdd.cend());
+							CodeTable.push_back(CodesToAdd);
+						}
+						if (CodeTable.size() - 1 >= CurCodeMaxVal)
+						{
+							CurCodeSize++;
+							if (CurCodeSize > MaxCodeSize)
+							{
+								ExpectCC = true;
+								CurCodeSize = FirstCodeSize;
+							}
+							CurCodeMaxVal = (1 << CurCodeSize) - 1;
+						}
 					}
 
-					if (CodeTable.size() - 1 == CurCodeMaxVal)
-					{
-						CurCodeSize++;
-						if (CurCodeSize > MaxCodeSize) 
-						{
-							// CodeTable.InitCodeTable();
-							ExpectCC = true;
-							CurCodeSize = FirstCodeSize;
-						}
-						CurCodeMaxVal = (1 << CurCodeSize) - 1;
-					}
 					CurCodeBitsNeeded = CurCodeSize;
 					LastCode = CurCode;
 					CurCode = 0;
