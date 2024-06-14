@@ -297,10 +297,10 @@ namespace CPPGIF
 		{
 		protected:
 			DataSubBlock Bytes;
-			int LastByteUsedBits = 0;
+			uint8_t LastByteUsedBits = 0;
 
 		public:
-			int CurCodeSize;
+			uint8_t CurCodeSize;
 
 			CodeStream() = delete;
 			CodeStream(int InitCodeSize) :
@@ -309,10 +309,17 @@ namespace CPPGIF
 				Bytes.push_back(0);
 			}
 
-			const DataSubBlock& GetEncodedBytes(int& LastByteUsedBits) const
+			const DataSubBlock& GetEncodedBytes(uint8_t& LastByteUsedBits) const
 			{
 				LastByteUsedBits = this->LastByteUsedBits;
 				return Bytes;
+			}
+
+			DataSubBlock GetEncodedBytes() const
+			{
+				DataSubBlock ret = Bytes;
+				if (!LastByteUsedBits) ret.pop_back();
+				return ret;
 			}
 
 			void Encode(uint16_t Code)
@@ -337,13 +344,41 @@ namespace CPPGIF
 					}
 				}
 			}
+
+			uint8_t& IncreaseCodeSize()
+			{
+				return ++CurCodeSize;
+			}
 		};
 
 		using Hasher_DataSubBlock = std::hash<DataSubBlock>;
+		using CodeTableMapType = std::unordered_map<DataSubBlock /*此处思路不对*/, uint16_t, Hasher_DataSubBlock>;
 
-		struct CodaTable : public std::unordered_map<DataSubBlock, uint16_t, Hasher_DataSubBlock>
+		struct CodaTable : public CodeTableMapType
 		{
+			uint16_t ClearCode;
+			uint16_t EOICode;
+			uint8_t CodeSize;
 
+			void InitCodeTable()
+			{
+				ClearCode = 1 << CodeSize;
+				EOICode = ClearCode + 1;
+
+				clear();
+				for (int i = 0; i <= EOICode; i++)
+				{
+					operator[]({/*此处需要编码*/uint8_t(i)}) = i;
+				}
+			}
+
+			CodaTable(uint8_t CodeSize) :
+				CodeTableMapType(),
+				CodeSize(CodeSize)
+			{
+				ClearCode = uint16_t(1) << CodeSize;
+				EOICode = ClearCode + 1;
+			}
 		};
 
 
