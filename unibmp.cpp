@@ -880,24 +880,25 @@ namespace UniformBitmap
 	}
 
 	template<typename PixelType>
-	Image<PixelType>::Image(uint32_t Width, uint32_t Height, uint32_t XPelsPerMeter, uint32_t YPelsPerMeter) :
-		IsHDR(std::is_floating_point_v<ChannelType>),
-		XPelsPerMeter(XPelsPerMeter), YPelsPerMeter(YPelsPerMeter)
+	Image<PixelType>::Image(uint32_t Width, uint32_t Height) :
+		IsHDR(std::is_floating_point_v<ChannelType>)
 	{
 		CreateBuffer(Width, Height);
 	}
 
 	template<typename PixelType>
 	Image<PixelType>::Image(uint32_t Width, uint32_t Height, const PixelType& DefaultColor) :
-		Image(Width, Height, 3000, 3000)
+		Image(Width, Height)
 	{
 		FillRect(0, 0, Width - 1, Height - 1, DefaultColor);
 	}
 
 	template<typename PixelType>
-		Image<PixelType>::Image(const Image& from) :
-		Image(from.GetWidth(), from.GetHeight(), from.XPelsPerMeter, from.YPelsPerMeter)
+	Image<PixelType>::Image(const Image& from) :
+		Image(from.GetWidth(), from.GetHeight())
 	{
+		XPelsPerMeter = from.XPelsPerMeter;
+		YPelsPerMeter = from.YPelsPerMeter;
 		IsHDR = false;
 #pragma omp parallel for
 		for (ptrdiff_t y = 0; y < ptrdiff_t(Height); y++)
@@ -915,8 +916,10 @@ namespace UniformBitmap
 	template<typename PixelType>
 	template<typename FromType> requires (!std::is_same_v<PixelType, FromType>)
 	Image<PixelType>::Image(const Image<FromType>& from) :
-		Image(from.GetWidth(), from.GetHeight(), from.XPelsPerMeter, from.YPelsPerMeter)
+		Image(from.GetWidth(), from.GetHeight())
 	{
+		XPelsPerMeter = from.XPelsPerMeter;
+		YPelsPerMeter = from.YPelsPerMeter;
 		IsHDR = false;
 #pragma omp parallel for
 		for (ptrdiff_t y = 0; y < ptrdiff_t(Height); y++)
