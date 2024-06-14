@@ -247,12 +247,34 @@ namespace CPPGIF
 	DataSubBlock ImageDescriptorType::UncompressLZW(const DataSubBlock& Compressed, uint8_t LZW_MinCodeSize)
 	{
 		auto ret = DataSubBlock();
+		using LZWCodeIndices = std::vector<uint16_t>;
 
-		auto ClearCode = uint8_t(1 << LZW_MinCodeSize);
-		auto EOI = ClearCode + 1;
+		// https://giflib.sourceforge.net/whatsinagif/lzw_image_data.html
 
-		using CodeTableType = std::vector<DataSubBlock>;
-		auto CodeTable = CodeTableType();
+		struct CodeTableType : public std::vector<LZWCodeIndices>
+		{
+		public:
+			void InitCodeTable(uint8_t LZW_MinCodeSize)
+			{
+				clear();
+
+				auto ClearCode = 1 << LZW_MinCodeSize;
+				auto EOI = ClearCode + 1;
+				
+				for (int i = 0; i <= EOI; i++)
+				{
+					push_back(LZWCodeIndices());
+					back().push_back(i);
+				}
+			}
+
+			CodeTableType(uint8_t LZW_MinCodeSize) : std::vector<LZWCodeIndices>()
+			{
+				InitCodeTable(LZW_MinCodeSize);
+			}
+		};
+
+		auto CodeTable = CodeTableType(LZW_MinCodeSize);
 
 
 
