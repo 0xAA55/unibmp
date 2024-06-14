@@ -216,6 +216,9 @@ namespace UniformBitmap
 
 		void BGR2RGB();
 
+		void FillRect(int l, int t, int r, int b, const PixelType& Color);
+		void Paint(int x, int y, int w, int h, const Image& Src, int src_x, int src_y);
+
 		size_t SaveToBmp24(const std::string& FilePath, bool InverseLineOrder = false) const;
 		size_t SaveToBmp32(const std::string& FilePath, bool InverseLineOrder = false) const;
 
