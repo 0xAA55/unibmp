@@ -293,7 +293,26 @@ namespace CPPGIF
 	{
 		// https://giflib.sourceforge.net/whatsinagif/lzw_image_data.html
 
-		struct CodeStream 
+		// 编码流，以及其哈希类
+		using CodeType = uint16_t;
+		using CodeStream = std::vector<CodeType>;
+		struct Hasher_CodeStream
+		{
+			const int Shifts = 4;
+			size_t operator() (const CodeStream& cs) const
+			{
+				size_t ret = 0;
+				for (auto& c : cs)
+				{
+					ret = (ret << Shifts) | (ret >> (8 * sizeof(ret) - Shifts));
+					ret += c;
+				}
+				return ret;
+			}
+		};
+
+		// 把编码流转换为二进制串的类
+		struct CodeStreamEncoder
 		{
 		protected:
 			DataSubBlock Bytes;
@@ -302,9 +321,8 @@ namespace CPPGIF
 		public:
 			uint8_t CurCodeSize;
 
-			CodeStream() = delete;
-			CodeStream(int InitCodeSize) :
-				CurCodeSize(InitCodeSize)
+			CodeStreamEncoder() = delete;
+			CodeStreamEncoder(int InitCodeSize) : CurCodeSize(InitCodeSize)
 			{
 				Bytes.push_back(0);
 			}
@@ -322,7 +340,7 @@ namespace CPPGIF
 				return ret;
 			}
 
-			void Encode(uint16_t Code)
+			void Encode(CodeType Code)
 			{
 				int BitsToEncode = CurCodeSize;
 				while (BitsToEncode)
@@ -345,19 +363,23 @@ namespace CPPGIF
 				}
 			}
 
+			void Encode(const CodeStream& cs)
+			{
+				for (auto& c : cs) Encode(c);
+			}
+
 			uint8_t& IncreaseCodeSize()
 			{
 				return ++CurCodeSize;
 			}
 		};
 
-		using Hasher_DataSubBlock = std::hash<DataSubBlock>;
-		using CodeTableMapType = std::unordered_map<DataSubBlock /*此处思路不对*/, uint16_t, Hasher_DataSubBlock>;
+		using CodeTableMapType = std::unordered_map<CodeStream, CodeType, Hasher_CodeStream>;
 
 		struct CodaTable : public CodeTableMapType
 		{
-			uint16_t ClearCode;
-			uint16_t EOICode;
+			CodeType ClearCode;
+			CodeType EOICode;
 			uint8_t CodeSize;
 
 			void InitCodeTable()
@@ -368,7 +390,7 @@ namespace CPPGIF
 				clear();
 				for (int i = 0; i <= EOICode; i++)
 				{
-					operator[]({/*此处需要编码*/uint8_t(i)}) = i;
+					operator[]({CodeType(i)}) = i;
 				}
 			}
 
@@ -376,7 +398,7 @@ namespace CPPGIF
 				CodeTableMapType(),
 				CodeSize(CodeSize)
 			{
-				ClearCode = uint16_t(1) << CodeSize;
+				ClearCode = CodeType(1) << CodeSize;
 				EOICode = ClearCode + 1;
 			}
 		};
