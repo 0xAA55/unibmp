@@ -191,12 +191,12 @@ namespace UniformBitmap
 		void LoadNonBmp(const void* FileInMemory, size_t FileSize);
 
 		// 存储 Bmp 到文件流
-		size_t SaveToBmp24(std::ostream& ofs, bool InverseLineOrder = false) const;
-		size_t SaveToBmp32(std::ostream& ofs, bool InverseLineOrder = false) const;
+		size_t SaveToBmp24(std::ostream& ofs, bool InverseLineOrder) const;
+		size_t SaveToBmp32(std::ostream& ofs, bool InverseLineOrder) const;
 
 		// 存储 Bmp 到字节数组
-		size_t SaveToBmp24(FileInMemoryType& mf, bool InverseLineOrder = false) const;
-		size_t SaveToBmp32(FileInMemoryType& mf, bool InverseLineOrder = false) const;
+		size_t SaveToBmp24(FileInMemoryType& mf, bool InverseLineOrder) const;
+		size_t SaveToBmp32(FileInMemoryType& mf, bool InverseLineOrder) const;
 
 	public:
 		inline uint32_t GetWidth() const { return Width; }
@@ -235,16 +235,16 @@ namespace UniformBitmap
 		void FillRect(int l, int t, int r, int b, const PixelType& Color);
 		void Paint(int x, int y, int w, int h, const Image& Src, int src_x, int src_y);
 
-		size_t SaveToBmp24(const std::string& FilePath, bool InverseLineOrder = false) const;
-		size_t SaveToBmp32(const std::string& FilePath, bool InverseLineOrder = false) const;
+		size_t SaveToBmp24(const std::string& FilePath, bool InverseLineOrder) const;
+		size_t SaveToBmp32(const std::string& FilePath, bool InverseLineOrder) const;
 
 		size_t SaveToPNG(const std::string& FilePath) const;
 		size_t SaveToTGA(const std::string& FilePath) const;
 		size_t SaveToJPG(const std::string& FilePath, int Quality) const;
 		size_t SaveToHDR(const std::string& FilePath) const;
 
-		FileInMemoryType SaveToBmp24(bool InverseLineOrder = false) const;
-		FileInMemoryType SaveToBmp32(bool InverseLineOrder = false) const;
+		FileInMemoryType SaveToBmp24(bool InverseLineOrder) const;
+		FileInMemoryType SaveToBmp32(bool InverseLineOrder) const;
 
 		FileInMemoryType SaveToPNG() const;
 		FileInMemoryType SaveToTGA() const;
