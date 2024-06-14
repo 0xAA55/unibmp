@@ -633,142 +633,142 @@ namespace UniformBitmap
 		switch (BMIF.biCompression)
 		{
 			// 原始位图不包含位域信息
-		case BI_RGB:
-		{
-			// 根据位数判断是否为调色板颜色
-			switch (BMIF.biBitCount)
+			case BI_RGB:
 			{
-				// 每个字节可能包含多个像素
-			case 1: case 2: case 4:
-			{
-				uint32_t x, y;
-				uint32_t ShiftCount = 8 - BMIF.biBitCount;
-				for (y = 0; y < Height; y++)
+				// 根据位数判断是否为调色板颜色
+				switch (BMIF.biBitCount)
 				{
-					uint32_t PixelsPerBytes = 8 / BMIF.biBitCount;
-					uint8_t LastByte = 0;
-					uint32_t BytePosition = 0;
-					uint32_t PalIndex;
-					uint32_t PixelsRemainLastByte = 0;
-					auto Row = RowPointers[y];
-					ifs.read(reinterpret_cast<char*>(&ReadInLineBuffer[0]), Pitch);
-					for (x = 0; x < Width; x++)
+					// 每个字节可能包含多个像素
+				case 1: case 2: case 4:
+				{
+					uint32_t x, y;
+					uint32_t ShiftCount = 8 - BMIF.biBitCount;
+					for (y = 0; y < Height; y++)
 					{
-						if (!PixelsRemainLastByte)
+						uint32_t PixelsPerBytes = 8 / BMIF.biBitCount;
+						uint8_t LastByte = 0;
+						uint32_t BytePosition = 0;
+						uint32_t PalIndex;
+						uint32_t PixelsRemainLastByte = 0;
+						auto Row = RowPointers[y];
+						ifs.read(reinterpret_cast<char*>(&ReadInLineBuffer[0]), Pitch);
+						for (x = 0; x < Width; x++)
 						{
-							PixelsRemainLastByte = PixelsPerBytes;
-							LastByte = ReadInLineBuffer[BytePosition++];
+							if (!PixelsRemainLastByte)
+							{
+								PixelsRemainLastByte = PixelsPerBytes;
+								LastByte = ReadInLineBuffer[BytePosition++];
+							}
+							PalIndex = LastByte >> ShiftCount;
+							LastByte <<= BMIF.biBitCount;
+							PixelsRemainLastByte--;
+							Row[x] = Palette[PalIndex];
 						}
-						PalIndex = LastByte >> ShiftCount;
-						LastByte <<= BMIF.biBitCount;
-						PixelsRemainLastByte--;
-						Row[x] = Palette[PalIndex];
 					}
+					break;
 				}
-				break;
-			}
-			// 一个字节一个像素，字节值即为像素索引
-			case 8:
-			{
-				uint32_t x, y;
-				for (y = 0; y < Height; y++)
+				// 一个字节一个像素，字节值即为像素索引
+				case 8:
 				{
-					auto Row = RowPointers[y];
-					ifs.read(reinterpret_cast<char*>(&ReadInLineBuffer[0]), Pitch);
-					for (x = 0; x < Width; x++)
+					uint32_t x, y;
+					for (y = 0; y < Height; y++)
 					{
-						Row[x] = Palette[ReadInLineBuffer[x]];
+						auto Row = RowPointers[y];
+						ifs.read(reinterpret_cast<char*>(&ReadInLineBuffer[0]), Pitch);
+						for (x = 0; x < Width; x++)
+						{
+							Row[x] = Palette[ReadInLineBuffer[x]];
+						}
 					}
+					break;
 				}
-				break;
-			}
-			// 非索引颜色，每16个bit按照从高到低 1:5:5:5 存储 ARGB 四个通道
-			case 16:
-			{
-				size_t x, y;
-				int HasAlpha = 0;
-				for (y = 0; y < Height; y++)
+				// 非索引颜色，每16个bit按照从高到低 1:5:5:5 存储 ARGB 四个通道
+				case 16:
 				{
-					auto Row = RowPointers[y];
-					ifs.read(reinterpret_cast<char*>(&ReadInLineBuffer[0]), Pitch);
-					for (x = 0; x < Width; x++)
+					size_t x, y;
+					int HasAlpha = 0;
+					for (y = 0; y < Height; y++)
 					{
-						uint32_t PixelData = (reinterpret_cast<uint16_t*>(&ReadInLineBuffer[0]))[x * 2];
-						uint32_t R5 = (PixelData & 0x7c00) >> 10;
-						uint32_t G5 = (PixelData & 0x03e0) >> 5;
-						uint32_t B5 = (PixelData & 0x001f) >> 0;
+						auto Row = RowPointers[y];
+						ifs.read(reinterpret_cast<char*>(&ReadInLineBuffer[0]), Pitch);
+						for (x = 0; x < Width; x++)
+						{
+							uint32_t PixelData = (reinterpret_cast<uint16_t*>(&ReadInLineBuffer[0]))[x * 2];
+							uint32_t R5 = (PixelData & 0x7c00) >> 10;
+							uint32_t G5 = (PixelData & 0x03e0) >> 5;
+							uint32_t B5 = (PixelData & 0x001f) >> 0;
 
-						Row[x] = Pixel_RGBA8(
-							(uint8_t)((R5 << 3) | (R5 >> 2)),
-							(uint8_t)((G5 << 3) | (G5 >> 2)),
-							(uint8_t)((B5 << 3) | (B5 >> 2)),
-							(uint8_t)(PixelData & 0x8000 ? (HasAlpha = 1) * 255 : 0));
+							Row[x] = Pixel_RGBA8(
+								(uint8_t)((R5 << 3) | (R5 >> 2)),
+								(uint8_t)((G5 << 3) | (G5 >> 2)),
+								(uint8_t)((B5 << 3) | (B5 >> 2)),
+								(uint8_t)(PixelData & 0x8000 ? (HasAlpha = 1) * 255 : 0));
+						}
 					}
+					if (!HasAlpha)
+					{
+						for (y = 0; y < Height; y++)
+						{
+							auto Row = RowPointers[y];
+							for (x = 0; x < Width; x++)
+							{
+								Row[x].A = std::numeric_limits<ChannelType>::max();
+							}
+						}
+					}
+					break;
 				}
-				if (!HasAlpha)
+				// 非索引颜色，每通道1字节
+				case 24:
 				{
+					size_t x, y;
 					for (y = 0; y < Height; y++)
 					{
 						auto Row = RowPointers[y];
+						ifs.read(reinterpret_cast<char*>(&ReadInLineBuffer[0]), Pitch);
 						for (x = 0; x < Width; x++)
 						{
-							Row[x].A = std::numeric_limits<ChannelType>::max();
+							size_t ByteIndex = x * 3;
+							Row[x] = Pixel_RGBA8(ReadInLineBuffer[ByteIndex + 2],
+								ReadInLineBuffer[ByteIndex + 1],
+								ReadInLineBuffer[ByteIndex + 0],
+								255);
 						}
 					}
+					break;
 				}
-				break;
-			}
-			// 非索引颜色，每通道1字节
-			case 24:
-			{
-				size_t x, y;
-				for (y = 0; y < Height; y++)
+				// 非索引颜色，每通道1字节，可能包含Alpha通道
+				case 32:
 				{
-					auto Row = RowPointers[y];
-					ifs.read(reinterpret_cast<char*>(&ReadInLineBuffer[0]), Pitch);
-					for (x = 0; x < Width; x++)
-					{
-						size_t ByteIndex = x * 3;
-						Row[x] = Pixel_RGBA8(ReadInLineBuffer[ByteIndex + 2],
-							ReadInLineBuffer[ByteIndex + 1],
-							ReadInLineBuffer[ByteIndex + 0],
-							255);
-					}
-				}
-				break;
-			}
-			// 非索引颜色，每通道1字节，可能包含Alpha通道
-			case 32:
-			{
-				size_t x, y;
-				int HasAlpha = 0;
-				for (y = 0; y < Height; y++)
-				{
-					auto Row = RowPointers[y];
-					ifs.read(reinterpret_cast<char*>(&ReadInLineBuffer[0]), Pitch);
-					for (x = 0; x < Width; x++)
-					{
-						size_t ByteIndex = x * 4;
-						Row[x] = Pixel_RGBA8(ReadInLineBuffer[ByteIndex + 2],
-							ReadInLineBuffer[ByteIndex + 1],
-							ReadInLineBuffer[ByteIndex + 0],
-							ReadInLineBuffer[ByteIndex + 3]);
-						if (ReadInLineBuffer[ByteIndex + 3]) HasAlpha = 1;
-					}
-				}
-				if (!HasAlpha)
-				{
+					size_t x, y;
+					int HasAlpha = 0;
 					for (y = 0; y < Height; y++)
 					{
 						auto Row = RowPointers[y];
+						ifs.read(reinterpret_cast<char*>(&ReadInLineBuffer[0]), Pitch);
 						for (x = 0; x < Width; x++)
 						{
-							Row[x].A = std::numeric_limits<ChannelType>::max();
+							size_t ByteIndex = x * 4;
+							Row[x] = Pixel_RGBA8(ReadInLineBuffer[ByteIndex + 2],
+								ReadInLineBuffer[ByteIndex + 1],
+								ReadInLineBuffer[ByteIndex + 0],
+								ReadInLineBuffer[ByteIndex + 3]);
+							if (ReadInLineBuffer[ByteIndex + 3]) HasAlpha = 1;
 						}
 					}
+					if (!HasAlpha)
+					{
+						for (y = 0; y < Height; y++)
+						{
+							auto Row = RowPointers[y];
+							for (x = 0; x < Width; x++)
+							{
+								Row[x].A = std::numeric_limits<ChannelType>::max();
+							}
+						}
+					}
+					break;
 				}
-				break;
-			}
 			}
 			break;
 		}
