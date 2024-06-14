@@ -572,25 +572,19 @@ namespace UniformBitmap
 			switch (Format)
 			{
 #define ConstructByType(Type) do {auto ret = std::make_shared<Type>(Format); ReadComponents(ret->Components, NumComponents); return ret; } while(0)
-			case IFDFieldFormat::SByte:     ConstructByType(IFDFieldBytes);
-			case IFDFieldFormat::SShort:    ConstructByType(IFDFieldShorts);
-			case IFDFieldFormat::SLong:     ConstructByType(IFDFieldLongs);
-			case IFDFieldFormat::SRational: ConstructByType(IFDFieldRationals);
-			case IFDFieldFormat::UByte:     ConstructByType(IFDFieldUBytes);
-			case IFDFieldFormat::UShort:    ConstructByType(IFDFieldUShorts);
-			case IFDFieldFormat::ULong:     ConstructByType(IFDFieldULongs);
-			case IFDFieldFormat::URational: ConstructByType(IFDFieldURationals);
-			case IFDFieldFormat::Float:     ConstructByType(IFDFieldFloats);
-			case IFDFieldFormat::Double:    ConstructByType(IFDFieldDoubles);
-			case IFDFieldFormat::Undefined: ConstructByType(IFDFieldBytes);
+			case IFDFieldFormat::SByte:       ConstructByType(IFDFieldBytes);
+			case IFDFieldFormat::SShort:      ConstructByType(IFDFieldShorts);
+			case IFDFieldFormat::SLong:       ConstructByType(IFDFieldLongs);
+			case IFDFieldFormat::SRational:   ConstructByType(IFDFieldRationals);
+			case IFDFieldFormat::UByte:       ConstructByType(IFDFieldUBytes);
+			case IFDFieldFormat::UShort:      ConstructByType(IFDFieldUShorts);
+			case IFDFieldFormat::ULong:       ConstructByType(IFDFieldULongs);
+			case IFDFieldFormat::URational:   ConstructByType(IFDFieldURationals);
+			case IFDFieldFormat::Float:       ConstructByType(IFDFieldFloats);
+			case IFDFieldFormat::Double:      ConstructByType(IFDFieldDoubles);
+			case IFDFieldFormat::Undefined:   ConstructByType(IFDFieldBytes);
+			case IFDFieldFormat::AsciiString: ConstructByType(IFDFieldString);
 #undef ConstructByType
-			case IFDFieldFormat::AsciiString:
-				if (1)
-				{
-					auto ret = std::make_shared<IFDFieldString>(Format, "");
-					ReadComponents(ret->Components, NumComponents);
-					return ret;
-				}
 			}
 			char buf[256];
 			snprintf(buf, sizeof buf, "Unknown format 0x%x", uint16_t(Format));
@@ -751,8 +745,8 @@ namespace UniformBitmap
 		std::vector<uint8_t> ret;
 
 
-
-
+		// TODO
+		throw std::invalid_argument("TODO: unimplemented");
 
 		return ret;
 	}
