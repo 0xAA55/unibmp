@@ -918,9 +918,7 @@ namespace UniformBitmap
 	}
 	catch (const std::ios::failure&)
 	{
-		std::stringstream sserr;
-		sserr << "Write BMP24 file to `" << FilePath << "` failed.";
-		throw WriteBmpFileError(sserr.str());
+		throw WriteBmpFileError("Write BMP24 file failed.");
 	}
 
 	template<typename PixelType, typename T>
@@ -975,9 +973,7 @@ namespace UniformBitmap
 	}
 	catch (const std::ios::failure&)
 	{
-		std::stringstream sserr;
-		sserr << "Write BMP32 file to `" << FilePath << "` failed.";
-		throw WriteBmpFileError(sserr.str());
+		throw WriteBmpFileError("Write BMP32 file failed.");
 	}
 
 	template<typename PixelType>
@@ -1039,6 +1035,7 @@ namespace UniformBitmap
 	template<typename PixelType>
 	Image<PixelType>::FloodFillEdgeType Image<PixelType>::FloodFill(uint32_t x, uint32_t y, const PixelType& Color, bool RetrieveEdge, bool(*IsSamePixel)(const PixelType& a, const PixelType& b), void (*SetPixel)(PixelType& dst, const PixelType& src))
 	{
+		using PixelRefSet = std::unordered_set<PXR, PXRHash>;
 		FloodFillEdgeType Edge;
 		PixelType OrigColor = GetPixel(x, y);
 		if (IsSamePixel(OrigColor, Color)) return Edge;
@@ -1046,9 +1043,9 @@ namespace UniformBitmap
 		const uint32_t min_y = 0;
 		auto max_x = Width - 1;
 		auto max_y = Height - 1;
-		auto EdgePoints = std::make_unique<std::unordered_set<Point, PointHash>>();
-		auto NewEdgePoints = std::make_unique<std::unordered_set<Point, PointHash>>();
-		EdgePoints->insert(Point(x, y, GetPixelRef(x, y)));
+		auto EdgePoints = std::make_unique<PixelRefSet>();
+		auto NewEdgePoints = std::make_unique<PixelRefSet>();
+		EdgePoints->insert(PXR(x, y, GetPixelRef(x, y)));
 		while (EdgePoints->size())
 		{
 			for (auto& p : *EdgePoints)
@@ -1066,7 +1063,7 @@ namespace UniformBitmap
 				if (p.y < max_y) NewEdgePoints->insert(PXR(p.x, p.y + 1, GetPixelRef(p.x, p.y + 1)));
 			}
 			EdgePoints = std::move(NewEdgePoints);
-			NewEdgePoints = std::make_unique<std::unordered_set<Point, PointHash>>();
+			NewEdgePoints = std::make_unique<PixelRefSet>();
 		}
 		return Edge;
 	}
