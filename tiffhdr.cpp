@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <algorithm>
+#include <cstring>
 #include <cinttypes>
 
 // #define DEBUG_TIFFHeader 1
