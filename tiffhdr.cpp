@@ -616,6 +616,18 @@ namespace UniformBitmap
 			throw BadDataError(buf);
 		}
 
+		void GetToOffsetIndicatedByIFDField(const IFDFieldBase& Field)
+		try
+		{
+			auto& Components = Field.AsULongs().Components;
+			if (Components.size() != 1) throw BadDataError("Bad SubIFD offset field: the offset shouldn't be an array.");
+			SeekToOffsetSafe(Components[0]);
+		}
+		catch (const std::bad_cast&)
+		{
+			throw BadDataError("Bad SubIFD offset field: wrong data type.");
+		}
+
 		IFD ParseIFD()
 		{
 			IFD ret;
@@ -634,30 +646,31 @@ namespace UniformBitmap
 				uint32_t NumComponents;
 				Read(NumComponents);
 
-				ret.Fields[TagType] = ReadIFDField(IFDFieldFormat(TagVarType), NumComponents);
+				if (ret.Fields.try_emplace(TagType, ReadIFDField(IFDFieldFormat(TagVarType), NumComponents)).second == false)
+				{
+					throw BadDataError("Duplicated IFD tag.");
+				}
 			}
 			if (ret.Fields.contains(0x8769))
 			{
 				auto CurOffset = ifs.tellg();
 
-				try
-				{
-					auto& ExifSubIFDOffset = ret.Fields.at(0x8769);
-					auto& Components = ExifSubIFDOffset->AsULongs().Components;
-					if (Components.size() != 1) throw BadDataError("Bad SubIFD offset field: the offset shouldn't be an array.");
-					SeekToOffsetSafe(Components[0]);
-					ret.SubIFD = std::make_shared<IFD>(ParseIFD());
-				}
-				catch (const std::bad_cast&)
-				{
-					throw BadDataError("Bad SubIFD offset field: wrong data type.");
-				}
+				GetToOffsetIndicatedByIFDField(*ret.Fields.at(0x8769));
+				ret.SubIFD = std::make_shared<IFD>(ParseIFD());
+
+				ifs.seekg(CurOffset);
+			}
+			if (ret.Fields.contains(0xa005))
+			{
+				auto CurOffset = ifs.tellg();
+
+				GetToOffsetIndicatedByIFDField(*ret.Fields.at(0x8769));
+				ret.InteroperabilityIFD = std::make_shared<IFD>(ParseIFD());
 
 				ifs.seekg(CurOffset);
 			}
 			return ret;
 		}
-
 
 		void Parse()
 		try

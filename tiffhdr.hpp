@@ -165,6 +165,7 @@ namespace UniformBitmap
 		IFDData Fields;
 
 		std::shared_ptr<IFD> SubIFD;
+		std::shared_ptr<IFD> InteroperabilityIFD;
 
 		IFD() = default;
 		IFD(const IFD& c) = default;
