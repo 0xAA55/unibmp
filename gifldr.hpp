@@ -131,24 +131,37 @@ namespace CPPGIF
 		GraphicControlExtensionType(std::istream& is);
 	};
 
-	struct ApplicationExtensionType
+	struct PlainTextExtension
 	{
-	protected:
-		char Identifier[8];
-		char AuthenticationCode[3];
-		std::vector<DataSubBlock> ApplicationData;
+		uint8_t BlockSize = 0x0C;
+		uint16_t TextGridLeftPosition = 0;
+		uint16_t TextGridTopPosition = 0;
+		uint16_t TextGridWidth = 0;
+		uint16_t TextGridHeight = 0;
+		uint8_t CharacterCellWidth = 0;
+		uint8_t CharacterCellHeight = 0;
+		uint8_t TextForegroundColorIndex = 0;
+		uint8_t TextBackgroundColorIndex = 0;
+		DataSubBlock PlainTextData;
 
-	public:
-		ApplicationExtensionType() = default;
-		ApplicationExtensionType(char Identifier[8], char AuthenticationCode[3], std::vector<DataSubBlock> ApplicationData);
-	
-	public:
-		ApplicationExtensionType(std::istream& is);
+		PlainTextExtension(std::istream& is);
 	};
 
 	struct CommentExtensionType
 	{
-		std::vector<DataSubBlock> Data;
+		DataSubBlock CommentData;
+
+		CommentExtensionType(std::istream& is);
+	};
+
+	struct ApplicationExtensionType
+	{
+	public:
+		char Identifier[8];
+		char AuthenticationCode[3];
+		DataSubBlock ApplicationData;
+
+		ApplicationExtensionType(std::istream& is);
 	};
 
 	class GIFLoader
