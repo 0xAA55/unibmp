@@ -887,7 +887,7 @@ namespace UniformBitmap
 		return true;
 	}
 
-	// 单个 Component 
+	// 单个 Component 转换为字符串
 	template<typename T> requires std::is_integral_v<T>
 	std::string ComponentToString(const T& v)
 	{
@@ -901,6 +901,7 @@ namespace UniformBitmap
 		return buf;
 	}
 
+	// 浮点数转换为字符串
 	template<typename T> requires std::is_floating_point_v<T>
 	std::string ComponentToString(const T& v)
 	{
@@ -909,15 +910,17 @@ namespace UniformBitmap
 		return buf;
 	}
 
+	// 数组转换为字符串
 	template<typename T>
 	std::string ComponentsToString(const std::vector<T>& Components, size_t limit = 16)
 	{
 		if (Components.size() == 1)
-		{
+		{ // 单个元素直接转换
 			return ComponentToString(Components[0]);
 		}
 		else
 		{
+			// 对于 uint8_t 数组类型，判断是否像字符串，并按字符串方式展示
 			if constexpr (std::is_same_v<T, uint8_t>)
 			{
 				if (IsLookLikeString(Components))
@@ -925,15 +928,16 @@ namespace UniformBitmap
 					auto* beg = reinterpret_cast<const char*>(&Components.front());
 					auto str = std::string(beg, Components.size());
 					if (str.back() == '\0')
-					{
+					{ // 有 '\0' 结尾，突出显示这个结尾
 						return std::string("\"") + str + "\\0\"";
 					}
 					else
-					{
+					{ // 无'\0' 结尾
 						return std::string("\"") + str + "\"";
 					}
 				}
 			}
+			// 不像字符串的形式/别的格式，按数值数组形式打印
 			std::stringstream ss;
 			ss << "[";
 			for (size_t i = 0; i < Components.size(); i++)
@@ -941,7 +945,7 @@ namespace UniformBitmap
 				if(i) ss << ", ";
 				ss << ComponentToString(Components[i]);
 				if (i >= limit)
-				{
+				{ // 省略超限个数的数组元素
 					ss << ", ...(" << Components.size() << " items)";
 					break;
 				}
@@ -951,6 +955,7 @@ namespace UniformBitmap
 		}
 	}
 
+	// 非字符串类型的 IFD 字段转字符串
 	template<typename T>
 	std::string IFDFieldType<T>::ToString() const
 	{
@@ -968,6 +973,7 @@ namespace UniformBitmap
 		return ss.str();
 	}
 
+	// 字符串类型的 IFD 字段转字符串
 	std::string IFDFieldString::ToString() const
 	{
 		std::stringstream ss;
@@ -1116,6 +1122,7 @@ namespace UniformBitmap
 	const IFDFieldUndefined& IFDFieldBase::AsUndefined() const { return static_cast<const IFDFieldUndefined&>(*this); }
 	const IFDFieldString& IFDFieldBase::AsString() const { return static_cast<const IFDFieldString&>(*this); }
 
+	// 构建一个简单的 TIFF 头
 	TIFFHeader ConstuctTIFFHeader
 	(
 		const std::string& ImageDescription,
@@ -1160,7 +1167,8 @@ namespace UniformBitmap
 		std::runtime_error(what)
 	{
 	}
-
+	
+	// 读取 Motorola 格式的 TIFF 头部的时候，需要改变字节顺序
 	template<typename T>
 	T BSWAPW(T v)
 	{
@@ -1224,6 +1232,7 @@ namespace UniformBitmap
 		{
 			SeekToOffset(Offset);
 
+			// 判断跳转死循环
 			if (UsedOffsets.insert(ifs.tellg()).second == false)
 			{
 				char buf[256];
@@ -1232,6 +1241,7 @@ namespace UniformBitmap
 			}
 		}
 
+		// 底层读
 		template<typename T>
 		size_t ReadRaw(T& r)
 		{
@@ -1239,12 +1249,14 @@ namespace UniformBitmap
 			return (sizeof r);
 		}
 
+		// 读字节数组
 		size_t ReadBytes(std::vector<uint8_t>& r, size_t BytesToRead)
 		{
 			ifs.read(reinterpret_cast<char*>(&r[0]), BytesToRead);
 			return BytesToRead;
 		}
 
+		// 读数值，并做字节顺序转换
 		template<typename T> requires (std::is_integral_v<T> || std::is_floating_point_v<T>) && (!std::is_same_v<T, bool>)
 		size_t Read(T& r)
 		{
@@ -1253,6 +1265,7 @@ namespace UniformBitmap
 			return ret;
 		}
 
+		// 读 Rational/URational （分子分母形式的分数）
 		template<typename T> requires std::is_same_v<T, Rational> || std::is_same_v<T, URational>
 		size_t Read(T& r)
 		{
@@ -1261,6 +1274,7 @@ namespace UniformBitmap
 				Read(r.Denominator);
 		}
 
+		// 读数据，大于 4 字节的 Component 需要跳转到偏移量去读取
 		template<typename T>
 		size_t ReadComponents(std::vector<T>& ReadInto, uint32_t NumComponents)
 		{
@@ -1280,7 +1294,7 @@ namespace UniformBitmap
 				return ret;
 			}
 			else
-			{
+			{ // 小于 4 字节的 Component 直接读取
 				size_t ret = 0;
 				auto CurPos = ifs.tellg();
 				for (size_t i = 0; i < NumComponents; i++)
@@ -1293,6 +1307,7 @@ namespace UniformBitmap
 			}
 		}
 
+		// 按照指定长度读取字符串
 		size_t ReadComponents(std::string& s, size_t Length)
 		{
 			s.resize(Length);
@@ -1317,6 +1332,7 @@ namespace UniformBitmap
 			return Length;
 		}
 
+		// 根据 IFD 字段格式读取一个 IFD 字段
 		std::shared_ptr<IFDFieldBase> ReadIFDField(IFDFieldFormat Format, uint32_t NumComponents)
 		{
 			switch (Format)
@@ -1341,6 +1357,7 @@ namespace UniformBitmap
 			throw BadDataError(buf);
 		}
 
+		// 有的 IFD 字段就是一个偏移量，此处跳转到这个偏移量上
 		void GetToOffsetIndicatedByIFDField(const IFDFieldBase& Field)
 		try
 		{
@@ -1353,22 +1370,31 @@ namespace UniformBitmap
 			throw BadDataError("Bad SubIFD offset field: wrong data type.");
 		}
 
-		void ParseSubIFD(uint16_t TagNumber, IFD& Ifd, std::shared_ptr<IFD>& ReadTo)
+		// 读取一整个 IFD 子表
+		void ParseSubIFD(uint16_t TagID, IFD& Ifd, std::shared_ptr<IFD>& ReadTo)
 		{
 			bool found;
 			do
-			{
+			{ // 按情况开发：可能要允许循环读取多个相同 TagID 的不同子表到一起
 				found = false;
 				for (auto i = Ifd.Fields.begin(); i != Ifd.Fields.end(); i++)
 				{
-					if (i->first == TagNumber)
+					if (i->first == TagID)
 					{
-						if (ReadTo) throw BadDataError("Duplicated IFD tag.");
+						// 目前不读取到一起
+						if (ReadTo)
+						{
+							std::cerr << "Duplicated IFD tag.\n";
+							break;
+						}
 						auto CurOffset = ifs.tellg();
 
+						// 跳转到指定偏移量进行读取
 						GetToOffsetIndicatedByIFDField(*i->second);
 						ReadTo = std::make_shared<IFD>(ParseIFD());
 
+						// 读完后恢复之前的读取位置
+						// 因为数据已经读取到了 ReadTo 了，因此从 Fields 里面擦除当前这个字段。
 						ifs.seekg(CurOffset);
 						found = true;
 						Ifd.Fields.erase(i);
@@ -1378,31 +1404,37 @@ namespace UniformBitmap
 			} while (found);
 		}
 
+		// 读取整个 IFD 表和它的子表
 		IFD ParseIFD()
 		{
 			IFD ret;
 
 			uint16_t NumFields;
 			Read(NumFields);
+
+			// 读取每个字段
 			for (size_t i = 0; i < NumFields; i++)
 			{
-				uint16_t TagType;
-				Read(TagType);
+				uint16_t TagID;
+				Read(TagID);
 
-				uint16_t TagVarType; // 对应IFDFieldFormat
-				Read(TagVarType);
+				uint16_t TagFormat; // 对应IFDFieldFormat
+				Read(TagFormat);
 
 				uint32_t NumComponents;
 				Read(NumComponents);
 
-				ret.Fields.push_back({ TagType, ReadIFDField(IFDFieldFormat(TagVarType), NumComponents) });
+				ret.Fields.push_back({ TagID, ReadIFDField(IFDFieldFormat(TagFormat), NumComponents) });
 			}
+
+			// 拆读子表
 			ParseSubIFD(0x8769, ret, ret.ExifSubIFD);
 			ParseSubIFD(0x8825, ret, ret.GPSSubIFD);
 			ParseSubIFD(0xa005, ret, ret.InteroperabilityIFD);
+
+			// 尝试解析 MakerNote 里包含的 TIFF 头
 			for (auto& kv : ret.Fields)
 			{
-				// 尝试解析 MakerNote 里包含的 TIFF 头
 				if (kv.first == 0x927c)
 				{
 					try
@@ -1424,6 +1456,7 @@ namespace UniformBitmap
 			return ret;
 		}
 
+		// 读取整个 TIFF 头
 		void Parse()
 		try
 		{
@@ -1433,19 +1466,22 @@ namespace UniformBitmap
 			ReadRaw(II_MM);
 			switch (II_MM)
 			{
-			case 0x002A4949: IsMotorola = false; break;
-			case 0x2A004D4D: IsMotorola = true; break;
+			case 0x002A4949: IsMotorola = false; break; // Intel 字节序
+			case 0x2A004D4D: IsMotorola = true; break; // Motorola 字节序
 			default: throw BadDataError("Bad TIFF header signature.");
 			}
 
+			// 跳转到 IFD 表开头
 			uint32_t OffsetOfIFD;
 			Read(OffsetOfIFD);
 			SeekToOffset(OffsetOfIFD);
 
+			// 挨个读取 IFD 表
 			for (;;)
 			{
 				Parsed.push_back(ParseIFD());
 
+				// 跳转到下一个 IFD 表开头
 				uint32_t OffsetOfNextIFD;
 				Read(OffsetOfNextIFD);
 				if (!OffsetOfNextIFD) break;
@@ -1481,24 +1517,20 @@ namespace UniformBitmap
 		}
 	};
 
-	template<typename T>
-	size_t Read(std::istream& ifs, T& r)
-	{
-		ifs.read(reinterpret_cast<char*>(&r), sizeof r);
-		return (sizeof r);
-	}
-
+	// 从输入文件流读取 TIFF 头
 	TIFFHeader ParseTIFFHeader(std::istream& ifs)
 	{
 		return TIFFParser(ifs).GetParsed();
 	}
 
+	// 从内存地址和字节数读取 TIFF 头
 	TIFFHeader ParseTIFFHeader(const uint8_t* TIFFData, size_t TIFFDataSize)
 	{
 		auto ss = std::stringstream(std::string(reinterpret_cast<char*>(const_cast<uint8_t*>(TIFFData)), TIFFDataSize));
 		return ParseTIFFHeader(ss);
 	}
 
+	// 将 GPS 子表打印出来看
 	static void ShowGPSFields(std::stringstream& ss, const IFDData& GPSFields, int indent, int cur_indent)
 	{
 		auto IndentStr = std::string(cur_indent * indent, ' ');
@@ -1517,6 +1549,7 @@ namespace UniformBitmap
 		}
 	}
 
+	// 将 IFD 表和子表打印出来看
 	static void ShowIFDFields(std::stringstream& ss, const IFD& Ifd, int indent, int cur_indent)
 	{
 		auto IndentStr = std::string(cur_indent * indent, ' ');
@@ -1706,10 +1739,6 @@ namespace UniformBitmap
 					}
 				}
 			} while (found);
-			// for (auto PointerTags : IFDPointerTags)
-			// {
-			// 	IfdToAdd.Fields.erase(PointerTags);
-			// }
 
 			// 根据子表需要算出总的表项数，来计算偏移量
 			FieldsCountTotal = IfdToAdd.Fields.size();
@@ -1747,6 +1776,7 @@ namespace UniformBitmap
 	std::vector<uint8_t> StoreTIFFHeader(const TIFFHeader& TIFFHdr)
 	{
 		// TIFF 头
+		// 我们只存 Intel 字节序的数据
 		std::vector<uint8_t> ret = {
 			'I', 'I', 0x2A, 0x00,
 			0x08, 0x00, 0x00, 0x00
