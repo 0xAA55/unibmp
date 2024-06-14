@@ -489,21 +489,6 @@ namespace UniformBitmap
 			return (sizeof r);
 		}
 
-		size_t ReadSZ(std::string& s)
-		{
-			std::stringstream ss;
-			size_t ret = 0;
-			for(;;)
-			{
-				char c;
-				ret += ReadRaw(c);
-				if (!c) break;
-				else ss << c;
-			}
-			s = ss.str();
-			return ret;
-		}
-
 		size_t ReadBytes(std::vector<uint8_t>& r, size_t BytesToRead)
 		{
 			ifs.read(reinterpret_cast<char*>(&r[0]), BytesToRead);
@@ -582,17 +567,6 @@ namespace UniformBitmap
 			return Length;
 		}
 
-		size_t ReadComponents(std::string& s)
-		{
-			uint32_t Offset;
-			auto ret = Read(Offset);
-			auto CurPos = ifs.tellg();
-			SeekToOffset(Offset);
-			ReadSZ(s);
-			ifs.seekg(CurPos, std::ios::beg);
-			return ret;
-		}
-
 		std::shared_ptr<IFDFieldBase> ReadIFDField(IFDFieldFormat Format, uint32_t NumComponents)
 		{
 			switch (Format)
@@ -614,14 +588,8 @@ namespace UniformBitmap
 				if (1)
 				{
 					auto ret = std::make_shared<IFDFieldString>(Format, "");
-					if (!NumComponents || NumComponents == 1)
-					{
-						ReadComponents(ret->Components);
-					}
-					else
-					{
-						ReadComponents(ret->Components, NumComponents);
-					}
+					ReadComponents(ret->Components, NumComponents);
+					return ret;
 				}
 			}
 			char buf[256];
@@ -682,6 +650,7 @@ namespace UniformBitmap
 			ParseSubIFD(0x8769, ret, ret.ExifSubIFD);
 			ParseSubIFD(0x8825, ret, ret.GPSSubIFD);
 			ParseSubIFD(0xa005, ret, ret.InteroperabilityIFD);
+			return ret;
 		}
 
 		void Parse()
