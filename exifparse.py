@@ -52,12 +52,16 @@ if __name__ == '__main__':
 	with open('exif.json', 'w', encoding='utf-8') as f:
 		json.dump(parsed, f, indent=4)
 
-	for tid, tdata in parsed.items():
-		tname = tdata['Tag Name']
-		tname = '|'.join(sorted(list(set(tname.split('\n')))))
-		print('{' + f'{tid}, "{tname}"' + '},')
+	parsed = ParseExifHtmlTable('exifgps.xml')
+	with open('exifgps.json', 'w', encoding='utf-8') as f:
+		json.dump(parsed, f, indent=4)
 
 	#for tid, tdata in parsed.items():
 	#	tname = tdata['Tag Name']
-	#	for tncname in sorted(list(set(tname.split('\n')))):
-	#		print('{' + f'"{tncname}", {tid}' + '},')
+	#	tname = '|'.join(sorted(list(set(tname.split('\n')))))
+	#	print('{' + f'{tid}, "{tname}"' + '},')
+
+	for tid, tdata in parsed.items():
+		tname = tdata['Tag Name']
+		for tncname in sorted(list(set(tname.split('\n')))):
+			print('{' + f'"{tncname}", {tid}' + '},')

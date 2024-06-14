@@ -1,0 +1,194 @@
+{
+    "0x0000": {
+        "Tag ID": "0x0000",
+        "Tag Name": "GPSVersionID",
+        "Writable": "int8u[4]:",
+        "Values /Notes": ""
+    },
+    "0x0001": {
+        "Tag ID": "0x0001",
+        "Tag Name": "GPSLatitudeRef",
+        "Writable": "string[2]",
+        "Values /Notes": "(tags 0x0001-0x0006 used for camera location according to MWG 2.0. ExifTool\nwill also accept a number when writing GPSLatitudeRef, positive for north\nlatitudes or negative for south, or a string containing N, North, S or South)\n'N' = North'N' = North\n'S' = South'S' = South"
+    },
+    "0x0002": {
+        "Tag ID": "0x0002",
+        "Tag Name": "GPSLatitude",
+        "Writable": "rational64u[3]",
+        "Values /Notes": ""
+    },
+    "0x0003": {
+        "Tag ID": "0x0003",
+        "Tag Name": "GPSLongitudeRef",
+        "Writable": "string[2]",
+        "Values /Notes": "(ExifTool will also accept a number when writing this tag, positive for east\nlongitudes or negative for west, or a string containing E, East, W or West)\n'E' = East'E' = East\n'W' = West'W' = West"
+    },
+    "0x0004": {
+        "Tag ID": "0x0004",
+        "Tag Name": "GPSLongitude",
+        "Writable": "rational64u[3]",
+        "Values /Notes": ""
+    },
+    "0x0005": {
+        "Tag ID": "0x0005",
+        "Tag Name": "GPSAltitudeRef",
+        "Writable": "int8u",
+        "Values /Notes": "(ExifTool will also accept number when writing this tag, with negative\nnumbers indicating below sea level)\n0 = Above Sea Level0 = Above Sea Level\n1 = Below Sea Level1 = Below Sea Level"
+    },
+    "0x0006": {
+        "Tag ID": "0x0006",
+        "Tag Name": "GPSAltitude",
+        "Writable": "rational64u",
+        "Values /Notes": ""
+    },
+    "0x0007": {
+        "Tag ID": "0x0007",
+        "Tag Name": "GPSTimeStamp",
+        "Writable": "rational64u[3]",
+        "Values /Notes": "(UTC time of GPS fix.  When writing, date is stripped off if present, and\ntime is adjusted to UTC if it includes a timezone)"
+    },
+    "0x0008": {
+        "Tag ID": "0x0008",
+        "Tag Name": "GPSSatellites",
+        "Writable": "string",
+        "Values /Notes": ""
+    },
+    "0x0009": {
+        "Tag ID": "0x0009",
+        "Tag Name": "GPSStatus",
+        "Writable": "string[2]",
+        "Values /Notes": "'A' = Measurement Active\n'V' = Measurement Void'V' = Measurement Void"
+    },
+    "0x000a": {
+        "Tag ID": "0x000a",
+        "Tag Name": "GPSMeasureMode",
+        "Writable": "string[2]",
+        "Values /Notes": "2 = 2-Dimensional Measurement\n3 = 3-Dimensional Measurement3 = 3-Dimensional Measurement"
+    },
+    "0x000b": {
+        "Tag ID": "0x000b",
+        "Tag Name": "GPSDOP",
+        "Writable": "rational64u",
+        "Values /Notes": ""
+    },
+    "0x000c": {
+        "Tag ID": "0x000c",
+        "Tag Name": "GPSSpeedRef",
+        "Writable": "string[2]",
+        "Values /Notes": "'K' = km/h\n'M' = mph'M' = mph\n'N' = knots'N' = knots"
+    },
+    "0x000d": {
+        "Tag ID": "0x000d",
+        "Tag Name": "GPSSpeed",
+        "Writable": "rational64u",
+        "Values /Notes": ""
+    },
+    "0x000e": {
+        "Tag ID": "0x000e",
+        "Tag Name": "GPSTrackRef",
+        "Writable": "string[2]",
+        "Values /Notes": "'M' = Magnetic North\n'T' = True North'T' = True North"
+    },
+    "0x000f": {
+        "Tag ID": "0x000f",
+        "Tag Name": "GPSTrack",
+        "Writable": "rational64u",
+        "Values /Notes": ""
+    },
+    "0x0010": {
+        "Tag ID": "0x0010",
+        "Tag Name": "GPSImgDirectionRef",
+        "Writable": "string[2]",
+        "Values /Notes": "'M' = Magnetic North\n'T' = True North'T' = True North"
+    },
+    "0x0011": {
+        "Tag ID": "0x0011",
+        "Tag Name": "GPSImgDirection",
+        "Writable": "rational64u",
+        "Values /Notes": ""
+    },
+    "0x0012": {
+        "Tag ID": "0x0012",
+        "Tag Name": "GPSMapDatum",
+        "Writable": "string",
+        "Values /Notes": ""
+    },
+    "0x0013": {
+        "Tag ID": "0x0013",
+        "Tag Name": "GPSDestLatitudeRef",
+        "Writable": "string[2]",
+        "Values /Notes": "(tags 0x0013-0x001a used for subject location according to MWG 2.0)\n'N' = North'N' = North\n'S' = South'S' = South"
+    },
+    "0x0014": {
+        "Tag ID": "0x0014",
+        "Tag Name": "GPSDestLatitude",
+        "Writable": "rational64u[3]",
+        "Values /Notes": ""
+    },
+    "0x0015": {
+        "Tag ID": "0x0015",
+        "Tag Name": "GPSDestLongitudeRef",
+        "Writable": "string[2]",
+        "Values /Notes": "'E' = East\n'W' = West'W' = West"
+    },
+    "0x0016": {
+        "Tag ID": "0x0016",
+        "Tag Name": "GPSDestLongitude",
+        "Writable": "rational64u[3]",
+        "Values /Notes": ""
+    },
+    "0x0017": {
+        "Tag ID": "0x0017",
+        "Tag Name": "GPSDestBearingRef",
+        "Writable": "string[2]",
+        "Values /Notes": "'M' = Magnetic North\n'T' = True North'T' = True North"
+    },
+    "0x0018": {
+        "Tag ID": "0x0018",
+        "Tag Name": "GPSDestBearing",
+        "Writable": "rational64u",
+        "Values /Notes": ""
+    },
+    "0x0019": {
+        "Tag ID": "0x0019",
+        "Tag Name": "GPSDestDistanceRef",
+        "Writable": "string[2]",
+        "Values /Notes": "'K' = Kilometers\n'M' = Miles'M' = Miles\n'N' = Nautical Miles'N' = Nautical Miles"
+    },
+    "0x001a": {
+        "Tag ID": "0x001a",
+        "Tag Name": "GPSDestDistance",
+        "Writable": "rational64u",
+        "Values /Notes": ""
+    },
+    "0x001b": {
+        "Tag ID": "0x001b",
+        "Tag Name": "GPSProcessingMethod",
+        "Writable": "undef",
+        "Values /Notes": "(values of \"GPS\", \"CELLID\", \"WLAN\" or \"MANUAL\" by the EXIF spec.)"
+    },
+    "0x001c": {
+        "Tag ID": "0x001c",
+        "Tag Name": "GPSAreaInformation",
+        "Writable": "undef",
+        "Values /Notes": ""
+    },
+    "0x001d": {
+        "Tag ID": "0x001d",
+        "Tag Name": "GPSDateStamp",
+        "Writable": "string[11]",
+        "Values /Notes": "(when writing, time is stripped off if present, after adjusting date/time to\nUTC if time includes a timezone.  Format is YYYY:mm:dd)"
+    },
+    "0x001e": {
+        "Tag ID": "0x001e",
+        "Tag Name": "GPSDifferential",
+        "Writable": "int16u",
+        "Values /Notes": "0 = No Correction\n1 = Differential Corrected1 = Differential Corrected"
+    },
+    "0x001f": {
+        "Tag ID": "0x001f",
+        "Tag Name": "GPSHPositioningError",
+        "Writable": "rational64u",
+        "Values /Notes": ""
+    }
+}
