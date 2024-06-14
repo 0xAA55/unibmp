@@ -4,13 +4,18 @@
 #include <unordered_map>
 namespace CPPGIF
 {
-	UnexpectedData::UnexpectedData(const std::string& what) noexcept :
+	DecodeError::DecodeError(const std::string& what) noexcept :
 		std::runtime_error(what)
 	{
 	}
 
+	UnexpectedData::UnexpectedData(const std::string& what) noexcept :
+		DecodeError(what)
+	{
+	}
+
 	MoreDataNeeded::MoreDataNeeded(const std::string& what) noexcept :
-		std::runtime_error(what)
+		DecodeError(what)
 	{
 	}
 
@@ -253,6 +258,9 @@ namespace CPPGIF
 
 	DataSubBlock ImageDescriptorType::UncompressLZW(const DataSubBlock& Compressed, uint8_t LZW_MinCodeSize)
 	{
+		// ÔÊÐíÎÞ LZW Ñ¹ËõµÄ GIF
+		if (!LZW_MinCodeSize) return Compressed;
+
 		auto Output = DataSubBlock();
 		using LZWCodeUnpackedType = uint16_t;
 		using LZWCodeUnpackedVectorType = std::vector<LZWCodeUnpackedType>;
@@ -270,11 +278,18 @@ namespace CPPGIF
 				ClearCode = 1 << LZW_MinCodeSize;
 				EOICode = ClearCode + 1;
 
-				clear();
-				for (int i = 0; i <= EOICode; i++)
+				// clear();
+				if (!size())
 				{
-					push_back(DataSubBlock());
-					back().push_back(i);
+					for (int i = 0; i <= EOICode; i++)
+					{
+						push_back(DataSubBlock());
+						back().push_back(i);
+					}
+				}
+				else
+				{
+					resize(EOICode + 1);
 				}
 			}
 
@@ -346,15 +361,15 @@ namespace CPPGIF
 						// throw UnexpectedData(buf);
 						std::cerr << buf;
 					}
-					if (CurCode == CodeTable.ClearCode || ExpectCC)
+					if (CurCode == CodeTable.ClearCode)
 					{
 						ExpectCC = false;
 						CodeTable.InitCodeTable();
+						DoFirstStep = true;
 						CurCodeSize = FirstCodeSize;
 						CurCodeMaxVal = (1 << CurCodeSize) - 1;
-						DoFirstStep = true;
 					}
-					else
+					else try
 					{
 						if (CurCode == CodeTable.EOICode)
 						{
@@ -389,10 +404,16 @@ namespace CPPGIF
 							if (CurCodeSize > MaxCodeSize)
 							{
 								ExpectCC = true;
+								CodeTable.InitCodeTable();
+								DoFirstStep = true;
 								CurCodeSize = FirstCodeSize;
 							}
 							CurCodeMaxVal = (1 << CurCodeSize) - 1;
 						}
+					}
+					catch (const std::out_of_range&)
+					{
+						throw UnexpectedData("GIF: LZW decompressing: unexpected code exceeded code table limit.");
 					}
 
 					CurCodeBitsNeeded = CurCodeSize;
