@@ -266,7 +266,7 @@ namespace CPPGIF
 
 	DataSubBlock ImageDescriptorType::UncompressLZW(const DataSubBlock& Compressed, uint8_t LZW_MinCodeSize)
 	{
-		// ÔÊĞíÎŞ LZW Ñ¹ËõµÄ GIF
+		// å…è®¸æ—  LZW å‹ç¼©çš„ GIF
 		if (!LZW_MinCodeSize) return Compressed;
 
 		auto Output = DataSubBlock();
@@ -315,9 +315,9 @@ namespace CPPGIF
 		auto CodeTable = CodeTableType(LZW_MinCodeSize);
 		bool DoFirstStep = true;
 		bool EOIReached = false;
-		bool ExpectCC = true; // ĞèÒªÁ¢¿Ì»ñµÃÒ»¸ö Clear Code
+		bool ExpectCC = true; // éœ€è¦ç«‹åˆ»è·å¾—ä¸€ä¸ª Clear Code
 
-		// ÏÈ°Ñ LZW µÄ×Ö½ÚĞòÁĞÒÔ¶¯Ì¬Î»Êı³¤¶ÈµÄ±àÂë×ª±äÎª¶¨³¤µÄ±àÂë¡£
+		// å…ˆæŠŠ LZW çš„å­—èŠ‚åºåˆ—ä»¥åŠ¨æ€ä½æ•°é•¿åº¦çš„ç¼–ç è½¬å˜ä¸ºå®šé•¿çš„ç¼–ç ã€‚
 		const auto FirstCodeSize = LZW_MinCodeSize + 1;
 		constexpr auto MaxCodeSize = 12;
 		constexpr auto MaxUnpackedBits = sizeof(LZWCodeUnpackedType) * 8;
@@ -332,18 +332,18 @@ namespace CPPGIF
 			auto CurByte = LZWCodeUnpackedType(Compressed[i]);
 			auto CurByteRemains = 8;
 			do
-			{ // ÏÈ×öÎ»Êı½âÂë¹¤×÷£¬»ñÈ¡µ½×ã¹»Î»ÊıµÄÊı¾İºóÔÙ×öÂë±íµÄ¹¤×÷
+			{ // å…ˆåšä½æ•°è§£ç å·¥ä½œï¼Œè·å–åˆ°è¶³å¤Ÿä½æ•°çš„æ•°æ®åå†åšç è¡¨çš„å·¥ä½œ
 				auto BitsToGet = CurCodeBitsNeeded;
 				if (BitsToGet > CurByteRemains) BitsToGet = CurByteRemains;
 				auto BitsMask = (1 << BitsToGet) - 1;
-				// ĞÂ»ñÈ¡µ½µÄ bits ·Åµ½ CurCode µÄ¸ßÎ»£¬ÓÉ¸ß´¦ÏòµÍ´¦Éú³¤
+				// æ–°è·å–åˆ°çš„ bits æ”¾åˆ° CurCode çš„é«˜ä½ï¼Œç”±é«˜å¤„å‘ä½å¤„ç”Ÿé•¿
 				CurCode >>= BitsToGet;
 				CurCode |= (CurByte & BitsMask) << (MaxUnpackedBits - BitsToGet);
 				CurByte >>= BitsToGet;
 				CurByteRemains -= BitsToGet;
 				CurCodeBitsNeeded -= BitsToGet;
 				if (!CurByteRemains)
-				{ // ÓÃÍêÒ»¸ö×Ö½Ú
+				{ // ç”¨å®Œä¸€ä¸ªå­—èŠ‚
 					i++;
 					if (i >= Compressed.size()) 
 					{
@@ -356,10 +356,10 @@ namespace CPPGIF
 					}
 				}
 				if (!CurCodeBitsNeeded)
-				{ // È«²¿Î»Êı»ñÈ¡Íê£¬´Ë´¦»ñÈ¡µ½ÁËÒ»¸ö LZW ±àÂëÊıÖµ
-					CurCode >>= MaxUnpackedBits - CurCodeSize; // ½«¶Ñ»ıµ½¸ßÎ»µÄÊıÖµÒÆ»Ø±¾À´µÄÎ»ÖÃ
+				{ // å…¨éƒ¨ä½æ•°è·å–å®Œï¼Œæ­¤å¤„è·å–åˆ°äº†ä¸€ä¸ª LZW ç¼–ç æ•°å€¼
+					CurCode >>= MaxUnpackedBits - CurCodeSize; // å°†å †ç§¯åˆ°é«˜ä½çš„æ•°å€¼ç§»å›æœ¬æ¥çš„ä½ç½®
 
-					// Îªµ÷ÊÔ£º¼ÇÂ¼Ã¿¸ö Code Öµ
+					// ä¸ºè°ƒè¯•ï¼šè®°å½•æ¯ä¸ª Code å€¼
 					UnpackedCodes.push_back(CurCode);
 
 					if (ExpectCC && CurCode != CodeTable.ClearCode)
@@ -474,20 +474,25 @@ namespace CPPGIF
 		}
 	}
 
+	void GraphicControlExtensionType::DrawToFrame(ImageAnimFrame& DrawTo, const GIFLoader& ldr) const
+	{
+		// æ¯ä¸€ä¸ªå¸§æ˜¯ç”±å¤šä¸ªå­å›¾åƒæ„æˆçš„
+		for (auto& ImgDesc : ImageDescriptors)
+		{
+			DrawImageDesc(DrawTo, ImgDesc, ldr);
+		}
+	}
+
 	ImageAnimFrame GraphicControlExtensionType::ConvertToFrame(const GIFLoader& ldr) const
 	{
 		auto Img = ImageAnimFrame(ldr.GetWidth(), ldr.GetHeight(), Pixel_RGBA8(0, 0, 0, 0));
 
-		// Ã¿Ò»¸öÖ¡ÊÇÓÉ¶à¸ö×ÓÍ¼Ïñ¹¹³ÉµÄ
-		for (auto& ImgDesc : ImageDescriptors)
-		{
-			DrawImageDesc(Img, ImgDesc, ldr);
-		}
+		DrawToFrame(Img, ldr);
 
-		// ÉèÖÃÖ¡ÊôĞÔ
+		// è®¾ç½®å¸§å±æ€§
 		Img.Duration = DelayTime;
 
-		// ·µ»ØÖ¡
+		// è¿”å›å¸§
 		return Img;
 	}
 
@@ -495,25 +500,25 @@ namespace CPPGIF
 	{
 		auto& ImgData = ImgDesc.GetImageData();
 
-		// ¿ÕÎ»Í¼ == LZW ½âÑ¹Ê§°ÜµÄ¿é£¬ÎŞÊÓÖ®
+		// ç©ºä½å›¾ == LZW è§£å‹å¤±è´¥çš„å—ï¼Œæ— è§†ä¹‹
 		if (!ImgData.size()) return;
 
-		// Í¸Ã÷É«
+		// é€æ˜è‰²
 		int KeyColor = HasTransparency() ? TransparentColorIndex : -1;
 
-		// ÑÕÉ«Êı
+		// é¢œè‰²æ•°
 		size_t numColors = 0;
 
-		// µ÷É«°å
+		// è°ƒè‰²æ¿
 		auto& ColorTable = ImgDesc.HasLocalColorTable() ?
 			ImgDesc.GetLocalColorTable(numColors) :
 			ldr.GetGlobalColorTable(numColors);
 
-		// »­Í¼Î»ÖÃ
+		// ç”»å›¾ä½ç½®
 		int dx = ImgDesc.GetLeft();
 		int dy = ImgDesc.GetTop();
 
-		// ²¢·¢»­Í¼
+		// å¹¶å‘ç”»å›¾
 #pragma omp parallel for
 		for (int y = 0; y < int(ImgDesc.GetHeight()); y++)
 		{
@@ -521,8 +526,8 @@ namespace CPPGIF
 			for (int x = 0; x < int(ImgDesc.GetWidth()); x++)
 			{
 				int ci = ImgData.at(row + x);
-				if (ci == KeyColor) continue; // Ìø¹ıÍ¸Ã÷É«
-				auto& c = ColorTable.at(ci); // É«±íÈ¡É«
+				if (ci == KeyColor) continue; // è·³è¿‡é€æ˜è‰²
+				auto& c = ColorTable.at(ci); // è‰²è¡¨å–è‰²
 				DrawTo.PutPixel(x + dx, y + dy, Pixel_RGBA8(c.R, c.G, c.B, 255));
 			}
 		}
