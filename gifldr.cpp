@@ -22,14 +22,14 @@ namespace CPPGIF
 	};
 
 	template<typename T>
-	size_t Read(std::istream& is, T& out)
+	static size_t Read(std::istream& is, T& out)
 	{
 		is.read(reinterpret_cast<char*>(&out), sizeof(out));
 		return sizeof(out);
 	}
 
 	template<typename T>
-	size_t Read(std::istream& is, T* out_ptr, size_t count)
+	static size_t Read(std::istream& is, T* out_ptr, size_t count)
 	{
 		auto BytesRead = sizeof(T) * count;
 		is.read(reinterpret_cast<char*>(out_ptr), BytesRead);
@@ -37,7 +37,7 @@ namespace CPPGIF
 	}
 
 	template<typename T>
-	size_t ReadVector(std::istream& is, std::vector<T>& out)
+	static size_t ReadVector(std::istream& is, std::vector<T>& out)
 	{
 		auto BytesRead = sizeof(T) * out.size();
 		is.read(reinterpret_cast<char*>(&out[0]), BytesRead);
@@ -45,12 +45,27 @@ namespace CPPGIF
 	}
 
 	template<typename T>
-	size_t ReadVector(std::istream& is, std::vector<T>& out, size_t count)
+	static size_t ReadVector(std::istream& is, std::vector<T>& out, size_t count)
 	{
 		out.resize(count);
 		auto BytesRead = sizeof(T) * count;
 		is.read(reinterpret_cast<char*>(&out[0]), BytesRead);
 		return BytesRead;
+	}
+
+	static DataSubBlock ReadDataSubBlock(std::istream& is)
+	{
+		auto BlockSize = uint8_t(0);
+		auto ret = DataSubBlock();
+		Read(is, BlockSize);
+		while (BlockSize)
+		{
+			size_t i = ret.size();
+			ret.resize(i + BlockSize);
+			Read(is, &ret[i], BlockSize);
+			Read(is, BlockSize);
+		}
+		return ret;
 	}
 
 	LogicalScreenDescriptorType::LogicalScreenDescriptorType(uint16_t LogicalScreenWidth, uint16_t LogicalScreenHeight, uint8_t Bitfields, uint8_t BackgroundColorIndex, std::shared_ptr<ColorTableArray> GlobalColorTable) :
@@ -378,21 +393,6 @@ namespace CPPGIF
 	{
 		numColorsOut = LogicalScreenDescriptor.SizeOfGlobalColorTable();
 		return LogicalScreenDescriptor.GetGlobalColorTable();
-	}
-
-	static DataSubBlock ReadDataSubBlock(std::istream& is)
-	{
-		auto BlockSize = uint8_t(0);
-		auto ret = DataSubBlock();
-		Read(is, BlockSize);
-		while (BlockSize)
-		{
-			size_t i = ret.size();
-			ret.resize(i + BlockSize);
-			Read(is, &ret[i], BlockSize);
-			Read(is, BlockSize);
-		}
-		return ret;
 	}
 
 	const LogicalScreenDescriptorType& GIFLoader::GetLogicalScreenDescriptor() const
