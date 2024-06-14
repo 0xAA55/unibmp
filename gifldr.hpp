@@ -16,6 +16,12 @@ namespace CPPGIF
 	// 文档
 	// https://giflib.sourceforge.net/gifstandard/GIF89a.html
 
+	class EncodeError : public std::runtime_error
+	{
+	public:
+		EncodeError(const std::string& what) noexcept;
+	};
+
 	class DecodeError : public std::runtime_error
 	{
 	public:
