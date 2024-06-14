@@ -784,7 +784,7 @@ namespace CPPGIF
 		auto numFrames = Frames.size();
 		auto CanvasW = TrueForVertical ? Width : Width * numFrames;
 		auto CanvasH = TrueForVertical ? Height * numFrames : Height;
-		auto Canvas = Image_RGBA8(CanvasW, CanvasH, Pixel_RGBA8(0, 0, 0, 0));
+		auto Canvas = Image_RGBA8(uint32_t(CanvasW), uint32_t(CanvasH), Pixel_RGBA8(0, 0, 0, 0));
 
 		auto DrawX = 0;
 		auto DrawY = 0;
