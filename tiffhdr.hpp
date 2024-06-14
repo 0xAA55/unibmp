@@ -191,6 +191,8 @@ namespace UniformBitmap
 		std::shared_ptr<IFD> GPSSubIFD;  // 0x8825
 		std::shared_ptr<IFD> InteroperabilityIFD; // 0xa005
 
+		std::list<std::vector<IFD>> MakerNoteSubIFD;
+
 		IFD() = default;
 		IFD(const IFD& c) = default;
 		bool operator==(const IFD& other) const = default;
@@ -245,9 +247,9 @@ namespace UniformBitmap
 	//     这个参数同时用于接收实际读取的 TIFF 数据的大小
 	// 返回值：经过初步解析的结构化的 TIFF 数据
 	TIFFHeader ParseTIFFHeader(std::istream& ifs);
-	TIFFHeader ParseTIFFHeader(const uint8_t* TIFFData, size_t& TIFFDataSize);
+	TIFFHeader ParseTIFFHeader(const uint8_t* TIFFData, size_t TIFFDataSize);
 
-	std::string TIFFHeaderToString(const TIFFHeader& TIFFHdr);
+	std::string TIFFHeaderToString(const TIFFHeader& TIFFHdr, int indent = 2, int cur_indent = 0);
 
 	// 函数：将解析好的 TIFF 头再做成字节数组
 	// 参数：
