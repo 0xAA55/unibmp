@@ -47,4 +47,8 @@ namespace ImageAnimation
 		}
 		Canvas.SaveToPNG(OutputFile);
 	}
+
+	void ImageAnim::SaveGIF(const std::string& OutputFile, SaveGIFOptions options) const
+	{
+	}
 }

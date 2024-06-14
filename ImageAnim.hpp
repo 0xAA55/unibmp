@@ -27,7 +27,7 @@ namespace ImageAnimation
 	public:
 		std::vector<ImageAnimFrame> Frames;
 		std::string Name;
-		bool Verbose = true;;
+		bool Verbose = true;
 
 	public:
 		ImageAnim(uint32_t Width, uint32_t Height, bool Verbose);
@@ -35,5 +35,14 @@ namespace ImageAnimation
 		uint32_t GetHeight() const;
 
 		void SaveSequencePNG(const std::string& OutputFile, bool TrueForVertical) const;
+
+		struct SaveGIFOptions
+		{
+			bool UseLocalPalettes = false;
+			bool UseOrderedPattern = true;
+			bool UseFloydSteinberg = true;
+		};
+
+		void SaveGIF(const std::string& OutputFile, SaveGIFOptions options) const;
 	};
 };
