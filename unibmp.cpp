@@ -1329,7 +1329,7 @@ namespace UniformBitmap
 	template<typename PixelType>
 	bool Image<PixelType>::WidthIs2N() const
 	{
-		uint64_t i = 0;
+		uint64_t i = 1;
 		while (i < Width) i <<= 1;
 		return i == Width;
 	}
@@ -1337,7 +1337,7 @@ namespace UniformBitmap
 	template<typename PixelType>
 	bool Image<PixelType>::HeightIs2N() const
 	{
-		uint64_t i = 0;
+		uint64_t i = 1;
 		while (i < Height) i <<= 1;
 		return i == Height;
 	}
