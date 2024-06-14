@@ -226,6 +226,40 @@ namespace UniformBitmap
 		{"CFAPattern", 0xa302},
 	};
 
+	const std::unordered_map<IFDFieldFormat, std::string> IFDFormatToStringMap =
+	{
+		{IFDFieldFormat::Unknown, "<unknown>"},
+		{IFDFieldFormat::SByte, "SByte"},
+		{IFDFieldFormat::SShort, "SShort"},
+		{IFDFieldFormat::SLong, "SLong"},
+		{IFDFieldFormat::SRational, "SRational"},
+		{IFDFieldFormat::UByte, "UByte"},
+		{IFDFieldFormat::UShort, "UShort"},
+		{IFDFieldFormat::ULong, "ULong"},
+		{IFDFieldFormat::URational, "URational"},
+		{IFDFieldFormat::Undefined, "Undefined"},
+		{IFDFieldFormat::AsciiString, "AsciiString"},
+		{IFDFieldFormat::Float, "Float"},
+		{IFDFieldFormat::Double, "Double"},
+	};
+
+	const std::unordered_map<std::string, IFDFieldFormat> StringToIFDFormatMap =
+	{
+		{"<unknown>", IFDFieldFormat::Unknown},
+		{"SByte", IFDFieldFormat::SByte},
+		{"SShort", IFDFieldFormat::SShort},
+		{"SLong", IFDFieldFormat::SLong},
+		{"SRational", IFDFieldFormat::SRational},
+		{"UByte", IFDFieldFormat::UByte},
+		{"UShort", IFDFieldFormat::UShort},
+		{"ULong", IFDFieldFormat::ULong},
+		{"URational", IFDFieldFormat::URational},
+		{"Undefined", IFDFieldFormat::Undefined},
+		{"AsciiString", IFDFieldFormat::AsciiString},
+		{"Float", IFDFieldFormat::Float},
+		{"Double", IFDFieldFormat::Double},
+	};
+
 	template<typename T>
 	IFDFieldFormat IFDFieldType<T>::GetFormatValueByType()
 	{
@@ -278,6 +312,92 @@ namespace UniformBitmap
 	IFDFieldType<T>::IFDFieldType(const std::vector<T>& Values) :
 		IFDFieldType(GetFormatValueByType(), Values)
 	{
+	}
+
+	template<typename T> requires std::is_same_v<T, Rational> || std::is_same_v<T, URational>
+	std::string ComponentToString(const T& r)
+	{
+		char buf[64];
+		snprintf(buf, sizeof buf, "%d/%d", r.Numerator, r.Denominator);
+		return buf;
+	}
+
+	template<typename T> requires std::is_integral_v<T>
+	std::string ComponentToString(const T& v)
+	{
+		char buf[64];
+		if constexpr (std::is_signed_v<T>)
+			snprintf(buf, sizeof buf, "%d", int32_t(v));
+		else
+			snprintf(buf, sizeof buf, "%u", uint32_t(v));
+		return buf;
+	}
+
+	template<typename T> requires std::is_floating_point_v<T>
+	std::string ComponentToString(const T& v)
+	{
+		char buf[128];
+		snprintf(buf, sizeof buf, "%lf", double(v));
+		return buf;
+	}
+
+	template<typename T>
+	std::string ComponentsToString(const std::vector<T>& Components, size_t limit = 16)
+	{
+		if (Components.size() == 1)
+		{
+			return ComponentToString(Components[0]);
+		}
+		else
+		{
+			std::stringstream ss;
+			ss << "[";
+			for (size_t i = 0; i < Components.size(); i++)
+			{
+				if(i) ss << ", ";
+				ss << ComponentToString(Components[i]);
+				if (i >= limit)
+				{
+					ss << ", ...(" << Components.size() << " items)";
+					break;
+				}
+			}
+			ss << "]";
+			return ss.str();
+		}
+	}
+
+	template<typename T>
+	std::string IFDFieldType<T>::ToString() const
+	{
+		std::stringstream ss;
+
+		ss << IFDFormatToStringMap.at(Type) << ":\t";
+
+		if (Components.size() == 0)
+		{
+			ss << "<None>";
+			return ss.str();
+		}
+
+		ss << ComponentsToString(Components);
+		return ss.str();
+	}
+
+	std::string IFDFieldString::ToString() const
+	{
+		std::stringstream ss;
+
+		ss << IFDFormatToStringMap.at(Type) << ":\t";
+
+		if (Components.size() == 0)
+		{
+			ss << "<None>";
+			return ss.str();
+		}
+
+		ss << Components;
+		return ss.str();
 	}
 
 	template class IFDFieldType<int8_t>;
@@ -693,6 +813,7 @@ namespace UniformBitmap
 				throw ReadDataError(std::string("Invalid data input, ") + e.what());
 			}
 			Parse(); // 它自己会抛出 ReadDataError
+
 		}
 
 		const TIFFHeader& GetParsed() const
@@ -719,6 +840,50 @@ namespace UniformBitmap
 		std::stringstream ss;
 		ss.rdbuf()->pubsetbuf(reinterpret_cast<char*>(const_cast<uint8_t*>(TIFFData)), TIFFDataSize);
 		return ParseTIFFHeader(ss);
+	}
+
+	static void ShowIFDFields(std::stringstream& ss, const IFD& Ifd)
+	{
+		for (auto& field : Ifd.Fields)
+		{
+			char buf[256];
+			try
+			{
+				snprintf(buf, sizeof buf, "  %s:\t", IFDTagToStr.at(field.first));
+			}
+			catch (const std::out_of_range& e)
+			{
+				snprintf(buf, sizeof buf, "  <Unknown tag 0x%04X>:\t", field.first);
+			}
+			ss << buf << field.second->ToString() << "\n";
+		}
+		if (Ifd.ExifSubIFD)
+		{
+			ss << "- Exif SubIFD:\n";
+			ShowIFDFields(ss, *Ifd.ExifSubIFD);
+		}
+		if (Ifd.GPSSubIFD)
+		{
+			ss << "- GPS SubIFD:\n";
+			ShowIFDFields(ss, *Ifd.GPSSubIFD);
+		}
+		if (Ifd.InteroperabilityIFD)
+		{
+			ss << "- Interoperability SubIFD:\n";
+			ShowIFDFields(ss, *Ifd.InteroperabilityIFD);
+		}
+	}
+
+	std::string TIFFHeaderToString(const TIFFHeader& TIFFHdr)
+	{
+		std::stringstream ss;
+		for (size_t i = 0; i < TIFFHdr.size(); i++)
+		{
+			auto& IFD = TIFFHdr[i];
+			ss << "IFD" << i << ":\n";
+			ShowIFDFields(ss, IFD);
+		}
+		return ss.str();
 	}
 
 	template<typename T>

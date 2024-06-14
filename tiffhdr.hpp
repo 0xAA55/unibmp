@@ -48,6 +48,9 @@ namespace UniformBitmap
 		Double = 12
 	};
 
+	extern const std::unordered_map<IFDFieldFormat, std::string> IFDFormatToStringMap;
+	extern const std::unordered_map<std::string, IFDFieldFormat> StringToIFDFormatMap;
+
 	struct TIFFDateTime
 	{
 		char YYYY[4] = {};
@@ -111,6 +114,8 @@ namespace UniformBitmap
 		const IFDFieldDoubles& AsDoubles() const;
 		const IFDFieldUndefined& AsUndefined() const;
 		const IFDFieldString& AsString() const;
+
+		virtual std::string ToString() const = 0;
 	};
 
 	using IFDData = std::unordered_map<uint16_t, std::shared_ptr<IFDFieldBase>>;
@@ -133,6 +138,8 @@ namespace UniformBitmap
 		IFDFieldType(IFDFieldFormat Type, const std::vector<T>& Values);
 		IFDFieldType(T Value);
 		IFDFieldType(const std::vector<T>& Values);
+
+		virtual std::string ToString() const override;
 	};
 
 	extern template class IFDFieldType<int8_t>;
@@ -158,6 +165,8 @@ namespace UniformBitmap
 
 		IFDFieldString(const IFDFieldString& c) = default;
 		bool operator==(const IFDFieldString& other) const = default;
+
+		virtual std::string ToString() const override;
 	};
 
 	struct IFD
@@ -219,6 +228,8 @@ namespace UniformBitmap
 	// 返回值：经过初步解析的结构化的 TIFF 数据
 	TIFFHeader ParseTIFFHeader(std::istream& ifs);
 	TIFFHeader ParseTIFFHeader(const uint8_t* TIFFData, size_t& TIFFDataSize);
+
+	std::string TIFFHeaderToString(const TIFFHeader& TIFFHdr);
 
 	// 函数：将解析好的 TIFF 头再做成字节数组
 	// 参数：
