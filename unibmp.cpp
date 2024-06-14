@@ -394,6 +394,7 @@ namespace UniformBitmap
 		size_t i;
 
 		std::ifstream ifs(FilePath, std::ios::binary);
+		ifs.exceptions(std::ofstream::badbit | std::ofstream::failbit);
 		std::stringstream sserr;
 
 		if (ifs.fail())
