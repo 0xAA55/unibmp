@@ -1,5 +1,5 @@
 *.user
 *.o
 ubtest
-test.gif
-test.png
+test*.gif
+test*.png
