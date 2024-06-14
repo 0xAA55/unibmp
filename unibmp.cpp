@@ -1418,7 +1418,7 @@ namespace UniformBitmap
 		for (int y = 0; y < int(NewHeight); y++)
 		{
 			float v = float(y) / NewHeight;
-			auto DstRow = PrevRPtr[y];
+			auto DstRow = RowPointers[y];
 			for (int x = 0; x < int(NewWidth); x++)
 			{
 				float u = float(x) / NewWidth;
@@ -1449,7 +1449,7 @@ namespace UniformBitmap
 		{
 			int y0 = int((int64_t(y) * OrigHeight + 0) / int(NewHeight));
 			int y1 = int((int64_t(y) * OrigHeight + 1) / int(NewHeight));
-			auto DstRow = PrevRPtr[y];
+			auto DstRow = RowPointers[y];
 			for (int x = 0; x < int(NewWidth); x++)
 			{
 				int x0 = int((int64_t(x) * OrigWidth + 0) / int(NewWidth));
@@ -1487,9 +1487,9 @@ namespace UniformBitmap
 		auto ret = Pixel_RGBA32F(0, 0, 0, 0);
 		size_t count = 0;
 
-		for (int y = y0; y < y1; y++)
+		for (int y = y0; y <= y1; y++)
 		{
-			for (int x = x0; x < x1; x++)
+			for (int x = x0; x <= x1; x++)
 			{
 				auto& c = RowPointers[y][x];
 				ret.R += c.R;
