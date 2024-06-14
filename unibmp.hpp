@@ -285,6 +285,9 @@ namespace UniformBitmap
 		void Rotate_CW(RotationAngle Angle);
 		void Rotate_CCW(RotationAngle Angle);
 		void Rotate(RotationAngle Angle, RotationOrient Orient);
+
+		bool WidthIs2N() const;
+		bool HeightIs2N() const;
 	};
 
 	extern template class Image<Pixel_RGBA8>;

@@ -1284,6 +1284,22 @@ namespace UniformBitmap
 		}
 	}
 
+	template<typename PixelType>
+	bool Image<PixelType>::WidthIs2N() const
+	{
+		uint64_t i = 0;
+		while (i < Width) i <<= 1;
+		return i == Width;
+	}
+
+	template<typename PixelType>
+	bool Image<PixelType>::HeightIs2N() const
+	{
+		uint64_t i = 0;
+		while (i < Height) i <<= 1;
+		return i == Height;
+	}
+
 	template<typename PixelType, typename T>
 	size_t SaveBmp24(const Image<PixelType>& img, T& t, bool InverseLineOrder)
 	try
