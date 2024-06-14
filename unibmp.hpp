@@ -198,6 +198,8 @@ namespace UniformBitmap
 		size_t SaveToBmp24(FileInMemoryType& mf, bool InverseLineOrder) const;
 		size_t SaveToBmp32(FileInMemoryType& mf, bool InverseLineOrder) const;
 
+		void RotateByExifData(bool RemoveRotationFromExifData, bool Verbose);
+
 	public:
 		inline uint32_t GetWidth() const { return Width; }
 		inline uint32_t GetHeight() const { return Height; }
