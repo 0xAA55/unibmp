@@ -1029,6 +1029,7 @@ namespace UniformBitmap
 	{
 		int HalfWidth = int(Width >> 1);
 		int MaxX = int(Width - 1);
+
 #pragma omp parallel for
 		for (int y = 0; y < int(Height); y++)
 		{
@@ -1047,15 +1048,16 @@ namespace UniformBitmap
 		int MaxY = int(Height - 1);
 		auto RowBuffers = std::make_unique<PixelType[]>(int(Width) * HalfHeight);
 		auto RowLength = size_t(Width) * sizeof(PixelType);
+
 #pragma omp parallel for
 		for (int y = 0; y < HalfHeight; y++)
 		{
 			auto& row1 = RowPointers[y];
 			auto& row2 = RowPointers[MaxY - y];
 			auto& rowb = RowBuffers[int(Width) * y];
-			memcpy(rowb, row1, RowLength);
-			memcpy(row1, row2, RowLength);
-			memcpy(row2, rowb, RowLength);
+			memcpy(&rowb, &row1, RowLength);
+			memcpy(&row1, &row2, RowLength);
+			memcpy(&row2, &rowb, RowLength);
 		}
 	}
 
@@ -1063,13 +1065,67 @@ namespace UniformBitmap
 	void Image<PixelType>::Rotate180()
 	{
 		FlipH();
-		FlipV()
+		FlipV();
+	}
+
+	template<typename PixelType>
+	void Image<PixelType>::Rotate90_CW()
+	{
+		auto PrevBMP = std::move(BitmapData);
+		auto PrevRPtr = std::move(RowPointers);
+		CreateBuffer(Height, Width);
+
+		const auto MaxX = int(Width - 1);
+		const auto MaxY = int(Height - 1);
+
+#pragma omp parallel for
+		for (int y = 0; y < int(Height); y++)
+		{
+			auto& row = RowPointers[y];
+			for (int x = 0; x < int(Width); x++)
+			{
+				row[x] = PrevRPtr[MaxX - x][y];
+			}
+		}
+	}
+
+	template<typename PixelType>
+	void Image<PixelType>::Rotate270_CW()
+	{
+		auto PrevBMP = std::move(BitmapData);
+		auto PrevRPtr = std::move(RowPointers);
+		CreateBuffer(Height, Width);
+
+		const auto MaxX = int(Width - 1);
+		const auto MaxY = int(Height - 1);
+
+#pragma omp parallel for
+		for (int y = 0; y < int(Height); y++)
+		{
+			auto& row = RowPointers[y];
+			for (int x = 0; x < int(Width); x++)
+			{
+				row[x] = PrevRPtr[x][MaxY - y];
+			}
+		}
+	}
+
+	template<typename PixelType>
+	void Image<PixelType>::Rotate90_CCW()
+	{
+		Rotate270_CW();
+	}
+
+	template<typename PixelType>
+	void Image<PixelType>::Rotate270_CCW()
+	{
+		Rotate90_CW();
 	}
 
 	template<typename PixelType>
 	void Image<PixelType>::FlipV_RowPtrs()
 	{
-		std::reverse(RowPointers.cbegin(), RowPointers.cend());
+		std::reverse(RowPointers.begin(), RowPointers.end());
 	}
 
 	template<typename PixelType, typename T>
