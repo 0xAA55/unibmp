@@ -343,6 +343,28 @@ namespace UniformBitmap
 	template Pixel_RGBA32F::Pixel_RGBA(const Pixel_RGBA32& from);
 	template Pixel_RGBA32F::Pixel_RGBA(const Pixel_RGBA32F& from);
 
+	uint8_t Clip(int c)
+	{
+		c = c > 255 ? 255 : c;
+		c = c < 0 ? 0 : c;
+		return uint8_t(c);
+	}
+
+	Pixel_RGBA8 ConvertYCrCbToRGB(int y, int cr, int cb)
+	{
+		Pixel_RGBA8 rgba;
+
+		int c = y - 16;
+		int d = cb - 128;
+		int e = cr - 128;
+
+		rgba.R = Clip((298 * c + 409 * e + 128) >> 8);
+		rgba.G = Clip((298 * c - 100 * d - 208 * e + 128) >> 8);
+		rgba.B = Clip((298 * c + 516 * d + 128) >> 8);
+		rgba.A = 255;
+		return rgba;
+	}
+
 	Point::Point(uint32_t x, uint32_t y) : x(x), y(y)
 	{}
 	size_t Point::Hash::operator()(const Point& p) const

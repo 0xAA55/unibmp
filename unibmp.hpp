@@ -99,6 +99,8 @@ namespace UniformBitmap
 	extern template Pixel_RGBA32F::Pixel_RGBA(const Pixel_RGBA32& from);
 	extern template Pixel_RGBA32F::Pixel_RGBA(const Pixel_RGBA32F& from);
 
+	Pixel_RGBA8 ConvertYCrCbToRGB(int y, int cr, int cb);
+
 	class Point
 	{
 	public:
