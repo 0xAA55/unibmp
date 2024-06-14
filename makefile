@@ -3,9 +3,9 @@ CXX=g++
 LD=gcc
 AR=ar
 RANLIB=ranlib
-CFLAGS=-static -fPIC -fopenmp -std=c++20 -O3 -I. -Iinclude -fopenmp
+CFLAGS=-static -fPIC -fopenmp -std=c++20 -O3 -I. -Iinclude
 CXXFLAGS=$(CFLAGS) -fmax-errors=5
-LDFLAGS=-s -g -L.
+LDFLAGS=-s -g -L. -fopenmp
 LDLIBS=-lstdc++ -lm -lgomp -lunibmp
 
 OBJS=
