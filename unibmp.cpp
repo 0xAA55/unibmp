@@ -8,7 +8,6 @@
 
 namespace UniformBitmap
 {
-	using FileInMemoryType = std::vector<uint8_t>;
 
 	ReadBmpFileError::ReadBmpFileError(std::string what) noexcept :
 		std::runtime_error(what)
@@ -108,7 +107,7 @@ namespace UniformBitmap
 		constexpr auto max = static_cast<double>(std::numeric_limits<DstI>::max());
 		constexpr auto min = static_cast<double>(std::numeric_limits<DstI>::min());
 		if (value > 1.0) value = 1.0;
-		if (std::is_signed_v<DstI>)
+		if constexpr (std::is_signed_v<DstI>)
 		{
 			if (value < -1.0) value = -1.0;
 			return static_cast<DstI>(min + (value + 1.0) * 0.5 * (max - min));
@@ -120,16 +119,14 @@ namespace UniformBitmap
 		}
 	}
 
-#pragma warning(disable: 4293)
-
-	template<typename SrcI, typename DstI> requires std::is_integral_v<SrcI>&& std::is_integral_v<DstI>
+	template<typename SrcI, typename DstI> requires std::is_integral_v<SrcI> && std::is_integral_v<DstI>
 	DstI NormalizedIntegralConvertion(SrcI si)
 	{
 		constexpr int SrcBitCount = sizeof(SrcI) * 8;
 		constexpr int DstBitCount = sizeof(DstI) * 8;
-		if (SrcBitCount >= DstBitCount)
+		if constexpr (SrcBitCount >= DstBitCount)
 		{
-			if (std::is_signed_v<DstI>)
+			if constexpr(std::is_signed_v<DstI>)
 			{
 				// int8_t -> int8_t
 				// int16_t -> int8_t
@@ -161,7 +158,7 @@ namespace UniformBitmap
 		}
 		else
 		{
-			if (std::is_signed_v<DstI>)
+			if constexpr (std::is_signed_v<DstI>)
 			{
 				// int8_t -> int16_t
 				// int8_t -> int32_t
@@ -195,8 +192,6 @@ namespace UniformBitmap
 			return value;
 		}
 	}
-
-#pragma warning(default: 4293)
 
 	template<typename SrcI, typename DstI> requires std::is_integral_v<SrcI> && std::is_floating_point_v<DstI>
 	DstI ChannelConvert(SrcI si)
@@ -1103,68 +1098,6 @@ namespace UniformBitmap
 		return ret;
 	}
 
-
-	template<typename PixelType>
-	std::shared_ptr<TIFFHeader> Image<PixelType>::FindExifDataFromJpeg(const std::string& FilePath)
-	try
-	{
-		auto ifs = std::ifstream(FilePath, std::ios::binary);
-		ifs.exceptions(std::ios::badbit | std::ios::failbit);
-		return FindExifDataFromJpeg(ifs);
-	}
-	catch (const std::ios::failure&)
-	{
-		return nullptr;
-	}
-
-	template<typename PixelType>
-	std::shared_ptr<TIFFHeader> Image<PixelType>::FindExifDataFromJpeg(std::istream& ifs)
-	try
-	{
-		uint16_t Buf16;
-		uint16_t ExifChunkSize;
-		uint32_t Buf32;
-
-		ReadData(ifs, Buf16);
-		if (Buf16 != 0xD8FF) return false; // 不是 JPG 文件
-
-		ReadData(ifs, Buf16);
-		if (Buf16 != 0xE1FF) return false; // 没有 Exif 头
-
-		ReadData(ifs, ExifChunkSize); // 读取 Exif 头部大小
-		ExifChunkSize -= 2;
-
-		// 读取 Exif 标识
-		ReadData(ifs, Buf32);
-		ReadData(ifs, Buf16);
-		if (Buf32 != 0x66697845 || Buf16 != 0x0000) return false; // 不是 'Exif' 标识
-
-		// 后面就都是 TIFF 头的数据了，交给 `ParseTIFFHeader()`
-		return std::make_shared<TIFFHeader>(ParseTIFFHeader(ifs));;
-	}
-	catch (const ReadDataError&)
-	{
-		return nullptr;
-	}
-	catch (const std::ios::failure&)
-	{
-		return nullptr;
-	}
-
-	template<typename PixelType>
-	static std::shared_ptr<TIFFHeader> Image<PixelType>::FindExifDataFromJpeg(FileInMemoryType& JpegFile)
-	{
-		return FindExifDataFromJpeg(reinterpret_cast<void*>(&JpegFile.front()), JpegFile.size());
-	}
-
-	template<typename PixelType>
-	std::shared_ptr<TIFFHeader> Image<PixelType>::FindExifDataFromJpeg(const void* FileInMemory, size_t FileSize)
-	{
-		std::stringstream ss;
-		ss.rdbuf()->pubsetbuf(reinterpret_cast<char*>(const_cast<void*>(FileInMemory)), FileSize);
-		return FindExifDataFromJpeg(ss);
-	}
-
 	template<typename PixelType>
 	Image<PixelType>::FloodFillEdgeType Image<PixelType>::FloodFill(uint32_t x, uint32_t y, const PixelType& Color, bool RetrieveEdge, bool(*IsSamePixel)(const PixelType& a, const PixelType& b), void (*SetPixel)(PixelType& dst, const PixelType& src))
 	{
@@ -1199,6 +1132,106 @@ namespace UniformBitmap
 			NewEdgePoints = std::make_unique<PixelRefSet>();
 		}
 		return Edge;
+	}
+
+	std::shared_ptr<TIFFHeader> FindExifDataFromJpeg(const std::string& FilePath)
+	{
+		auto ifs = std::ifstream(FilePath, std::ios::binary);
+		ifs.exceptions(std::ios::badbit | std::ios::failbit);
+		return FindExifDataFromJpeg(ifs);
+	}
+
+	std::shared_ptr<TIFFHeader> FindExifDataFromJpeg(FileInMemoryType& JpegFile)
+	{
+		return FindExifDataFromJpeg(reinterpret_cast<void*>(&JpegFile.front()), JpegFile.size());
+	}
+
+	std::shared_ptr<TIFFHeader> FindExifDataFromJpeg(const void* FileInMemory, size_t FileSize)
+	{
+		auto cptr = reinterpret_cast<const char*>(FileInMemory);
+		auto ifs = std::istringstream(std::string(cptr, cptr + FileSize));
+		return FindExifDataFromJpeg(ifs);
+	}
+
+	std::shared_ptr<TIFFHeader> FindExifDataFromJpeg(std::istream& ifs)
+	{
+		uint16_t Buf16;
+		uint16_t ExifChunkSize;
+		uint32_t Buf32;
+
+		ReadData(ifs, Buf16);
+		if (Buf16 != 0xD8FF) return nullptr; // 不是 JPG 文件
+
+		ReadData(ifs, Buf16);
+		if (Buf16 != 0xE1FF) return nullptr; // 没有 Exif 头
+
+		ReadData(ifs, ExifChunkSize); // 读取 Exif 头部大小
+		ExifChunkSize -= 2;
+
+		// 读取 Exif 标识
+		ReadData(ifs, Buf32);
+		ReadData(ifs, Buf16);
+		if (Buf32 != 0x66697845 || Buf16 != 0x0000) return nullptr; // 不是 'Exif' 标识
+
+		// 后面就都是 TIFF 头的数据了，交给 `ParseTIFFHeader()`
+		return std::make_shared<TIFFHeader>(ParseTIFFHeader(ifs));;
+	}
+
+	void ModifyJpegToInsertExif(FileInMemoryType& JpegFile, const TIFFHeader& ExifData)
+	{
+		FileInMemoryType ExifHeader = {
+			0xFF, 0xE1,
+			0, 0,
+			'E', 'x', 'i', 'f', 0, 0
+		};
+		if (1)
+		{
+			auto TIFFHeaderBytes = StoreTIFFHeader(ExifData);
+			size_t SegmentLength = TIFFHeaderBytes.size() + 2 + 6;
+			if (SegmentLength > 0xFFFFu)
+			{
+				// 这个 Exif 节长度超标了
+				std::cerr << "Warning: JPEG Exif section size too big to fit.\n";
+				return;
+			}
+			WriteData(ExifHeader, TIFFHeaderBytes);
+
+			ExifHeader[2] = (SegmentLength >> 8) & 0xFF;
+			ExifHeader[3] = SegmentLength & 0xFF;
+		}
+
+		// 准备插入 ExifHeader 到 JPEG 头部，替换已有头部
+		size_t NewOffsetToNextHdr = ExifHeader.size() + 2;
+		size_t OffsetToNextHdr = 2;
+		if (JpegFile[2] == 0xFF && // 检查已有的头部，将其删除（重新标记下一个头部的位置）
+			(JpegFile[3] == 0xE0 || JpegFile[3] == 0xE1))
+		{
+			OffsetToNextHdr += 2;
+			OffsetToNextHdr +=
+				(size_t(JpegFile[4]) << 8) +
+				JpegFile[5];
+		}
+		if (JpegFile.size() <= OffsetToNextHdr) throw SaveImageError("Failed to add Exif data to JPG: corrupted file.");
+
+		// 调整 JPEG 文件大小和后续内容的位置，使能容纳新的 Exif 头部
+		size_t RemSize = JpegFile.size() - OffsetToNextHdr;
+		if (NewOffsetToNextHdr > OffsetToNextHdr)
+		{
+			JpegFile.resize(NewOffsetToNextHdr + RemSize);
+			memmove(&JpegFile[NewOffsetToNextHdr],
+				&JpegFile[OffsetToNextHdr],
+				RemSize);
+		}
+		else if (NewOffsetToNextHdr < OffsetToNextHdr)
+		{
+			memmove(&JpegFile[NewOffsetToNextHdr],
+				&JpegFile[OffsetToNextHdr],
+				RemSize);
+			JpegFile.resize(NewOffsetToNextHdr + RemSize);
+		}
+
+		// 插入新的头部数据
+		memcpy(&JpegFile[2], &ExifHeader[0], ExifHeader.size());
 	}
 }
 
@@ -1342,64 +1375,6 @@ namespace UniformBitmap
 	{
 		auto& wt = *reinterpret_cast<FileInMemoryType*>(context);
 		WriteData(wt, data, size_t(size));
-	}
-
-	template<typename PixelType>
-	void Image<PixelType>::ModifyJpegToInsertExif(FileInMemoryType& JpegFile, const TIFFHeader& ExifData)
-	{
-		FileInMemoryType ExifHeader = {
-			0xFF, 0xE1,
-			0, 0,
-			'E', 'x', 'i', 'f', 0, 0
-		};
-		if (1)
-		{
-			auto TIFFHeaderBytes = StoreTIFFHeader(ExifData);
-			size_t SegmentLength = TIFFHeaderBytes.size() + 2 + 6;
-			if (SegmentLength > 0xFFFFu)
-			{
-				// 这个 Exif 节长度超标了
-				std::cerr << "Warning: JPEG Exif section size too big to fit.\n";
-				return;
-			}
-			WriteData(ExifHeader, TIFFHeaderBytes);
-
-			ExifHeader[2] = (SegmentLength >> 8) & 0xFF;
-			ExifHeader[3] = SegmentLength & 0xFF;
-		}
-		
-		// 准备插入 ExifHeader 到 JPEG 头部，替换已有头部
-		size_t NewOffsetToNextHdr = ExifHeader.size() + 2;
-		size_t OffsetToNextHdr = 2;
-		if (JpegFile[2] == 0xFF && // 检查已有的头部，将其删除（重新标记下一个头部的位置）
-			(JpegFile[3] == 0xE0 || JpegFile[3] == 0xE1))
-		{
-			OffsetToNextHdr += 2;
-			OffsetToNextHdr +=
-				(size_t(JpegFile[4]) << 8) +
-				JpegFile[5];
-		}
-		if (JpegFile.size() <= OffsetToNextHdr) throw SaveImageError("Failed to add Exif data to JPG: corrupted file.");
-
-		// 调整 JPEG 文件大小和后续内容的位置，使能容纳新的 Exif 头部
-		size_t RemSize = JpegFile.size() - OffsetToNextHdr;
-		if (NewOffsetToNextHdr > OffsetToNextHdr)
-		{
-			JpegFile.resize(NewOffsetToNextHdr + RemSize);
-			memmove(&JpegFile[NewOffsetToNextHdr],
-				&JpegFile[OffsetToNextHdr],
-				RemSize);
-		}
-		else if (NewOffsetToNextHdr < OffsetToNextHdr)
-		{
-			memmove(&JpegFile[NewOffsetToNextHdr],
-				&JpegFile[OffsetToNextHdr],
-				RemSize);
-			JpegFile.resize(NewOffsetToNextHdr + RemSize);
-		}
-
-		// 插入新的头部数据
-		memcpy(&JpegFile[2], &ExifHeader[0], ExifHeader.size());
 	}
 
 	template<typename PixelType>

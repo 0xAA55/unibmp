@@ -127,6 +127,8 @@ namespace UniformBitmap
 	void GetImageInfo(const std::string& FilePath, uint32_t& Width, uint32_t& Height);
 	void GetImageInfo(const void* Memory, size_t MemPicSize, uint32_t& Width, uint32_t& Height);
 
+	using FileInMemoryType = std::vector<uint8_t>;
+
 	template<typename PixelType>
 	class Image
 	{
@@ -136,7 +138,6 @@ namespace UniformBitmap
 		using PXR = PixelRef<PixelType>;
 		using PXRHash = PXR::Hash;
 		using FloodFillEdgeType = std::unordered_set<PXR, PXRHash>;
-		using FileInMemoryType = std::vector<uint8_t>;
 
 	protected:
 		// 位图信息
@@ -225,15 +226,6 @@ namespace UniformBitmap
 		FileInMemoryType SaveToTGA() const;
 		FileInMemoryType SaveToJPG(int Quality) const;
 		FileInMemoryType SaveToHDR() const;
-
-		// 从 Jpeg 文件里查找 Exif 信息块，更新到 ExifData 成员里
-		static std::shared_ptr<TIFFHeader> FindExifDataFromJpeg(FileInMemoryType& JpegFile);
-		static std::shared_ptr<TIFFHeader> FindExifDataFromJpeg(const std::string& FilePath);
-		static std::shared_ptr<TIFFHeader> FindExifDataFromJpeg(std::istream& ifs);
-		static std::shared_ptr<TIFFHeader> FindExifDataFromJpeg(const void* FileInMemory, size_t FileSize);
-
-		// 插入ExifData 到已经生成出来的 JPEG 文件字节里
-		static void ModifyJpegToInsertExif(FileInMemoryType& JpegFile, const TIFFHeader& ExifData);
 	};
 
 	extern template class Image<Pixel_RGBA8>;
@@ -256,4 +248,13 @@ namespace UniformBitmap
 	extern template Image_RGBA32F::Image(const Image_RGBA8& from);
 	extern template Image_RGBA32F::Image(const Image_RGBA16& from);
 	extern template Image_RGBA32F::Image(const Image_RGBA32& from);
+
+	// 从 Jpeg 文件里查找 Exif 信息块，更新到 ExifData 成员里
+	std::shared_ptr<TIFFHeader> FindExifDataFromJpeg(FileInMemoryType& JpegFile);
+	std::shared_ptr<TIFFHeader> FindExifDataFromJpeg(const std::string& FilePath);
+	std::shared_ptr<TIFFHeader> FindExifDataFromJpeg(std::istream& ifs);
+	std::shared_ptr<TIFFHeader> FindExifDataFromJpeg(const void* FileInMemory, size_t FileSize);
+
+	// 插入ExifData 到已经生成出来的 JPEG 文件字节里
+	void ModifyJpegToInsertExif(FileInMemoryType& JpegFile, const TIFFHeader& ExifData);
 }
