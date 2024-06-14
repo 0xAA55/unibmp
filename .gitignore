@@ -1,5 +1,7 @@
 *.user
 *.o
+*.so
+*.a
 ubtest
 test*.gif
 test*.png
