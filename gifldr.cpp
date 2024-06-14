@@ -281,7 +281,7 @@ namespace CPPGIF
 		{
 			std::cerr << "GIF: " << e.what() << "\n";
 		}
-		if (0)
+		if (1)
 		{
 			auto RecompressedLZW = CompressLZW(ImageData, LZW_MinCodeSize);
 			if (RecompressedLZW != LZW_Data)
@@ -340,8 +340,14 @@ namespace CPPGIF
 				return ret;
 			}
 
+			CodeType CurCodeMaxValue() const
+			{
+				return (CodeType(1) << CurCodeSize) - 1;
+			}
+
 			void Encode(CodeType Code)
 			{
+				if (Code > CurCodeMaxValue()) throw EncodeError(std::string("Unexpected code ") + std::to_string(Code) + " that's beyond the current max value of " + std::to_string(CurCodeMaxValue()));
 				int BitsToEncode = CurCodeSize;
 				while (BitsToEncode)
 				{
@@ -403,7 +409,8 @@ namespace CPPGIF
 			}
 		};
 
-		auto Encoder = CodeStreamEncoder(LZW_MinCodeSize);
+		const auto FirstCodeSize = LZW_MinCodeSize + 1;
+		auto Encoder = CodeStreamEncoder(FirstCodeSize);
 		auto CodeTable = CodaTableType(LZW_MinCodeSize);
 		CodeTable.InitCodeTable();
 		Encoder.Encode(CodeTable.ClearCode);
@@ -432,13 +439,15 @@ namespace CPPGIF
 					{
 						Encoder.CurCodeSize = 12;
 						Encoder.Encode(CodeTable.ClearCode);
-						Encoder.CurCodeSize = LZW_MinCodeSize;
+						Encoder.CurCodeSize = FirstCodeSize;
 						CodeTable.InitCodeTable();
 					}
 				}
 				CurIndexBuffer = { Index };
 			}
 		}
+
+		Encoder.Encode(CodeTable.EOICode);
 
 		return Encoder.GetEncodedBytes();
 	}
