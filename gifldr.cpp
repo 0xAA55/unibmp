@@ -243,6 +243,12 @@ namespace CPPGIF
 		Read(is, DelayTime);
 		Read(is, TransparentColorIndex);
 		SubBlockData = ReadDataSubBlock(is);
+		while (is.peek() == 0x2C)
+		{
+			auto Label = uint8_t(0);
+			Read(is, Label);
+			ImageDescriptors.push_back(ImageDescriptorType(is));
+		}
 	}
 
 	PlainTextExtensionType::PlainTextExtensionType(std::istream& is)
