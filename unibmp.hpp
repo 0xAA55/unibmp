@@ -197,7 +197,7 @@ namespace UniformBitmap
 		uint32_t XPelsPerMeter;
 		uint32_t YPelsPerMeter;
 
-		Image(std::string FilePath);
+		Image(const std::string& FilePath);
 		Image(const void* FileInMemory, size_t FileSize);
 		Image(uint32_t Width, uint32_t Height, uint32_t XPelsPerMeter = 3000, uint32_t YPelsPerMeter = 3000);
 		Image(const Image& from);

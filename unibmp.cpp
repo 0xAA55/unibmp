@@ -447,7 +447,7 @@ namespace UniformBitmap
 	}
 
 	template<typename PixelType>
-	Image<PixelType>::Image(std::string FilePath) :
+	Image<PixelType>::Image(const std::string& FilePath) :
 		IsHDR(false)
 	{
 		try
@@ -1205,7 +1205,6 @@ namespace UniformBitmap
 		auto& wt = *reinterpret_cast<FileInMemoryType*>(context);
 		WriteData(wt, data, size_t(size));
 	}
-
 
 	template<typename PixelType>
 	FileInMemoryType Image<PixelType>::SaveToPNG() const
