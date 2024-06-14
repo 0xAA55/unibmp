@@ -30,6 +30,16 @@ namespace UniformBitmap
 	{
 	}
 
+	InvalidRotationAngle::InvalidRotationAngle(std::string what) noexcept :
+		std::invalid_argument(what)
+	{
+	}
+
+	InvalidRotationOrient::InvalidRotationOrient(std::string what) noexcept :
+		std::invalid_argument(what)
+	{
+	}
+
 #pragma pack(push, 1)
 
 	// 位图文件头
@@ -1120,6 +1130,44 @@ namespace UniformBitmap
 	void Image<PixelType>::Rotate270_CCW()
 	{
 		Rotate90_CW();
+	}
+
+	template<typename PixelType>
+	void Image<PixelType>::Rotate_CW(RotationAngle Angle)
+	{
+		switch (RotationAngle(int(Angle) % 360))
+		{
+		case RotationAngle::R_0: return;
+		case RotationAngle::R_90: Rotate90_CW(); return;
+		case RotationAngle::R_180: Rotate180(); return;
+		case RotationAngle::R_270: Rotate270_CW(); return;
+		default: throw InvalidRotationAngle(std::string("Invalid rotation angle (value = ") + std::to_string(int(Angle)) + ")");
+		}
+	}
+
+	template<typename PixelType>
+	void Image<PixelType>::Rotate_CCW(RotationAngle Angle)
+	{
+		switch (RotationAngle(int(Angle) % 360))
+		{
+		case RotationAngle::R_0: return;
+		case RotationAngle::R_90: Rotate90_CCW(); return;
+		case RotationAngle::R_180: Rotate180(); return;
+		case RotationAngle::R_270: Rotate270_CCW(); return;
+		default: throw InvalidRotationAngle(std::string("Invalid rotation angle (value = ") + std::to_string(int(Angle)) + ")");
+		}
+	}
+
+
+	template<typename PixelType>
+	void Image<PixelType>::Rotate(RotationAngle Angle, RotationOrient Orient)
+	{
+		switch (Orient)
+		{
+		case RotationOrient::ClockWise: Rotate_CW(Angle); return;
+		case RotationOrient::CounterClockWise: Rotate_CCW(Angle); return;
+		default: throw InvalidRotationOrient(std::string("Invalid rotation orient (value = ") + std::to_string(int(Orient)) + ")");
+		}
 	}
 
 	template<typename PixelType>
