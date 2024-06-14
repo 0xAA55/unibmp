@@ -83,10 +83,12 @@ namespace CPPGIF
 		Read(LoadFrom, LogicalScreenHeight);
 		Read(LoadFrom, Bitfields);
 		Read(LoadFrom, BackgroundColorIndex);
+		Read(LoadFrom, PixelAspectRatio);
 		if (HasGlobalColorTable())
 		{
 			GlobalColorTable = std::make_shared<ColorTableArray>();
-			Read(LoadFrom, &(GlobalColorTable.get())[0], SizeOfGlobalColorTable());
+			auto& ColorTable = *GlobalColorTable;
+			Read(LoadFrom, &ColorTable[0], SizeOfGlobalColorTable());
 		}
 	}
 

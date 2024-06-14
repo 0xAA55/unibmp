@@ -39,6 +39,7 @@ namespace CPPGIF
 		uint16_t LogicalScreenHeight = 0;
 		uint8_t Bitfields = 0;
 		uint8_t BackgroundColorIndex = 0;
+		uint8_t PixelAspectRatio = 0;
 		std::shared_ptr<ColorTableArray> GlobalColorTable = nullptr;
 
 	public:
