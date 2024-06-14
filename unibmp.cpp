@@ -540,7 +540,7 @@ namespace UniformBitmap
 	template<typename PixelType>
 	Image<PixelType>::Image(const std::string& FilePath) :
 		IsHDR(false),
-		Name(std::filesystem::path(FilePath).filename())
+		Name(std::filesystem::path(FilePath).filename().string())
 	{
 		if (IsLikelyBmp(FilePath))
 		{
@@ -931,8 +931,7 @@ namespace UniformBitmap
 
 	template<typename PixelType>
 	Image<PixelType>::Image(uint32_t Width, uint32_t Height, const PixelType& DefaultColor, const std::string& Name) :
-		Image(Width, Height),
-		Name(Name)
+		Image(Width, Height, Name)
 	{
 		FillRect(0, 0, Width - 1, Height - 1, DefaultColor);
 	}
@@ -1307,7 +1306,7 @@ namespace UniformBitmap
 						Rotate270_CW();
 						break;
 					default:
-						std::cerr << std::string("[WARN] For bitmap `") + Name + ": Exif data `Orientation` specified unknown orientation `") + std::to_string(Orientation) + "`.\n";
+						std::cerr << std::string("[WARN] For bitmap `") + Name + ": Exif data `Orientation` specified unknown orientation `" + std::to_string(Orientation) + "`.\n";
 						break;
 					}
 					if (RemoveRotationFromExifData)
