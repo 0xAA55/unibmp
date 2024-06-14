@@ -192,7 +192,7 @@ namespace CPPGIF
 		const LogicalScreenDescriptorType& GetLogicalScreenDescriptor() const;
 		
 	protected:
-		void LoadGIF(std::istream& LoadFrom);
+		void LoadGIF(std::istream& is);
 	};
 }
 
