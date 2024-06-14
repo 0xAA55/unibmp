@@ -91,26 +91,45 @@ namespace CPPGIF
 	{
 		if (!src) throw std::invalid_argument("GIF DataSubBlock::DataSubBlock(): Null pointer given.");
 		
-		BlockSize = count;
-		if (count) memcpy(&front(), src, count);
+		if (count) 
+		{
+			resize(count);
+			memcpy(&front(), src, count);
+		}
 	}
 
 	uint8_t DataSubBlock::GetBlockSize() const
 	{
-		return BlockSize;
+		auto BlockSize = size();
+		if (BlockSize > 255) throw std::runtime_error(std::string("GIF: misconstructed `DataSubBlock` with data size = ") + std::to_string(BlockSize));
+		return uint8_t(BlockSize);
 	}
 
 	DataSubBlock::DataSubBlock(std::istream& is)
 	{
+		auto BlockSize = uint8_t(0);
 		Read(is, BlockSize);
-		Read(is, &front(), BlockSize);
+		if (BlockSize) Read(is, &front(), BlockSize);
+	}
 
+	DataSubBlock::DataSubBlock(std::istream& is, uint8_t BlockSize)
+	{
 		if (BlockSize)
-		{ // »Áπ˚’‚∏ˆøÈ”– ˝æ›£¨À¸∫Û√Êª·”–∏ˆ '\0'
-			auto Terminator = uint8_t();
-			Read(is, Terminator);
-			if (Terminator) throw UnexpectedData(std::string("GIF DataSubBlock::DataSubBlock(): When reading: data terminator expected, got `") + std::to_string(Terminator) + "`");
+		{
+			resize(BlockSize);
+			Read(is, &front(), BlockSize);
 		}
+	}
+
+	std::vector<DataSubBlock> DataSubBlock::ReadDataSubBlocks(std::istream& is)
+	{
+		auto BlockSize = uint8_t(0);
+		auto ret = std::vector<DataSubBlock>();
+		do
+		{
+			ret.push_back(DataSubBlock(is));
+		} while (ret.back().GetBlockSize());
+		return ret;
 	}
 
 	const LogicalScreenDescriptorType& GIFLoader::GetLogicalScreenDescriptor() const
@@ -286,6 +305,8 @@ namespace CPPGIF
 			LocalColorTable = std::make_shared<ColorTableArray>();
 			Read(is, &LocalColorTable.get()[0], SizeOfLocalColorTable());
 		}
+		// TODO
+		// Ëß£Á†Å LZWÔºåÂæóÂà∞ std::vector<DataSubBlock> ImageData
 	}
 
 	const ColorTableArray& ImageDescriptorType::GetLocalColorTable() const
@@ -305,11 +326,21 @@ namespace CPPGIF
 		Read(is, Bitfields);
 		Read(is, DelayTime);
 		Read(is, TransparentColorIndex);
-		SubBlock = DataSubBlock(is);
-		if (SubBlock.GetBlockSize() != 0)
-		{
-			throw UnexpectedData("GIF Graphic Control Extension should end with an zero, got some blocks of data.");
-		}
+		SubBlocks = DataSubBlock::ReadDataSubBlocks(is);
+	}
+
+	ApplicationExtensionType::ApplicationExtensionType(char Identifier[8], char AuthenticationCode[3], std::vector<DataSubBlock> ApplicationData) :
+		ApplicationData(ApplicationData)
+	{
+		memcpy(this->Identifier, Identifier, 8);
+		memcpy(this->AuthenticationCode, AuthenticationCode, 3);
+	}
+
+	ApplicationExtensionType::ApplicationExtensionType(std::istream& is)
+	{
+		Read(is, Identifier, 8);
+		Read(is, AuthenticationCode, 3);
+		
 	}
 
 	uint8_t GraphicControlExtensionType::MakeBitfields(DisposalMethodEnum DisposalMethod, bool ReactToUserInput, bool HasTransparency)
