@@ -83,7 +83,7 @@ namespace UniformBitmap
 
 		IFDFieldBase() = default;
 		IFDFieldBase(const IFDFieldBase& c) = default;
-		virtual bool operator==(const IFDFieldBase& other) const = 0;
+		bool operator==(const IFDFieldBase& other) const = default;
 
 		IFDFieldBase(IFDFieldFormat Type);
 
@@ -124,7 +124,8 @@ namespace UniformBitmap
 	public:
 		std::vector<T> Components;
 
-		virtual bool operator==(const IFDFieldType& other) const = default;
+		IFDFieldType(const IFDFieldType& c) = default;
+		bool operator==(const IFDFieldType& other) const = default;
 
 		IFDFieldType();
 		IFDFieldType(IFDFieldFormat Type);
@@ -142,7 +143,10 @@ namespace UniformBitmap
 		IFDFieldString();
 		IFDFieldString(IFDFieldFormat Type, const std::string& Value);
 		IFDFieldString(const std::string& Value);
-		virtual bool operator==(const IFDFieldString& other) const = default;
+		IFDFieldString(const TIFFDateTime& Value);
+
+		IFDFieldString(const IFDFieldString& c) = default;
+		bool operator==(const IFDFieldString& other) const = default;
 	};
 
 	extern template class IFDFieldType<int8_t>;
@@ -163,6 +167,7 @@ namespace UniformBitmap
 		std::shared_ptr<IFD> SubIFD;
 
 		IFD() = default;
+		IFD(const IFD& c) = default;
 		bool operator==(const IFD& other) const = default;
 
 		void WriteField(uint16_t Tag, std::shared_ptr<IFDFieldBase> field);

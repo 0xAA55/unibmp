@@ -293,6 +293,11 @@ namespace UniformBitmap
 		Components(Value)
 	{
 	}
+	IFDFieldString::IFDFieldString(const TIFFDateTime& Value) :
+		IFDFieldBase(IFDFieldFormat::AsciiString),
+		Components(Value)
+	{
+	}
 
 	IFDFieldBase::IFDFieldBase(IFDFieldFormat Type) :
 		Type(Type)
@@ -324,31 +329,31 @@ namespace UniformBitmap
 		return buf;
 	}
 
-	IFDFieldBytes& IFDFieldBase::AsBytes() { return dynamic_cast<IFDFieldBytes&>(*this); }
-	IFDFieldShorts& IFDFieldBase::AsShorts() { return dynamic_cast<IFDFieldShorts&>(*this); }
-	IFDFieldLongs& IFDFieldBase::AsLongs() { return dynamic_cast<IFDFieldLongs&>(*this); }
-	IFDFieldRationals& IFDFieldBase::AsRationals() { return dynamic_cast<IFDFieldRationals&>(*this); }
-	IFDFieldUBytes& IFDFieldBase::AsUBytes() { return dynamic_cast<IFDFieldUBytes&>(*this); }
-	IFDFieldUShorts& IFDFieldBase::AsUShorts() { return dynamic_cast<IFDFieldUShorts&>(*this); }
-	IFDFieldULongs& IFDFieldBase::AsULongs() { return dynamic_cast<IFDFieldULongs&>(*this); }
-	IFDFieldURationals& IFDFieldBase::AsURationals() { return dynamic_cast<IFDFieldURationals&>(*this); }
-	IFDFieldFloats& IFDFieldBase::AsFloats() { return dynamic_cast<IFDFieldFloats&>(*this); }
-	IFDFieldDoubles& IFDFieldBase::AsDoubles() { return dynamic_cast<IFDFieldDoubles&>(*this); }
-	IFDFieldUndefined& IFDFieldBase::AsUndefined() { return dynamic_cast<IFDFieldUndefined&>(*this); }
-	IFDFieldString& IFDFieldBase::AsString() { return dynamic_cast<IFDFieldString&>(*this); }
+	IFDFieldBytes& IFDFieldBase::AsBytes() { return static_cast<IFDFieldBytes&>(*this); }
+	IFDFieldShorts& IFDFieldBase::AsShorts() { return static_cast<IFDFieldShorts&>(*this); }
+	IFDFieldLongs& IFDFieldBase::AsLongs() { return static_cast<IFDFieldLongs&>(*this); }
+	IFDFieldRationals& IFDFieldBase::AsRationals() { return static_cast<IFDFieldRationals&>(*this); }
+	IFDFieldUBytes& IFDFieldBase::AsUBytes() { return static_cast<IFDFieldUBytes&>(*this); }
+	IFDFieldUShorts& IFDFieldBase::AsUShorts() { return static_cast<IFDFieldUShorts&>(*this); }
+	IFDFieldULongs& IFDFieldBase::AsULongs() { return static_cast<IFDFieldULongs&>(*this); }
+	IFDFieldURationals& IFDFieldBase::AsURationals() { return static_cast<IFDFieldURationals&>(*this); }
+	IFDFieldFloats& IFDFieldBase::AsFloats() { return static_cast<IFDFieldFloats&>(*this); }
+	IFDFieldDoubles& IFDFieldBase::AsDoubles() { return static_cast<IFDFieldDoubles&>(*this); }
+	IFDFieldUndefined& IFDFieldBase::AsUndefined() { return static_cast<IFDFieldUndefined&>(*this); }
+	IFDFieldString& IFDFieldBase::AsString() { return static_cast<IFDFieldString&>(*this); }
 
-	const IFDFieldBytes& IFDFieldBase::AsBytes() const { return dynamic_cast<const IFDFieldBytes&>(*this); }
-	const IFDFieldShorts& IFDFieldBase::AsShorts() const { return dynamic_cast<const IFDFieldShorts&>(*this); }
-	const IFDFieldLongs& IFDFieldBase::AsLongs() const { return dynamic_cast<const IFDFieldLongs&>(*this); }
-	const IFDFieldRationals& IFDFieldBase::AsRationals() const { return dynamic_cast<const IFDFieldRationals&>(*this); }
-	const IFDFieldUBytes& IFDFieldBase::AsUBytes() const { return dynamic_cast<const IFDFieldUBytes&>(*this); }
-	const IFDFieldUShorts& IFDFieldBase::AsUShorts() const { return dynamic_cast<const IFDFieldUShorts&>(*this); }
-	const IFDFieldULongs& IFDFieldBase::AsULongs() const { return dynamic_cast<const IFDFieldULongs&>(*this); }
-	const IFDFieldURationals& IFDFieldBase::AsURationals() const { return dynamic_cast<const IFDFieldURationals&>(*this); }
-	const IFDFieldFloats& IFDFieldBase::AsFloats() const { return dynamic_cast<const IFDFieldFloats&>(*this); }
-	const IFDFieldDoubles& IFDFieldBase::AsDoubles() const { return dynamic_cast<const IFDFieldDoubles&>(*this); }
-	const IFDFieldUndefined& IFDFieldBase::AsUndefined() const { return dynamic_cast<const IFDFieldUndefined&>(*this); }
-	const IFDFieldString& IFDFieldBase::AsString() const { return dynamic_cast<const IFDFieldString&>(*this); }
+	const IFDFieldBytes& IFDFieldBase::AsBytes() const { return static_cast<const IFDFieldBytes&>(*this); }
+	const IFDFieldShorts& IFDFieldBase::AsShorts() const { return static_cast<const IFDFieldShorts&>(*this); }
+	const IFDFieldLongs& IFDFieldBase::AsLongs() const { return static_cast<const IFDFieldLongs&>(*this); }
+	const IFDFieldRationals& IFDFieldBase::AsRationals() const { return static_cast<const IFDFieldRationals&>(*this); }
+	const IFDFieldUBytes& IFDFieldBase::AsUBytes() const { return static_cast<const IFDFieldUBytes&>(*this); }
+	const IFDFieldUShorts& IFDFieldBase::AsUShorts() const { return static_cast<const IFDFieldUShorts&>(*this); }
+	const IFDFieldULongs& IFDFieldBase::AsULongs() const { return static_cast<const IFDFieldULongs&>(*this); }
+	const IFDFieldURationals& IFDFieldBase::AsURationals() const { return static_cast<const IFDFieldURationals&>(*this); }
+	const IFDFieldFloats& IFDFieldBase::AsFloats() const { return static_cast<const IFDFieldFloats&>(*this); }
+	const IFDFieldDoubles& IFDFieldBase::AsDoubles() const { return static_cast<const IFDFieldDoubles&>(*this); }
+	const IFDFieldUndefined& IFDFieldBase::AsUndefined() const { return static_cast<const IFDFieldUndefined&>(*this); }
+	const IFDFieldString& IFDFieldBase::AsString() const { return static_cast<const IFDFieldString&>(*this); }
 
 	TIFFHeader ConstuctTIFFHeader
 	(
@@ -371,7 +376,7 @@ namespace UniformBitmap
 		if (XResolution) IFD0.WriteField("XResolution", std::make_shared<IFDFieldURationals>(*XResolution));
 		if (YResolution) IFD0.WriteField("YResolution", std::make_shared<IFDFieldURationals>(*YResolution));
 		if (Software.length()) IFD0.WriteField("Software", std::make_shared<IFDFieldString>(Software));
-		if (DateTime) IFD0.WriteField("DateTime", std::make_shared<IFDFieldString>(DateTime));
+		if (DateTime) IFD0.WriteField("DateTime", std::make_shared<IFDFieldString>(*DateTime));
 		if (CopyRight.length()) IFD0.WriteField("CopyRight", std::make_shared<IFDFieldString>(CopyRight));
 		IFD0.SubIFD = SubIFD;
 
@@ -567,7 +572,7 @@ namespace UniformBitmap
 			case IFDFieldFormat::AsciiString:
 				if (1)
 				{
-					auto ret = std::make_shared<IFDFieldString>(Format);
+					auto ret = std::make_shared<IFDFieldString>(Format, "");
 					if (!NumComponents || NumComponents == 1)
 					{
 						ReadComponents(ret->Components);
@@ -603,6 +608,7 @@ namespace UniformBitmap
 
 				ret.Fields[TagType] = ReadIFDField(IFDFieldFormat(TagVarType), NumComponents);
 			}
+			return ret;
 		}
 
 	public:
