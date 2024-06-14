@@ -1015,7 +1015,7 @@ namespace UniformBitmap
 		{
 			std::stringstream sserr;
 			sserr << "Could not open `" << FilePath << "` for write.";
-			throw ExceptionType(sserr.str());
+			throw WriteBmpFileError(sserr.str());
 		}
 	}
 
@@ -1032,7 +1032,7 @@ namespace UniformBitmap
 		{
 			std::stringstream sserr;
 			sserr << "Could not open `" << FilePath << "` for write.";
-			throw ExceptionType(sserr.str());
+			throw WriteBmpFileError(sserr.str());
 		}
 	}
 
