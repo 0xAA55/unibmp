@@ -892,7 +892,8 @@ namespace UniformBitmap
 		Image(from.GetWidth(), from.GetHeight(), from.XPelsPerMeter, from.YPelsPerMeter)
 	{
 		IsHDR = false;
-		for (size_t y = 0; y < Height; y++)
+#pragma omp parallel for
+		for (ptrdiff_t y = 0; y < ptrdiff_t(Height); y++)
 		{
 			auto srow = from.GetBitmapRowPtr(y);
 			auto drow = RowPointers[y];
@@ -910,7 +911,8 @@ namespace UniformBitmap
 		Image(from.GetWidth(), from.GetHeight(), from.XPelsPerMeter, from.YPelsPerMeter)
 	{
 		IsHDR = false;
-		for (size_t y = 0; y < Height; y++)
+#pragma omp parallel for
+		for (ptrdiff_t y = 0; y < ptrdiff_t(Height); y++)
 		{
 			auto srow = from.GetBitmapRowPtr(y);
 			auto drow = RowPointers[y];
@@ -926,6 +928,8 @@ namespace UniformBitmap
 	void Image<PixelType>::BGR2RGB()
 	{
 		int32_t w = static_cast<int32_t>(Width), h = static_cast<int32_t>(Height);
+#pragma omp parallel for
+		for (ptrdiff_t y = 0; y < h; y++)
 		for (int32_t y = 0; y < h; y++)
 		{
 			auto src_row = RowPointers[y];
@@ -1298,7 +1302,8 @@ namespace UniformBitmap
 		{
 			auto stbi = STBITakeOver<Pixel_RGBA32F>(w, h, stbi_loadf(FilePath.c_str(), &w, &h, &n, 4));
 			CreateBuffer(w, h);
-			for (size_t y = 0; y < Height; y++)
+#pragma omp parallel for
+			for (ptrdiff_t y = 0; y < ptrdiff_t(Height); y++)
 			{
 				auto srow = &stbi.Pixels[y * Width];
 				auto drow = RowPointers[y];
@@ -1313,7 +1318,8 @@ namespace UniformBitmap
 		{
 			auto stbi = STBITakeOver<Pixel_RGBA8>(w, h, stbi_load(FilePath.c_str(), &w, &h, &n, 4));
 			CreateBuffer(w, h);
-			for (size_t y = 0; y < Height; y++)
+#pragma omp parallel for
+			for (ptrdiff_t y = 0; y < ptrdiff_t(Height); y++)
 			{
 				auto srow = &stbi.Pixels[y * Width];
 				auto drow = RowPointers[y];
@@ -1328,7 +1334,8 @@ namespace UniformBitmap
 		{
 			auto stbi = STBITakeOver<Pixel_RGBA16>(w, h, stbi_load_16(FilePath.c_str(), &w, &h, &n, 4));
 			CreateBuffer(w, h);
-			for (size_t y = 0; y < Height; y++)
+#pragma omp parallel for
+			for (ptrdiff_t y = 0; y < ptrdiff_t(Height); y++)
 			{
 				auto srow = &stbi.Pixels[y * Width];
 				auto drow = RowPointers[y];
@@ -1351,7 +1358,8 @@ namespace UniformBitmap
 		{
 			auto stbi = STBITakeOver<Pixel_RGBA32F>(w, h, stbi_loadf_from_memory(reinterpret_cast<const uint8_t*>(FileInMemory), FileSize, &w, &h, &n, 4));
 			CreateBuffer(w, h);
-			for (size_t y = 0; y < Height; y++)
+#pragma omp parallel for
+			for (ptrdiff_t y = 0; y < ptrdiff_t(Height); y++)
 			{
 				auto srow = &stbi.Pixels[y * Width];
 				auto drow = RowPointers[y];
@@ -1366,7 +1374,8 @@ namespace UniformBitmap
 		{
 			auto stbi = STBITakeOver<Pixel_RGBA8>(w, h, stbi_load_from_memory(reinterpret_cast<const uint8_t*>(FileInMemory), FileSize, &w, &h, &n, 4));
 			CreateBuffer(w, h);
-			for (size_t y = 0; y < Height; y++)
+#pragma omp parallel for
+			for (ptrdiff_t y = 0; y < ptrdiff_t(Height); y++)
 			{
 				auto srow = &stbi.Pixels[y * Width];
 				auto drow = RowPointers[y];
@@ -1381,7 +1390,8 @@ namespace UniformBitmap
 		{
 			auto stbi = STBITakeOver<Pixel_RGBA16>(w, h, stbi_load_16_from_memory(reinterpret_cast<const uint8_t*>(FileInMemory), FileSize, &w, &h, &n, 4));
 			CreateBuffer(w, h);
-			for (size_t y = 0; y < Height; y++)
+#pragma omp parallel for
+			for (ptrdiff_t y = 0; y < ptrdiff_t(Height); y++)
 			{
 				auto srow = &stbi.Pixels[y * Width];
 				auto drow = RowPointers[y];
