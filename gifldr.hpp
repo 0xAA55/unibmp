@@ -42,7 +42,7 @@ namespace CPPGIF
 		uint16_t LogicalScreenHeight = 0;
 		uint8_t Bitfields = 0;
 		uint8_t BackgroundColorIndex = 0;
-		std::shared_ptr<ColorTableArray> GlobalColorTable;
+		std::shared_ptr<ColorTableArray> GlobalColorTable = nullptr;
 
 	public:
 		LSD_Type() = default;
@@ -66,12 +66,13 @@ namespace CPPGIF
 	public:
 
 	protected:
-		std::string Version;
+		std::string Version; // gif87a / gif89a
 
+		// Âß¼­ÆÁÄ»ÃèÊö·û
 		LSD_Type LogicalScreenDescriptor;
 
 		
-
+		
 
 		std::shared_ptr<AppExtension> ApplicationExtension;
 
@@ -79,10 +80,12 @@ namespace CPPGIF
 		GIFLoader(const std::string& LoadFrom);
 
 		const std::string& GetVersion() const;
-		const LSD_Type& GetLogicalScreenDescriptor() const;
 		const uint16_t GetWidth() const;
 		const uint16_t GetHeight() const;
 		const ColorTableArray& GetGlobalColorTable(uint32_t& numColorsOut) const;
+
+		const LSD_Type& GetLogicalScreenDescriptor() const;
+		
 	};
 }
 
