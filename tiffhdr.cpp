@@ -901,6 +901,23 @@ namespace UniformBitmap
 		Fields[IFDTagFromStr.at(TagString)] = field;
 	}
 
+	TIFFDateTime::TIFFDateTime(const std::tm& tm)
+	{
+#define TIFFDateTime_FromString(member, value) memcpy(member, std::to_string(value).c_str(), sizeof member)
+		TIFFDateTime_FromString(YYYY, tm.tm_year + 1900);
+		TIFFDateTime_FromString(MM, tm.tm_mon + 1);
+		TIFFDateTime_FromString(DD, tm.tm_mday);
+		TIFFDateTime_FromString(hh, tm.tm_hour);
+		TIFFDateTime_FromString(mm, tm.tm_min);
+		TIFFDateTime_FromString(ss, tm.tm_sec);
+#undef TIFFDateTime_FromString
+	}
+
+	TIFFDateTime::TIFFDateTime(const std::time_t& t) :
+		TIFFDateTime(*std::localtime(&t))
+	{
+	}
+
 	TIFFDateTime::operator std::string() const
 	{
 		char buf[] = "YYYY:MM:DD HH:MM:SS";
@@ -914,6 +931,27 @@ namespace UniformBitmap
 		TIFFDateTime_Write(ss);
 #undef TIFFDateTime_Write
 		return buf;
+	}
+
+	TIFFDateTime::operator std::tm() const
+	{
+		char buf[] = { 0, 0, 0, 0, 0 };
+		auto ret = std::tm();
+#define TIFFDateTime_Write(member, writeto, offset) do {memcpy(buf, &member, sizeof member); writeto = std::stod(buf) - (offset); } while (0)
+		TIFFDateTime_Write(YYYY, ret.tm_year, 1900);
+		TIFFDateTime_Write(MM, ret.tm_mon, 1);
+		TIFFDateTime_Write(DD, ret.tm_mday, 0);
+		TIFFDateTime_Write(hh, ret.tm_hour, 0);
+		TIFFDateTime_Write(mm, ret.tm_min, 0);
+		TIFFDateTime_Write(ss, ret.tm_sec, 0);
+#undef TIFFDateTime_Write
+		return ret;
+	}
+
+	TIFFDateTime::operator std::time_t() const
+	{
+		std::tm tm = *this;
+		return std::mktime(&tm);
 	}
 
 	IFDFieldBytes& IFDFieldBase::AsBytes() { return static_cast<IFDFieldBytes&>(*this); }

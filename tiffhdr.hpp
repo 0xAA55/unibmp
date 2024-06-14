@@ -1,4 +1,5 @@
 #pragma once
+#include <ctime>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -15,6 +16,7 @@ namespace UniformBitmap
 	// ²Î¿¼×ÊÁÏ
 	// https://exiftool.org/TagNames/EXIF.html
 	// http://www.fifi.org/doc/jhead/exif-e.html
+	// https://www.media.mit.edu/pia/Research/deepview/exif.html
 	// https://web.archive.org/web/20111025004429/http://park2.wakwak.com/~tsuruzoh/Computer/Digicams/exif-e.html
 
 	struct Rational
@@ -65,7 +67,14 @@ namespace UniformBitmap
 		char mm[2] = {};
 		char ss[2] = {};
 
+		TIFFDateTime() = default;
+
+		TIFFDateTime(const std::tm& tm);
+		TIFFDateTime(const std::time_t& t);
+
 		operator std::string() const;
+		operator std::tm() const;
+		operator std::time_t() const;
 	};
 
 	template<typename T>
