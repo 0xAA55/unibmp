@@ -1,6 +1,7 @@
 #include "tiffhdr.hpp"
 
 #include <sstream>
+#include <algorithm>
 #include <cinttypes>
 
 #define DEBUG_TIFFHeader 1
@@ -1349,24 +1350,155 @@ namespace UniformBitmap
 		memcpy(&Dst[Pos], &Src[0], Len);
 	}
 
+#pragma pack(push, 1)
+	struct IFDBinItem
+	{
+		uint16_t TagID = 0;
+		uint16_t VarType = 0;
+		uint32_t NumComponents = 0;
+		uint32_t ValueField = 0;
+	};
+#pragma pack(pop)
 
+	class IFDSerializer
+	{
+	protected:
+		size_t FieldsCountTotal;
+		size_t FieldsBytesTotal;
+		std::vector<IFDBinItem> Fields;
+		std::vector<uint8_t> Extra;
+		size_t BaseOffset;
+		size_t BeginOfExtra;
+
+	public:
+		size_t GetSerializedSize() const
+		{
+			size_t SizeOfExtras = Extra.size();
+			return FieldsBytesTotal + SizeOfExtras;
+		}
+		std::vector<uint8_t> Serialize() const
+		{
+			std::vector<uint8_t> ret;
+			size_t SizeOfExtras = Extra.size();
+			ret.resize(GetSerializedSize());
+			memcpy(&ret[0], &Fields[0], std::min(FieldsBytesTotal, sizeof(IFDBinItem) * Fields.size()));
+			memcpy(&ret[FieldsBytesTotal], &Extra[0], SizeOfExtras);
+			return ret;
+		}
+
+	protected:
+		template<typename IFDFT>
+		void AddField(IFDBinItem& CurItem, const IFDFT& FT)
+		{
+			size_t SizeUsage = FT.Components.size() * sizeof(FT.Components[0]);
+			if (SizeUsage <= 4)
+			{
+				memcpy(&CurItem.ValueField, &FT.Components[0], SizeUsage);
+			}
+			else
+			{
+				CurItem.ValueField = BeginOfExtra + Tail;
+				ConcatBytes(Extra, FT.Components);
+			}
+		}
+
+		void AddField(uint16_t TagID, const IFDFieldBase& f)
+		{
+			Fields.push_back(IFDBinItem());
+			auto& CurItem = Fields.back();
+
+			CurItem.TagID = TagID;
+			CurItem.VarType = uint16_t(f.Type);
+			switch (f.Type)
+			{
+			case IFDFieldFormat::SByte:       AddField(CurItem, f.AsBytes());
+			case IFDFieldFormat::SShort:      AddField(CurItem, f.AsShorts());
+			case IFDFieldFormat::SLong:       AddField(CurItem, f.AsLongs());
+			case IFDFieldFormat::UByte:       AddField(CurItem, f.AsUBytes());
+			case IFDFieldFormat::UShort:      AddField(CurItem, f.AsUShorts());
+			case IFDFieldFormat::ULong:       AddField(CurItem, f.AsULongs());
+			case IFDFieldFormat::Float:       AddField(CurItem, f.AsFloats());
+			case IFDFieldFormat::SRational:   AddField(CurItem, f.AsRationals());
+			case IFDFieldFormat::URational:   AddField(CurItem, f.AsURationals());
+			case IFDFieldFormat::Double:      AddField(CurItem, f.AsDoubles());
+			case IFDFieldFormat::Undefined:   AddField(CurItem, f.AsUBytes());
+			case IFDFieldFormat::AsciiString: AddField(CurItem, f.AsString());
+			default:
+				if (1)
+				{
+					char buf[256];
+					snprintf(buf, sizeof buf, "Unknown format 0x%x", uint16_t(f.Type));
+					throw BadDataError(buf);
+				}
+			}
+		}
+
+		void AddOffsetField(uint16_t TagID, uint32_t OffsetValue)
+		{
+			Fields.push_back(IFDBinItem{ TagID, uint16_t(IFDFieldFormat::ULong), 1, OffsetValue });
+		}
+
+		void AddSubIFDField(uint16_t TagID, const IFD& ifd);
+
+	public:
+		IFDSerializer() = delete;
+		IFDSerializer(size_t BaseOffset, const IFD& ifd) :
+			BaseOffset(BaseOffset)
+		{
+			IFD IfdToAdd = ifd;
+			for (auto PointerTags : IFDPointerTags)
+			{
+				// 删除先前读取的任何包含指针偏移量的字段
+				// 因为指针偏移量在现在都是无效的了
+				IfdToAdd.Fields.erase(PointerTags);
+			}
+
+			// 根据子表需要算出总的表项数，来计算偏移量
+			FieldsCountTotal = IfdToAdd.Fields.size();
+			if (IfdToAdd.ExifSubIFD) FieldsCountTotal++;
+			if (IfdToAdd.GPSSubIFD) FieldsCountTotal++;
+			if (IfdToAdd.InteroperabilityIFD) FieldsCountTotal++;
+			FieldsBytesTotal = sizeof(IFDBinItem)* FieldsCountTotal;
+
+			Fields.reserve(FieldsCountTotal);
+			BeginOfExtra = BaseOffset + FieldsCountTotal * sizeof(IFDBinItem);
+
+			for (auto& kv : IfdToAdd.Fields)
+			{
+				AddField(kv.first, *kv.second);
+			}
+			if (IfdToAdd.ExifSubIFD) AddSubIFDField(0x8769, *IfdToAdd.ExifSubIFD);
+			if (IfdToAdd.GPSSubIFD) AddSubIFDField(0x8825, *IfdToAdd.GPSSubIFD);
+			if (IfdToAdd.InteroperabilityIFD) AddSubIFDField(0xa005, *IfdToAdd.InteroperabilityIFD);
+		}
+	};
+
+	void IFDSerializer::AddSubIFDField(uint16_t TagID, const IFD& ifd)
+	{
+		auto BaseOffsetSubIFD = BeginOfExtra + Extra.size();
+		auto SubIFDBytes = IFDSerializer(BaseOffsetSubIFD, ifd).Serialize();
+		AddOffsetField(TagID, uint32_t(BaseOffsetSubIFD));
+		ConcatBytes(Extra, SubIFDBytes);
+	}
 
 	static void StoreIFD(std::vector<uint8_t>& Bytes, const IFD& ifd)
 	{
-		std::vector<uint8_t> Extra;
-
-
-
+		ConcatBytes(Bytes, IFDSerializer(Bytes.size(), ifd).Serialize());
 	}
 
 	std::vector<uint8_t> StoreTIFFHeader(const TIFFHeader& TIFFHdr)
 	{
-		std::vector<uint8_t> ret;
+		// TIFF 头
+		std::vector<uint8_t> ret = {
+			'I', 'I', 0x2A, 0x00,
+			0x08, 0x00, 0x00, 0x00
+		};
 
-
-		// TODO
-		throw std::invalid_argument("TODO: unimplemented");
-
+		// 按顺序插入一个个的 IFD
+		for (auto& ifd : TIFFHdr)
+		{
+			StoreIFD(ret, ifd);
+		}
 		return ret;
 	}
 }
