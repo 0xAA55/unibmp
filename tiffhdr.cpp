@@ -29,19 +29,18 @@ namespace UniformBitmap
 		{"ImageDescription", 0x010e},
 		{"Make", 0x010f},
 		{"Model", 0x0110},
-		{"JpgFromRawStartJpgFromRawStart", 0x0111},
-		{"OtherImageStartOtherImageStart", 0x0111},
+		{"JpgFromRawStart", 0x0111},
+		{"OtherImageStart", 0x0111},
 		{"StripOffsets", 0x0111},
-		{"PreviewImageStartPreviewImageStart", 0x0111},
-		{"StripOffsetsStripOffsets", 0x0111},
+		{"PreviewImageStart", 0x0111},
+		{"StripOffsets", 0x0111},
 		{"Orientation", 0x0112},
 		{"SamplesPerPixel", 0x0115},
 		{"RowsPerStrip", 0x0116},
-		{"JpgFromRawLengthJpgFromRawLength", 0x0117},
-		{"PreviewImageLengthPreviewImageLength", 0x0117},
-		{"StripByteCountsStripByteCounts", 0x0117},
+		{"JpgFromRawLength", 0x0117},
+		{"PreviewImageLength", 0x0117},
 		{"StripByteCounts", 0x0117},
-		{"OtherImageLengthOtherImageLength", 0x0117},
+		{"OtherImageLength", 0x0117},
 		{"MinSampleValue", 0x0118},
 		{"MaxSampleValue", 0x0119},
 		{"XResolution", 0x011a},
@@ -77,7 +76,7 @@ namespace UniformBitmap
 		{"CleanFaxData", 0x0147},
 		{"ConsecutiveBadFaxLines", 0x0148},
 		{"SubIFD", 0x014a},
-		{"A100DataOffsetA100DataOffset", 0x014a},
+		{"A100DataOffset", 0x014a},
 		{"InkSet", 0x014c},
 		{"InkNames", 0x014d},
 		{"NumberofInks", 0x014e},
@@ -105,16 +104,15 @@ namespace UniformBitmap
 		{"T82Options", 0x01b3},
 		{"JPEGTables", 0x01b5},
 		{"JPEGProc", 0x0200},
-		{"JpgFromRawStartJpgFromRawStart", 0x0201},
-		{"OtherImageStartOtherImageStart", 0x0201},
-		{"PreviewImageStartPreviewImageStart", 0x0201},
+		{"JpgFromRawStart", 0x0201},
+		{"OtherImageStart", 0x0201},
+		{"PreviewImageStart", 0x0201},
 		{"ThumbnailOffset", 0x0201},
-		{"ThumbnailOffsetThumbnailOffset", 0x0201},
-		{"ThumbnailLengthThumbnailLength", 0x0202},
-		{"JpgFromRawLengthJpgFromRawLength", 0x0202},
-		{"PreviewImageLengthPreviewImageLength", 0x0202},
 		{"ThumbnailLength", 0x0202},
-		{"OtherImageLengthOtherImageLength", 0x0202},
+		{"JpgFromRawLength", 0x0202},
+		{"PreviewImageLength", 0x0202},
+		{"ThumbnailLength", 0x0202},
+		{"OtherImageLength", 0x0202},
 		{"JPEGRestartInterval", 0x0203},
 		{"JPEGLosslessPredictors", 0x0205},
 		{"JPEGPointTransforms", 0x0206},
@@ -288,97 +286,97 @@ namespace UniformBitmap
 		{"CIP3Sheet", 0x923b},
 		{"CIP3Side", 0x923c},
 		{"StoNits", 0x923f},
-		{"MakerNoteLeicaMakerNoteLeica", 0x927c},
-		{"MakerNoteKodak5MakerNoteKodak5", 0x927c},
-		{"MakerNoteUnknown", 0x927c},
-		{"MakerNoteFujiFilmMakerNoteFujiFilm", 0x927c},
-		{"MakerNotePentax4MakerNotePentax4", 0x927c},
-		{"MakerNoteApple", 0x927c},
-		{"MakerNotePentaxMakerNotePentax", 0x927c},
-		{"MakerNoteHP2MakerNoteHP2", 0x927c},
-		{"MakerNoteRicoh2MakerNoteRicoh2", 0x927c},
-		{"MakerNoteSamsung1bMakerNoteSamsung1b", 0x927c},
-		{"MakerNoteSamsung1aMakerNoteSamsung1a", 0x927c},
-		{"MakerNoteSony4MakerNoteSony4", 0x927c},
-		{"MakerNoteHasselbladMakerNoteHasselblad", 0x927c},
-		{"MakerNoteMinoltaMakerNoteMinolta", 0x927c},
-		{"MakerNoteDJIMakerNoteDJI", 0x927c},
-		{"MakerNotePanasonicMakerNotePanasonic", 0x927c},
-		{"MakerNotePanasonic3MakerNotePanasonic3", 0x927c},
-		{"MakerNoteSigmaMakerNoteSigma", 0x927c},
-		{"MakerNotePentax5MakerNotePentax5", 0x927c},
-		{"MakerNoteKodak6aMakerNoteKodak6a", 0x927c},
-		{"MakerNoteMinolta2MakerNoteMinolta2", 0x927c},
-		{"MakerNoteSony2MakerNoteSony2", 0x927c},
-		{"MakerNoteKodak2MakerNoteKodak2", 0x927c},
-		{"MakerNoteRicohMakerNoteRicoh", 0x927c},
-		{"MakerNoteMinolta3MakerNoteMinolta3", 0x927c},
-		{"MakerNoteNikon2MakerNoteNikon2", 0x927c},
-		{"MakerNoteMotorolaMakerNoteMotorola", 0x927c},
-		{"MakerNoteLeica3MakerNoteLeica3", 0x927c},
-		{"MakerNoteOlympus3MakerNoteOlympus3", 0x927c},
-		{"MakerNoteLeica8MakerNoteLeica8", 0x927c},
-		{"MakerNoteSanyoMakerNoteSanyo", 0x927c},
-		{"MakerNoteKodak8aMakerNoteKodak8a", 0x927c},
-		{"MakerNoteUnknownTextMakerNoteUnknownText", 0x927c},
-		{"MakerNoteHPMakerNoteHP", 0x927c},
-		{"MakerNoteLeica9MakerNoteLeica9", 0x927c},
-		{"MakerNoteCanonMakerNoteCanon", 0x927c},
-		{"MakerNoteKodak11MakerNoteKodak11", 0x927c},
-		{"MakerNoteLeica2MakerNoteLeica2", 0x927c},
-		{"MakerNoteSonyEricssonMakerNoteSonyEricsson", 0x927c},
-		{"MakerNoteLeica6MakerNoteLeica6", 0x927c},
-		{"MakerNotePentax2MakerNotePentax2", 0x927c},
-		{"MakerNoteGEMakerNoteGE", 0x927c},
-		{"MakerNoteHP6MakerNoteHP6", 0x927c},
-		{"MakerNoteSony5MakerNoteSony5", 0x927c},
-		{"MakerNoteGE2MakerNoteGE2", 0x927c},
-		{"MakerNoteKodak3MakerNoteKodak3", 0x927c},
-		{"MakerNotePhaseOneMakerNotePhaseOne", 0x927c},
-		{"MakerNoteReconyx3MakerNoteReconyx3", 0x927c},
-		{"MakerNoteSonySRFMakerNoteSonySRF", 0x927c},
-		{"MakerNoteKodak1aMakerNoteKodak1a", 0x927c},
-		{"MakerNoteRicohPentaxMakerNoteRicohPentax", 0x927c},
-		{"MakerNoteKodak12MakerNoteKodak12", 0x927c},
-		{"MakerNoteSony3MakerNoteSony3", 0x927c},
-		{"MakerNoteKyoceraMakerNoteKyocera", 0x927c},
-		{"MakerNoteSonyMakerNoteSony", 0x927c},
-		{"MakerNoteISLMakerNoteISL", 0x927c},
-		{"MakerNoteJVCMakerNoteJVC", 0x927c},
-		{"MakerNoteReconyxMakerNoteReconyx", 0x927c},
-		{"MakerNoteKodak10MakerNoteKodak10", 0x927c},
-		{"MakerNoteKodak8cMakerNoteKodak8c", 0x927c},
-		{"MakerNoteLeica4MakerNoteLeica4", 0x927c},
-		{"MakerNoteSanyoPatchMakerNoteSanyoPatch", 0x927c},
-		{"MakerNoteNikonMakerNoteNikon", 0x927c},
-		{"MakerNoteSanyoC4MakerNoteSanyoC4", 0x927c},
-		{"MakerNoteLeica5MakerNoteLeica5", 0x927c},
-		{"MakerNoteSamsung2MakerNoteSamsung2", 0x927c},
-		{"MakerNotePentax3MakerNotePentax3", 0x927c},
-		{"MakerNoteReconyx2MakerNoteReconyx2", 0x927c},
-		{"MakerNotePanasonic2MakerNotePanasonic2", 0x927c},
-		{"MakerNoteJVCTextMakerNoteJVCText", 0x927c},
-		{"MakerNoteCasio2MakerNoteCasio2", 0x927c},
-		{"MakerNoteKodak8bMakerNoteKodak8b", 0x927c},
-		{"MakerNoteHP4MakerNoteHP4", 0x927c},
-		{"MakerNoteFLIRMakerNoteFLIR", 0x927c},
-		{"MakerNoteNikon3MakerNoteNikon3", 0x927c},
-		{"MakerNoteKodakUnknownMakerNoteKodakUnknown", 0x927c},
-		{"MakerNoteKodak4MakerNoteKodak4", 0x927c},
-		{"MakerNoteDJIInfoMakerNoteDJIInfo", 0x927c},
-		{"MakerNoteKodak6bMakerNoteKodak6b", 0x927c},
-		{"MakerNoteLeica10MakerNoteLeica10", 0x927c},
-		{"MakerNoteKodak7MakerNoteKodak7", 0x927c},
-		{"MakerNoteOlympus2MakerNoteOlympus2", 0x927c},
-		{"MakerNotePentax6MakerNotePentax6", 0x927c},
-		{"MakerNoteNintendoMakerNoteNintendo", 0x927c},
-		{"MakerNoteOlympusMakerNoteOlympus", 0x927c},
-		{"MakerNoteRicohTextMakerNoteRicohText", 0x927c},
-		{"MakerNoteUnknownBinaryMakerNoteUnknownBinary", 0x927c},
-		{"MakerNoteKodak1bMakerNoteKodak1b", 0x927c},
-		{"MakerNoteKodak9MakerNoteKodak9", 0x927c},
-		{"MakerNoteLeica7MakerNoteLeica7", 0x927c},
-		{"MakerNoteCasioMakerNoteCasio", 0x927c},
+		{ "MakerNoteLeica", 0x927c },
+		{ "MakerNoteKodak5", 0x927c },
+		{ "MakerNoteUnknown", 0x927c },
+		{ "MakerNoteFujiFilm", 0x927c },
+		{ "MakerNotePentax4", 0x927c },
+		{ "MakerNoteApple", 0x927c },
+		{ "MakerNotePentax", 0x927c },
+		{ "MakerNoteHP2", 0x927c },
+		{ "MakerNoteRicoh2", 0x927c },
+		{ "MakerNoteSamsung1b", 0x927c },
+		{ "MakerNoteSamsung1a", 0x927c },
+		{ "MakerNoteSony4", 0x927c },
+		{ "MakerNoteHasselblad", 0x927c },
+		{ "MakerNoteMinolta", 0x927c },
+		{ "MakerNoteDJI", 0x927c },
+		{ "MakerNotePanasonic", 0x927c },
+		{ "MakerNotePanasonic3", 0x927c },
+		{ "MakerNoteSigma", 0x927c },
+		{ "MakerNotePentax5", 0x927c },
+		{ "MakerNoteKodak6a", 0x927c },
+		{ "MakerNoteMinolta2", 0x927c },
+		{ "MakerNoteSony2", 0x927c },
+		{ "MakerNoteKodak2", 0x927c },
+		{ "MakerNoteRicoh", 0x927c },
+		{ "MakerNoteMinolta3", 0x927c },
+		{ "MakerNoteNikon2", 0x927c },
+		{ "MakerNoteMotorola", 0x927c },
+		{ "MakerNoteLeica3", 0x927c },
+		{ "MakerNoteOlympus3", 0x927c },
+		{ "MakerNoteLeica8", 0x927c },
+		{ "MakerNoteSanyo", 0x927c },
+		{ "MakerNoteKodak8a", 0x927c },
+		{ "MakerNoteUnknownText", 0x927c },
+		{ "MakerNoteHP", 0x927c },
+		{ "MakerNoteLeica9", 0x927c },
+		{ "MakerNoteCanon", 0x927c },
+		{ "MakerNoteKodak11", 0x927c },
+		{ "MakerNoteLeica2", 0x927c },
+		{ "MakerNoteSonyEricsson", 0x927c },
+		{ "MakerNoteLeica6", 0x927c },
+		{ "MakerNotePentax2", 0x927c },
+		{ "MakerNoteGE", 0x927c },
+		{ "MakerNoteHP6", 0x927c },
+		{ "MakerNoteSony5", 0x927c },
+		{ "MakerNoteGE2", 0x927c },
+		{ "MakerNoteKodak3", 0x927c },
+		{ "MakerNotePhaseOne", 0x927c },
+		{ "MakerNoteReconyx3", 0x927c },
+		{ "MakerNoteSonySRF", 0x927c },
+		{ "MakerNoteKodak1a", 0x927c },
+		{ "MakerNoteRicohPentax", 0x927c },
+		{ "MakerNoteKodak12", 0x927c },
+		{ "MakerNoteSony3", 0x927c },
+		{ "MakerNoteKyocera", 0x927c },
+		{ "MakerNoteSony", 0x927c },
+		{ "MakerNoteISL", 0x927c },
+		{ "MakerNoteJVC", 0x927c },
+		{ "MakerNoteReconyx", 0x927c },
+		{ "MakerNoteKodak10", 0x927c },
+		{ "MakerNoteKodak8c", 0x927c },
+		{ "MakerNoteLeica4", 0x927c },
+		{ "MakerNoteSanyoPatch", 0x927c },
+		{ "MakerNoteNikon", 0x927c },
+		{ "MakerNoteSanyoC4", 0x927c },
+		{ "MakerNoteLeica5", 0x927c },
+		{ "MakerNoteSamsung2", 0x927c },
+		{ "MakerNotePentax3", 0x927c },
+		{ "MakerNoteReconyx2", 0x927c },
+		{ "MakerNotePanasonic2", 0x927c },
+		{ "MakerNoteJVCText", 0x927c },
+		{ "MakerNoteCasio2", 0x927c },
+		{ "MakerNoteKodak8b", 0x927c },
+		{ "MakerNoteHP4", 0x927c },
+		{ "MakerNoteFLIR", 0x927c },
+		{ "MakerNoteNikon3", 0x927c },
+		{ "MakerNoteKodakUnknown", 0x927c },
+		{ "MakerNoteKodak4", 0x927c },
+		{ "MakerNoteDJIInfo", 0x927c },
+		{ "MakerNoteKodak6b", 0x927c },
+		{ "MakerNoteLeica10", 0x927c },
+		{ "MakerNoteKodak7", 0x927c },
+		{ "MakerNoteOlympus2", 0x927c },
+		{ "MakerNotePentax6", 0x927c },
+		{ "MakerNoteNintendo", 0x927c },
+		{ "MakerNoteOlympus", 0x927c },
+		{ "MakerNoteRicohText", 0x927c },
+		{ "MakerNoteUnknownBinary", 0x927c },
+		{ "MakerNoteKodak1b", 0x927c },
+		{ "MakerNoteKodak9", 0x927c },
+		{ "MakerNoteLeica7", 0x927c },
+		{ "MakerNoteCasio", 0x927c },
 		{"UserComment", 0x9286},
 		{"SubSecTime", 0x9290},
 		{"SubSecTimeOriginal", 0x9291},
@@ -523,12 +521,12 @@ namespace UniformBitmap
 		{"AntiAliasStrength", 0xc632},
 		{"ShadowScale", 0xc633},
 		{"DNGPrivateDataDNGPrivateData", 0xc634},
-		{"MakerNoteRicohPentaxMakerNoteRicohPentax", 0xc634},
-		{"MakerNoteDJIInfoMakerNoteDJIInfo", 0xc634},
+		{"MakerNoteRicohPentax", 0xc634},
+		{"MakerNoteDJIInfo", 0xc634},
 		{"SR2Private", 0xc634},
 		{"DNGAdobeDataDNGAdobeData", 0xc634},
-		{"MakerNotePentax5MakerNotePentax5", 0xc634},
-		{"MakerNotePentaxMakerNotePentax", 0xc634},
+		{"MakerNotePentax5", 0xc634},
+		{"MakerNotePentax", 0xc634},
 		{"MakerNoteSafety", 0xc635},
 		{"RawImageSegmentation", 0xc640},
 		{"CalibrationIlluminant1", 0xc65a},
@@ -712,10 +710,26 @@ namespace UniformBitmap
 		return ret;
 	}
 
+	std::string FindPrefix(const std::string& a, const std::string& b)
+	{
+		size_t s = std::min(a.length(), b.length());
+		for (size_t i = 0; i < s; i++)
+		{
+			if (a[i] != b[i])
+			{
+				std::string ret = a;
+				ret.resize(i);
+				return ret;
+			}
+		}
+		return "";
+	}
+
 	template<typename TagType, size_t N>
 	const std::unordered_map<TagType, std::string> DataToMapE2S(const std::pair<const char*, TagType>(&cdata)[N])
 	{
 		std::unordered_map<TagType, std::string> ret;
+		std::unordered_map<TagType, std::list<std::string>> dup;
 		for (size_t i = 0; i < N; i++)
 		{
 			auto& k_v = cdata[i];
@@ -724,12 +738,33 @@ namespace UniformBitmap
 
 			if (ret.contains(tag))
 			{
-				auto& s = ret[tag];
-				s += "|";
-				s += val;
+				// auto& s = ret[tag];
+				// s += "|";
+				// s += val;
+				// ret[tag] = FindPrefix(ret[tag], val);
+				if (dup[tag].empty()) dup[tag].push_back(ret[tag]);
+				dup[tag].push_back(val);
 			}
 			else
+			{
 				ret[tag] = val;
+			}
+		}
+		for (auto& kv : dup)
+		{
+			auto tag = kv.first;
+			auto& strlist = kv.second;
+			std::string Prefix;
+			std::string Sum;
+			for (auto& s : strlist)
+			{
+				if (Prefix.empty()) Prefix = s;
+				else Prefix = FindPrefix(Prefix, s);
+				if (Sum.length()) Sum += "|";
+				Sum += s;
+			}
+			if (Prefix.length()) ret[tag] = Prefix;
+			else ret[tag] = Sum;
 		}
 		return ret;
 	}
@@ -821,6 +856,8 @@ namespace UniformBitmap
 		char buf[64];
 		if constexpr (std::is_signed_v<T>)
 			snprintf(buf, sizeof buf, "%d", int32_t(v));
+		else if constexpr (std::is_same_v<T, uint8_t>)
+			snprintf(buf, sizeof buf, "0x%02x", uint32_t(v));
 		else
 			snprintf(buf, sizeof buf, "%u", uint32_t(v));
 		return buf;
@@ -1304,16 +1341,31 @@ namespace UniformBitmap
 				uint32_t NumComponents;
 				Read(NumComponents);
 
-				//if (ret.Fields.try_emplace(TagType, ReadIFDField(IFDFieldFormat(TagVarType), NumComponents)).second == false)
-				//{
-				//	throw BadDataError("Duplicated IFD tag.");
-				//}
-
 				ret.Fields.push_back({ TagType, ReadIFDField(IFDFieldFormat(TagVarType), NumComponents) });
 			}
 			ParseSubIFD(0x8769, ret, ret.ExifSubIFD);
 			ParseSubIFD(0x8825, ret, ret.GPSSubIFD);
 			ParseSubIFD(0xa005, ret, ret.InteroperabilityIFD);
+			for (auto& kv : ret.Fields)
+			{
+				// 尝试解析 MakerNote 里包含的 TIFF 头
+				if (kv.first == 0x927c)
+				{
+					try
+					{
+						auto& MakerNodeData = kv.second->AsUBytes();
+						auto& UBytes = MakerNodeData.Components;
+						if (UBytes.size() > 16 &&
+							!memcmp(&UBytes[0], "HUAWEI\0\0", 8))
+						{
+							ret.MakerNoteSubIFD.push_back(ParseTIFFHeader(&UBytes[8], UBytes.size() - 8));
+						}
+					}
+					catch (const BadDataError&) {}
+					catch (const ReadDataError&) {}
+					catch (const std::bad_cast&) {}
+				}
+			}
 			return ret;
 		}
 
@@ -1326,7 +1378,7 @@ namespace UniformBitmap
 			ReadRaw(II_MM);
 			switch (II_MM)
 			{
-			case 0x2A004949: IsMotorola = false; break;
+			case 0x002A4949: IsMotorola = false; break;
 			case 0x2A004D4D: IsMotorola = true; break;
 			default: throw BadDataError("Bad TIFF header signature.");
 			}
@@ -1386,71 +1438,78 @@ namespace UniformBitmap
 		return TIFFParser(ifs).GetParsed();
 	}
 
-	TIFFHeader ParseTIFFHeader(const uint8_t* TIFFData, size_t& TIFFDataSize)
+	TIFFHeader ParseTIFFHeader(const uint8_t* TIFFData, size_t TIFFDataSize)
 	{
-		std::stringstream ss;
-		ss.rdbuf()->pubsetbuf(reinterpret_cast<char*>(const_cast<uint8_t*>(TIFFData)), TIFFDataSize);
+		auto ss = std::stringstream(std::string(reinterpret_cast<char*>(const_cast<uint8_t*>(TIFFData)), TIFFDataSize));
 		return ParseTIFFHeader(ss);
 	}
 
-	static void ShowGPSFields(std::stringstream& ss, const IFDData& GPSFields)
+	static void ShowGPSFields(std::stringstream& ss, const IFDData& GPSFields, int indent, int cur_indent)
 	{
+		auto IndentStr = std::string(cur_indent * indent, ' ');
 		for (auto& field : GPSFields)
 		{
 			char buf[256];
 			try
 			{
-				snprintf(buf, sizeof buf, "  (0x%04X)%s:\t", field.first, GPSTagToStr.at(field.first).c_str());
+				snprintf(buf, sizeof buf, "(0x%04X)%s:\t", field.first, GPSTagToStr.at(field.first).c_str());
 			}
 			catch (const std::out_of_range&)
 			{
-				snprintf(buf, sizeof buf, "  (0x%04X)<Unknown Tag ID>:\t", field.first);
+				snprintf(buf, sizeof buf, "(0x%04X)<Unknown Tag ID>:\t", field.first);
 			}
-			ss << buf << field.second->ToString() << "\n";
+			ss << IndentStr << buf << field.second->ToString() << "\n";
 		}
 	}
 
-	static void ShowIFDFields(std::stringstream& ss, const IFD& Ifd)
+	static void ShowIFDFields(std::stringstream& ss, const IFD& Ifd, int indent, int cur_indent)
 	{
+		auto IndentStr = std::string(cur_indent * indent, ' ');
 		for (auto& field : Ifd.Fields)
 		{
 			char buf[256];
 			try
 			{
-				snprintf(buf, sizeof buf, "  (0x%04X)%s:\t", field.first, IFDTagToStr.at(field.first).c_str());
+				snprintf(buf, sizeof buf, "(0x%04X)%s:\t", field.first, IFDTagToStr.at(field.first).c_str());
 			}
 			catch (const std::out_of_range&)
 			{
-				snprintf(buf, sizeof buf, "  (0x%04X)<Unknown Tag ID>:\t", field.first);
+				snprintf(buf, sizeof buf, "(0x%04X)<Unknown Tag ID>:\t", field.first);
 			}
-			ss << buf << field.second->ToString() << "\n";
+			ss << IndentStr << buf << field.second->ToString() << "\n";
 		}
 		if (Ifd.ExifSubIFD)
 		{
-			ss << "- Exif SubIFD:\n";
-			ShowIFDFields(ss, *Ifd.ExifSubIFD);
+			ss << IndentStr << "- Exif SubIFD:\n";
+			ShowIFDFields(ss, *Ifd.ExifSubIFD, indent, cur_indent + 1);
 		}
 		if (Ifd.GPSSubIFD)
 		{
 			// GPS 的因为 ID 名字不同，必须用专门的函数来打印。
-			ss << "- GPS SubIFD:\n";
-			ShowGPSFields(ss, Ifd.GPSSubIFD->Fields);
+			ss << IndentStr << "- GPS SubIFD:\n";
+			ShowGPSFields(ss, Ifd.GPSSubIFD->Fields, indent, cur_indent + 1);
 		}
 		if (Ifd.InteroperabilityIFD)
 		{
-			ss << "- Interoperability SubIFD:\n";
-			ShowIFDFields(ss, *Ifd.InteroperabilityIFD);
+			ss << IndentStr << "- Interoperability SubIFD:\n";
+			ShowIFDFields(ss, *Ifd.InteroperabilityIFD, indent, cur_indent + 1);
+		}
+		for (auto& m : Ifd.MakerNoteSubIFD)
+		{
+			ss << IndentStr << "- MakerNotes SubIFD:\n";
+			ss << TIFFHeaderToString(m, indent, cur_indent + 1);
 		}
 	}
 
-	std::string TIFFHeaderToString(const TIFFHeader& TIFFHdr)
+	std::string TIFFHeaderToString(const TIFFHeader& TIFFHdr, int indent, int cur_indent)
 	{
 		std::stringstream ss;
+		auto IndentStr = std::string(cur_indent * indent, ' ');
 		for (size_t i = 0; i < TIFFHdr.size(); i++)
 		{
 			auto& IFD = TIFFHdr[i];
-			ss << "IFD" << i << ":\n";
-			ShowIFDFields(ss, IFD);
+			ss << IndentStr << "IFD" << i << ":\n";
+			ShowIFDFields(ss, IFD, indent, cur_indent + 1);
 		}
 		return ss.str();
 	}
