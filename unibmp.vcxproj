@@ -19,9 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="tiffhdr.hpp" />
     <ClInclude Include="unibmp.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="tiffhdr.cpp" />
     <ClCompile Include="unibmp.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
