@@ -6,7 +6,7 @@ RANLIB=ranlib
 CFLAGS=-static -fPIC -std=c++20 -O3 -I. -Iinclude
 CXXFLAGS=$(CFLAGS) -fmax-errors=5
 LDFLAGS=-s -g -L.
-LDLIBS=-lstdc++ -lm
+LDLIBS=-lstdc++ -lm -lunibmp
 
 OBJS=
 OBJS+=tiffhdr.o
@@ -20,7 +20,7 @@ libunibmp.a: $(OBJS)
 	$(RANLIB) $@
 
 libunibmp.so: libunibmp.a
-	$(LD) -shared $(LDFLAGS) $^ -o $@ $(LDLIBS) -lunibmp.a
+	$(LD) -shared $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
 ubtest: test.o libunibmp.a
 	$(LD) $(LDFLAGS) $^ -o $@ $(LDLIBS)
