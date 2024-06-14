@@ -53,60 +53,6 @@ namespace CPPGIF
 		return BytesRead;
 	}
 
-	GIFLoader::GIFLoader(const std::string& LoadFrom)
-	{
-		std::ifstream ifs;
-		ifs.exceptions(std::ios::failbit | std::ios::badbit);
-		ifs.open(LoadFrom, std::ios::binary);
-		LoadGIF(ifs);
-	}
-
-	GIFLoader::GIFLoader(std::istream& LoadFrom)
-	{
-		LoadGIF(LoadFrom);
-	}
-
-	const std::string& GIFLoader::GetVersion() const
-	{
-		return Version;
-	}
-
-	const uint16_t GIFLoader::GetWidth() const
-	{
-		return LogicalScreenDescriptor.GetLogicalScreenWidth();
-	}
-
-	const uint16_t GIFLoader::GetHeight() const
-	{
-		return LogicalScreenDescriptor.GetLogicalScreenHeight();
-	}
-
-	const ColorTableArray& GIFLoader::GetGlobalColorTable(size_t& numColorsOut) const
-	{
-		numColorsOut = LogicalScreenDescriptor.SizeOfGlobalColorTable();
-		return LogicalScreenDescriptor.GetGlobalColorTable();
-	}
-
-	static DataSubBlock ReadDataSubBlock(std::istream& is)
-	{
-		auto BlockSize = uint8_t(0);
-		auto ret = DataSubBlock();
-		Read(is, BlockSize);
-		while(BlockSize)
-		{
-			size_t i = ret.size();
-			ret.resize(i + BlockSize);
-			Read(is, &ret[i], BlockSize);
-			Read(is, BlockSize);
-		}
-		return ret;
-	}
-
-	const LogicalScreenDescriptorType& GIFLoader::GetLogicalScreenDescriptor() const
-	{
-		return LogicalScreenDescriptor;
-	}
-
 	LogicalScreenDescriptorType::LogicalScreenDescriptorType(uint16_t LogicalScreenWidth, uint16_t LogicalScreenHeight, uint8_t Bitfields, uint8_t BackgroundColorIndex, std::shared_ptr<ColorTableArray> GlobalColorTable) :
 		LogicalScreenWidth(LogicalScreenWidth),
 		LogicalScreenHeight(LogicalScreenHeight),
@@ -375,4 +321,101 @@ namespace CPPGIF
 		return ImageDescriptors;
 	}
 
+	GIFLoader::GIFLoader(const std::string& LoadFrom)
+	{
+		std::ifstream ifs;
+		ifs.exceptions(std::ios::failbit | std::ios::badbit);
+		ifs.open(LoadFrom, std::ios::binary);
+		LoadGIF(ifs);
+	}
+
+	GIFLoader::GIFLoader(std::istream& LoadFrom)
+	{
+		LoadGIF(LoadFrom);
+	}
+
+	const std::string& GIFLoader::GetVersion() const
+	{
+		return Version;
+	}
+
+	const uint16_t GIFLoader::GetWidth() const
+	{
+		return LogicalScreenDescriptor.GetLogicalScreenWidth();
+	}
+
+	const uint16_t GIFLoader::GetHeight() const
+	{
+		return LogicalScreenDescriptor.GetLogicalScreenHeight();
+	}
+
+	const ColorTableArray& GIFLoader::GetGlobalColorTable(size_t& numColorsOut) const
+	{
+		numColorsOut = LogicalScreenDescriptor.SizeOfGlobalColorTable();
+		return LogicalScreenDescriptor.GetGlobalColorTable();
+	}
+
+	static DataSubBlock ReadDataSubBlock(std::istream& is)
+	{
+		auto BlockSize = uint8_t(0);
+		auto ret = DataSubBlock();
+		Read(is, BlockSize);
+		while (BlockSize)
+		{
+			size_t i = ret.size();
+			ret.resize(i + BlockSize);
+			Read(is, &ret[i], BlockSize);
+			Read(is, BlockSize);
+		}
+		return ret;
+	}
+
+	const LogicalScreenDescriptorType& GIFLoader::GetLogicalScreenDescriptor() const
+	{
+		return LogicalScreenDescriptor;
+	}
+
+	void GIFLoader::LoadGIF(std::istream& is)
+	{
+		Version.resize(6);
+		Read(is, &Version[0], 6);
+		if (Version != "gif87a" && Version != "gif89a") throw UnexpectedData(std::string("GIF: Read error: Unknown version: ") + Version);
+		LogicalScreenDescriptor = LogicalScreenDescriptorType(is);
+
+		auto Introducer = uint8_t();
+		auto Label = uint8_t();
+		for(;!ReadToTrailer;)
+		{
+			Read(is, Introducer);
+			switch (Introducer)
+			{
+			case '!':
+				Read(is, Label);
+				switch (Label)
+				{
+				case 0x01: PlainTextExtension.push_back(PlainTextExtensionType(is)); break;
+				case 0x2C: throw UnexpectedData(std::string("GIF: Read error: got an unexpectd Image Descriptor (0x2C) here."));
+				case 0x3B: ReadToTrailer = true; break;
+				case 0xF9: GraphicControlExtension.push_back(GraphicControlExtensionType(is)); break;
+				case 0xFE: CommentExtension.push_back(CommentExtensionType(is)); break;
+				case 0xFF: ApplicationExtension.push_back(ApplicationExtensionType(is)); break;
+				default:
+					do
+					{
+						char buf[256];
+						snprintf(buf, sizeof buf, "GIF: Read error: got unknown label (0x%02X) here.", Label);
+						throw UnexpectedData(buf);
+					} while (0);
+				}
+				break;
+			default:
+				do
+				{
+					char buf[256];
+					snprintf(buf, sizeof buf, "GIF: Read error: got unknown introducer (0x%02X) here.", Introducer);
+					throw UnexpectedData(buf);
+				} while (0);
+			}
+		}
+	}
 }
