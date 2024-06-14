@@ -225,6 +225,7 @@ namespace UniformBitmap
 		void FlipH();
 		void FlipV();
 		void FlipV_RowPtrs();
+		void Rotate180();
 
 		size_t SaveToBmp24(const std::string& FilePath, bool InverseLineOrder = false) const;
 		size_t SaveToBmp32(const std::string& FilePath, bool InverseLineOrder = false) const;
