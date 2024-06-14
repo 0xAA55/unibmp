@@ -34,6 +34,18 @@ namespace UniformBitmap
 		SaveImageError(std::string what) noexcept;
 	};
 
+	class InvalidRotationAngle : public std::invalid_argument
+	{
+	public:
+		InvalidRotationAngle(std::string what) noexcept;
+	};
+
+	class InvalidRotationOrient : public std::invalid_argument
+	{
+	public:
+		InvalidRotationOrient(std::string what) noexcept;
+	};
+
 	template<typename ChannelType_> class Pixel_RGBA;
 	using Pixel_RGBA8 = Pixel_RGBA<uint8_t>;
 	using Pixel_RGBA16 = Pixel_RGBA<uint16_t>;
@@ -230,6 +242,25 @@ namespace UniformBitmap
 		void Rotate180();
 		void Rotate270_CW();
 		void Rotate270_CCW();
+
+		enum class RotationAngle
+		{
+			R_0 = 0,
+			R_90 = 90,
+			R_180 = 180,
+			R_270 = 270,
+			R_360 = 360
+		};
+
+		enum class RotationOrient
+		{
+			ClockWise = 1,
+			CounterClockWise = 2
+		};
+
+		void Rotate_CW(RotationAngle Angle);
+		void Rotate_CCW(RotationAngle Angle);
+		void Rotate(RotationAngle Angle, RotationOrient Orient);
 
 		size_t SaveToBmp24(const std::string& FilePath, bool InverseLineOrder = false) const;
 		size_t SaveToBmp32(const std::string& FilePath, bool InverseLineOrder = false) const;
