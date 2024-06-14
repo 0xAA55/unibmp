@@ -55,6 +55,11 @@ namespace UniformBitmap
 
 		static bool IsSame(const Pixel_RGBA& a, const Pixel_RGBA& b);
 		static void SetPixel(Pixel_RGBA& dst, const Pixel_RGBA& src);
+
+		struct Hash
+		{
+			size_t operator()(const Pixel_RGBA& p) const;
+		};
 	};
 
 	extern template class Pixel_RGBA<uint8_t>;

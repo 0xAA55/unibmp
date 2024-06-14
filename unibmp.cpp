@@ -284,6 +284,29 @@ namespace UniformBitmap
 		dst = src;
 	}
 
+	template<typename ChannelType_>
+	size_t Pixel_RGBA<ChannelType_>::Hash::operator()(const Pixel_RGBA& p) const
+	{
+		if constexpr (std::is_same_v<ChannelType_, uint8_t>)
+		{
+			return *reinterpret_cast<const uint32_t*>(&p);
+		}
+		else if constexpr (std::is_same_v<ChannelType_, uint16_t>)
+		{
+			return std::hash<uint64_t>{}(*reinterpret_cast<const uint64_t*>(&p));
+		}
+		else if constexpr (std::is_same_v<ChannelType_, uint32_t> || std::is_same_v<ChannelType_, float>)
+		{
+			auto data1 = reinterpret_cast<const uint64_t*>(&p)[0];
+			auto data2 = reinterpret_cast<const uint64_t*>(&p)[1];
+			return std::hash<uint64_t>{}(data1) + (std::hash<uint64_t>{}(data2) << 8);
+		}
+		else
+		{
+			throw std::invalid_argument("Unimplemented pixel hash function.");
+		}
+	}
+
 	template class Pixel_RGBA<uint8_t>;
 	template class Pixel_RGBA<uint16_t>;
 	template class Pixel_RGBA<uint32_t>;
