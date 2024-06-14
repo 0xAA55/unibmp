@@ -286,6 +286,7 @@ namespace CPPGIF
 		{
 		protected:
 			DataSubBlock Bytes;
+			int LastByteUsedBits = 0;
 
 		public:
 			int CurCodeSize;
@@ -294,16 +295,36 @@ namespace CPPGIF
 			CodeStream(int InitCodeSize) :
 				CurCodeSize(InitCodeSize)
 			{
+				Bytes.push_back(0);
 			}
 
-			DataSubBlock GetEncodedBytes() const
+			const DataSubBlock& GetEncodedBytes(int& LastByteUsedBits) const
 			{
+				LastByteUsedBits = this->LastByteUsedBits;
 				return Bytes;
 			}
 
-			void EncodeCode(uint16_t Code)
+			void Encode(uint16_t Code)
 			{
-
+				int BitsToEncode = CurCodeSize;
+				while (BitsToEncode)
+				{
+					int BitsCanEncode = (8 - LastByteUsedBits);
+					if (BitsCanEncode > BitsToEncode) BitsCanEncode = BitsToEncode;
+					if (!BitsCanEncode)
+					{
+						Bytes.push_back(0);
+						BitsCanEncode = BitsToEncode < 8 ? BitsToEncode : 8;
+						LastByteUsedBits = 0;
+					}
+					if (BitsCanEncode)
+					{
+						Bytes.back() |= uint8_t(Code << LastByteUsedBits);
+						Code >>= BitsCanEncode;
+						LastByteUsedBits += BitsCanEncode;
+						BitsToEncode -= BitsCanEncode;
+					}
+				}
 			}
 		};
 
