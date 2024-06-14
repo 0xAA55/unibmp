@@ -6,6 +6,7 @@
 #include <limits>
 #include <cstring>
 #include <algorithm>
+#include <cmath>
 
 #ifndef PROFILE_MultithreadingImageRastering
 #define PROFILE_MultithreadingImageRastering 1
