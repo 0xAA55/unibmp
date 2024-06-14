@@ -664,12 +664,12 @@ namespace UniformBitmap
 			try
 			{
 				ifs.exceptions(std::ios::failbit | std::ios::badbit);
-				Parse();
 			}
 			catch (const std::ios::failure& e)
 			{
 				throw ReadDataError(std::string("Invalid data input, ") + e.what());
 			}
+			Parse(); // 它自己会抛出 ReadDataError
 		}
 
 		const TIFFHeader& GetParsed() const
