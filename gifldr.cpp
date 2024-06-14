@@ -473,6 +473,16 @@ namespace CPPGIF
 		}
 	}
 
+	Image_RGBA8 GraphicControlExtensionType::ConvertToImage() const
+	{
+		// TODO
+	}
+
+	void GraphicControlExtensionType::DrawImageDesc(Image_RGBA8& DrawTo, const ImageDescriptorType& ImgDesc) const
+	{
+		// TODO
+	}
+
 	PlainTextExtensionType::PlainTextExtensionType(std::istream& is)
 	{
 		Read(is, BlockSize);
@@ -589,6 +599,16 @@ namespace CPPGIF
 		return LogicalScreenDescriptor;
 	}
 
+	ImageAnim GIFLoader::ConvertToImageAnim() const
+	{
+		auto ret = ImageAnim(GetWidth(), GetHeight());
+
+		// TODO
+
+
+		return ret;
+	}
+
 	void GIFLoader::LoadGIF(std::istream& is)
 	{
 		Version.resize(6);
@@ -631,5 +651,15 @@ namespace CPPGIF
 				} while (0);
 			}
 		}
+	}
+
+	int ImageAnimFrame::GetDuration() const
+	{
+		return Duration;
+	}
+
+	ImageAnim::ImageAnim(uint32_t Width, uint32_t Height) :
+		Width(Width), Height(Height)
+	{
 	}
 }
