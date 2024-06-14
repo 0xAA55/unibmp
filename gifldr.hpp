@@ -165,7 +165,7 @@ namespace CPPGIF
 		GraphicControlExtensionType(std::istream& is);
 
 		void DrawToFrame(ImageAnimFrame& DrawTo, const GIFLoader& ldr) const;
-		ImageAnimFrame ConvertToFrame(const GIFLoader& ldr) const;
+		ImageAnimFrame ConvertToFrame(const GIFLoader& ldr, bool Verbose) const;
 
 	protected:
 		void DrawImageDesc(Image_RGBA8& DrawTo, const ImageDescriptorType& ImgDesc, const GIFLoader& ldr) const;
@@ -217,11 +217,12 @@ namespace CPPGIF
 		std::vector<ApplicationExtensionType> ApplicationExtension;
 
 		std::string Name;
+		bool Verbose = true;
 
 	public:
-		GIFLoader(const std::string& LoadFrom);
-		GIFLoader(const std::string& LoadFrom, const std::string& Name);
-		GIFLoader(std::istream& LoadFrom, const std::string& Name);
+		GIFLoader(const std::string& LoadFrom, bool Verbose);
+		GIFLoader(const std::string& LoadFrom, const std::string& Name, bool Verbose);
+		GIFLoader(std::istream& LoadFrom, const std::string& Name, bool Verbose);
 
 		const std::string& GetVersion() const;
 		const uint16_t GetWidth() const;
@@ -257,9 +258,10 @@ namespace CPPGIF
 	public:
 		std::vector<ImageAnimFrame> Frames;
 		std::string Name;
+		bool Verbose = true;;
 
 	public:
-		ImageAnim(uint32_t Width, uint32_t Height);
+		ImageAnim(uint32_t Width, uint32_t Height, bool Verbose);
 		uint32_t GetWidth() const;
 		uint32_t GetHeight() const;
 

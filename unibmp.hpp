@@ -200,7 +200,7 @@ namespace UniformBitmap
 		size_t SaveToBmp24(FileInMemoryType& mf, bool InverseLineOrder) const;
 		size_t SaveToBmp32(FileInMemoryType& mf, bool InverseLineOrder) const;
 
-		void RotateByExifData(bool RemoveRotationFromExifData, bool Verbose);
+		void RotateByExifData(bool RemoveRotationFromExifData);
 
 	public:
 		inline uint32_t GetWidth() const { return Width; }
@@ -228,11 +228,11 @@ namespace UniformBitmap
 		// TIFF 头部信息
 		std::shared_ptr<TIFFHeader> ExifData;
 
-		Image(const std::string& FilePath);
-		Image(const std::string& FilePath, const std::string& Name);
-		Image(const void* FileInMemory, size_t FileSize, const std::string& Name);
-		Image(uint32_t Width, uint32_t Height, const std::string& Name);
-		Image(uint32_t Width, uint32_t Height, const PixelType& DefaultColor, const std::string& Name);
+		Image(const std::string& FilePath, bool Verbose);
+		Image(const std::string& FilePath, const std::string& Name, bool Verbose);
+		Image(const void* FileInMemory, size_t FileSize, const std::string& Name, bool Verbose);
+		Image(uint32_t Width, uint32_t Height, const std::string& Name, bool Verbose);
+		Image(uint32_t Width, uint32_t Height, const PixelType& DefaultColor, const std::string& Name, bool Verbose);
 		Image(const Image& from);
 		template<typename FromType> requires (!std::is_same_v<PixelType, FromType>)
 		Image(const Image<FromType>& from);
@@ -313,6 +313,9 @@ namespace UniformBitmap
 	protected:
 		static PixelType LinearSample(uint32_t Width, uint32_t Height, const std::vector<PixelType*> RowPointers, float u, float v);
 		static PixelType GetAvreage(int x0, int y0, int x1, int y1, const std::vector<PixelType*> RowPointers);
+
+	public:
+		bool Verbose = true;
 	};
 
 	extern template class Image<Pixel_RGBA8>;

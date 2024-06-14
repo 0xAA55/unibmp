@@ -665,9 +665,9 @@ namespace CPPGIF
 		}
 	}
 
-	ImageAnimFrame GraphicControlExtensionType::ConvertToFrame(const GIFLoader& ldr) const
+	ImageAnimFrame GraphicControlExtensionType::ConvertToFrame(const GIFLoader& ldr, bool Verbose) const
 	{
-		auto Img = ImageAnimFrame(ldr.GetWidth(), ldr.GetHeight(), Pixel_RGBA8(0, 0, 0, 0), "GIF file");
+		auto Img = ImageAnimFrame(ldr.GetWidth(), ldr.GetHeight(), Pixel_RGBA8(0, 0, 0, 0), "GIF file", Verbose);
 
 		DrawToFrame(Img, ldr);
 
@@ -792,8 +792,9 @@ namespace CPPGIF
 		return ImageDescriptors;
 	}
 
-	GIFLoader::GIFLoader(const std::string& LoadFrom) :
-		Name(std::filesystem::path(LoadFrom).filename().string())
+	GIFLoader::GIFLoader(const std::string& LoadFrom, bool Verbose) :
+		Name(std::filesystem::path(LoadFrom).filename().string()),
+		Verbose(Verbose)
 	{
 		std::ifstream ifs;
 		ifs.exceptions(std::ios::failbit | std::ios::badbit);
@@ -801,14 +802,15 @@ namespace CPPGIF
 		LoadGIF(ifs);
 	}
 
-	GIFLoader::GIFLoader(const std::string& LoadFrom, const std::string& Name) :
-		GIFLoader(LoadFrom)
+	GIFLoader::GIFLoader(const std::string& LoadFrom, const std::string& Name, bool Verbose) :
+		GIFLoader(LoadFrom, Verbose)
 	{
 		this->Name = Name;
 	}
 
-	GIFLoader::GIFLoader(std::istream& LoadFrom, const std::string& Name) :
-		Name(Name)
+	GIFLoader::GIFLoader(std::istream& LoadFrom, const std::string& Name, bool Verbose) :
+		Name(Name),
+		Verbose(Verbose)
 	{
 		LoadGIF(LoadFrom);
 	}
@@ -841,7 +843,7 @@ namespace CPPGIF
 
 	ImageAnim GIFLoader::ConvertToImageAnim() const
 	{
-		auto ret = ImageAnim(GetWidth(), GetHeight());
+		auto ret = ImageAnim(GetWidth(), GetHeight(), Verbose);
 		auto& BackgroundColor = LogicalScreenDescriptor.GetBackgroundColor();
 		auto BgColor = Pixel_RGBA8(BackgroundColor.R, BackgroundColor.G, BackgroundColor.B, 255);
 
@@ -849,7 +851,7 @@ namespace CPPGIF
 		for (auto& Graphic : GraphicControlExtension)
 		{
 			// 第一帧直接绘制
-			if (!ret.Frames.size()) ret.Frames.push_back(Graphic.ConvertToFrame(*this));
+			if (!ret.Frames.size()) ret.Frames.push_back(Graphic.ConvertToFrame(*this, Verbose));
 			else
 			{ // 之后的帧看情况绘制
 				switch (Graphic.GetDisposalMethod())
@@ -878,7 +880,7 @@ namespace CPPGIF
 					} while (false);
 					break;
 				case GraphicControlExtensionType::RestoreToPrevious: // 恢复到最初，其实就是不基于上一帧来绘图。
-					ret.Frames.push_back(Graphic.ConvertToFrame(*this));
+					ret.Frames.push_back(Graphic.ConvertToFrame(*this, Verbose));
 					break;
 				}
 			}
@@ -942,8 +944,8 @@ namespace CPPGIF
 		return Duration;
 	}
 
-	ImageAnim::ImageAnim(uint32_t Width, uint32_t Height) :
-		Width(Width), Height(Height)
+	ImageAnim::ImageAnim(uint32_t Width, uint32_t Height, bool Verbose) :
+		Width(Width), Height(Height), Verbose(Verbose)
 	{
 	}
 
@@ -962,7 +964,7 @@ namespace CPPGIF
 		auto numFrames = Frames.size();
 		auto CanvasW = TrueForVertical ? Width : Width * numFrames;
 		auto CanvasH = TrueForVertical ? Height * numFrames : Height;
-		auto Canvas = Image_RGBA8(uint32_t(CanvasW), uint32_t(CanvasH), Pixel_RGBA8(0, 0, 0, 0), Name);
+		auto Canvas = Image_RGBA8(uint32_t(CanvasW), uint32_t(CanvasH), Pixel_RGBA8(0, 0, 0, 0), Name, Verbose);
 
 		auto DrawX = 0;
 		auto DrawY = 0;

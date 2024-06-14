@@ -534,12 +534,13 @@ namespace UniformBitmap
 		LoadNonBmp(&Buffer[0], size);
 		ifs.seekg(0, std::ios::beg);
 		ExifData = FindExifDataFromJpeg(ifs);
-		RotateByExifData(true, true);
+		RotateByExifData(true);
 	}
 
 	template<typename PixelType>
-	Image<PixelType>::Image(const std::string& FilePath) :
+	Image<PixelType>::Image(const std::string& FilePath, bool Verbose) :
 		IsHDR(false),
+		Verbose(Verbose),
 		Name(std::filesystem::path(FilePath).filename().string())
 	{
 		if (IsLikelyBmp(FilePath))
@@ -560,16 +561,17 @@ namespace UniformBitmap
 	}
 
 	template<typename PixelType>
-	Image<PixelType>::Image(const std::string& FilePath, const std::string& Name) :
-		Image(FilePath)
+	Image<PixelType>::Image(const std::string& FilePath, const std::string& Name, bool Verbose) :
+		Image(FilePath, Verbose)
 	{
 		this->Name = Name;
 	}
 
 	template<typename PixelType>
-	Image<PixelType>::Image(const void* FileInMemory, size_t FileSize, const std::string& Name) :
+	Image<PixelType>::Image(const void* FileInMemory, size_t FileSize, const std::string& Name, bool Verbose) :
 		IsHDR(false),
-		Name(Name)
+		Name(Name),
+		Verbose(Verbose)
 	{
 		if (IsLikelyBmp(FileInMemory, FileSize))
 		{
@@ -922,23 +924,24 @@ namespace UniformBitmap
 	}
 
 	template<typename PixelType>
-	Image<PixelType>::Image(uint32_t Width, uint32_t Height, const std::string& Name) :
+	Image<PixelType>::Image(uint32_t Width, uint32_t Height, const std::string& Name, bool Verbose) :
 		IsHDR(std::is_floating_point_v<ChannelType>),
-		Name(Name)
+		Name(Name),
+		Verbose(Verbose)
 	{
 		CreateBuffer(Width, Height);
 	}
 
 	template<typename PixelType>
-	Image<PixelType>::Image(uint32_t Width, uint32_t Height, const PixelType& DefaultColor, const std::string& Name) :
-		Image(Width, Height, Name)
+	Image<PixelType>::Image(uint32_t Width, uint32_t Height, const PixelType& DefaultColor, const std::string& Name, bool Verbose) :
+		Image(Width, Height, Name, Verbose)
 	{
 		FillRect(0, 0, Width - 1, Height - 1, DefaultColor);
 	}
 
 	template<typename PixelType>
 	Image<PixelType>::Image(const Image& from) :
-		Image(from.GetWidth(), from.GetHeight(), from.Name)
+		Image(from.GetWidth(), from.GetHeight(), from.Name, from.Verbose)
 	{
 		XPelsPerMeter = from.XPelsPerMeter;
 		YPelsPerMeter = from.YPelsPerMeter;
@@ -961,7 +964,7 @@ namespace UniformBitmap
 	template<typename PixelType>
 	template<typename FromType> requires (!std::is_same_v<PixelType, FromType>)
 	Image<PixelType>::Image(const Image<FromType>& from) :
-		Image(from.GetWidth(), from.GetHeight(), from.Name)
+		Image(from.GetWidth(), from.GetHeight(), from.Name, from.Verbose)
 	{
 		XPelsPerMeter = from.XPelsPerMeter;
 		YPelsPerMeter = from.YPelsPerMeter;
@@ -1229,7 +1232,7 @@ namespace UniformBitmap
 	}
 
 	template<typename PixelType>
-	void Image<PixelType>::RotateByExifData(bool RemoveRotationFromExifData, bool Verbose)
+	void Image<PixelType>::RotateByExifData(bool RemoveRotationFromExifData)
 	{
 		if (!ExifData)
 		{
@@ -1933,7 +1936,7 @@ namespace UniformBitmap
 				}
 			}
 			ExifData = FindExifDataFromJpeg(FilePath);
-			RotateByExifData(true, true);
+			RotateByExifData(true);
 		}
 		else
 		{
@@ -1996,7 +1999,7 @@ namespace UniformBitmap
 				}
 			}
 			ExifData = FindExifDataFromJpeg(FileInMemory, FileSize);
-			RotateByExifData(true, true);
+			RotateByExifData(true);
 		}
 		else
 		{
