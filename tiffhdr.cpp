@@ -224,21 +224,6 @@ namespace UniformBitmap
 		{"CFAPattern", 0xa302},
 	};
 
-
-	template<typename T>
-	IFDFieldType<T>::IFDFieldType(IFDFieldFormat Type, T Value) :
-		IFDFieldBase(Type)
-	{
-		Components.push_back(Value);
-	}
-
-	template<typename T>
-	IFDFieldType<T>::IFDFieldType(IFDFieldFormat Type, const std::vector<T>& Values) :
-		IFDFieldBase(Type),
-		Components(Values)
-	{
-	}
-
 	template<typename T>
 	IFDFieldFormat IFDFieldType<T>::GetFormatValueByType()
 	{
@@ -256,16 +241,45 @@ namespace UniformBitmap
 	}
 
 	template<typename T>
-	IFDFieldType<T>::IFDFieldType(T Value) :
+	IFDFieldType<T>::IFDFieldType(IFDFieldFormat Type) :
+		IFDFieldBase(Type)
+	{
+	}
+
+	template<typename T>
+	IFDFieldType<T>::IFDFieldType() :
 		IFDFieldBase(GetFormatValueByType())
+	{
+	}
+
+	template<typename T>
+	IFDFieldType<T>::IFDFieldType(IFDFieldFormat Type, T Value) :
+		IFDFieldBase(Type)
 	{
 		Components.push_back(Value);
 	}
 
 	template<typename T>
-	IFDFieldType<T>::IFDFieldType(const std::vector<T>& Values) :
-		IFDFieldBase(GetFormatValueByType()),
+	IFDFieldType<T>::IFDFieldType(IFDFieldFormat Type, const std::vector<T>& Values) :
+		IFDFieldBase(Type),
 		Components(Values)
+	{
+	}
+
+	template<typename T>
+	IFDFieldType<T>::IFDFieldType(T Value) :
+		IFDFieldType(GetFormatValueByType(), Value)
+	{
+	}
+
+	template<typename T>
+	IFDFieldType<T>::IFDFieldType(const std::vector<T>& Values) :
+		IFDFieldType(GetFormatValueByType(), Values)
+	{
+	}
+
+	IFDFieldString::IFDFieldString() :
+		IFDFieldBase(IFDFieldFormat::AsciiString)
 	{
 	}
 
@@ -425,27 +439,29 @@ namespace UniformBitmap
 		size_t ReadRaw(T& r)
 		{
 			ifs.read(reinterpret_cast<char*>(&r), sizeof r);
+			RB += sizeof r;
 			return (sizeof r);
 		}
 
 		size_t ReadSZ(std::string& s)
 		{
 			std::stringstream ss;
-			size_t RB = 0;
+			size_t ret = 0;
 			for(;;)
 			{
 				char c;
-				RB += ReadRaw(c);
+				ret += ReadRaw(c);
 				if (!c) break;
 				else ss << c;
 			}
 			s = ss.str();
-			return RB;
+			return ret;
 		}
 
 		size_t ReadBytes(std::vector<uint8_t>& r, size_t BytesToRead)
 		{
 			ifs.read(reinterpret_cast<char*>(&r[0]), BytesToRead);
+			RB += BytesToRead;
 			return BytesToRead;
 		}
 
@@ -457,29 +473,95 @@ namespace UniformBitmap
 			return ret;
 		}
 
+		template<typename T> requires std::is_same_v<T, Rational> || std::is_same_v<T, URational>
+		size_t Read(T& r)
+		{
+			return
+				Read(r.Numerator) +
+				Read(r.Denominator);
+		}
+
+		template<typename T>
+		size_t ReadComponents(std::vector<T>& ReadInto, uint32_t NumComponents)
+		{
+			ReadInto.resize(NumComponents);
+			size_t DataSize = (sizeof ReadInto[0]) * NumComponents;
+			if (DataSize > 4)
+			{
+				uint32_t Offset;
+				auto ret = Read(Offset);
+				auto CurRB = RB;
+				auto CurPos = ifs.tellg();
+				ifs.seekg(Offset, std::ios::beg);
+				for (size_t i = 0; i < NumComponents; i++)
+				{
+					Read(ReadInto[i]);
+				}
+				ifs.seekg(CurPos, std::ios::beg);
+				RB = CurRB;
+				return ret;
+			}
+			else
+			{
+				size_t ret = 0;
+				for (size_t i = 0; i < NumComponents; i++)
+				{
+					ret += Read(ReadInto[i]);
+				}
+				return ret;
+			}
+		}
+
+		size_t ReadComponents(std::string& s, size_t Length)
+		{
+			s.resize(Length);
+
+			if (Length > 4)
+			{
+
+			}
+			else
+			{
+				ifs.read(reinterpret_cast<char*>(&s[0]), Length);
+				RB += Length;
+			}
+			return Length;
+		}
+
 		std::shared_ptr<IFDFieldBase> ReadIFDField(IFDFieldFormat Format, uint32_t NumComponents)
 		{
 			switch (Format)
 			{
-			case IFDFieldFormat::SByte: RB += Read(field.Literal.SByte); break;
-			case IFDFieldFormat::SShort: RB += Read(field.Literal.SShort); break;
-			case IFDFieldFormat::SLong: RB += Read(field.Literal.SLong); break;
-			case IFDFieldFormat::SRational:
-				RB += Read(field.Literal.SRational.Numerator);
-				RB += Read(field.Literal.SRational.Denominator);
-				break;
-			case IFDFieldFormat::UByte: RB += Read(field.Literal.UByte); break;
-			case IFDFieldFormat::UShort: RB += Read(field.Literal.UShort); break;
-			case IFDFieldFormat::ULong: RB += Read(field.Literal.ULong); break;
-			case IFDFieldFormat::URational:
-				RB += Read(field.Literal.URational.Numerator);
-				RB += Read(field.Literal.URational.Denominator);
-				break;
-			case IFDFieldFormat::Float: RB += Read(field.Literal.Float); break;
-			case IFDFieldFormat::Double: RB += Read(field.Literal.Double); break;
-			case IFDFieldFormat::AsciiString: RB += ReadSZ(field.String);
-			case IFDFieldFormat::Undefined: RB += ReadBytes(field.UnknownData, NumComponents);
+#define ConstructByType(Type) do {auto ret = std::make_shared<Type>(Format); ReadComponents(ret->Components, NumComponents); return ret; } while(0)
+			case IFDFieldFormat::SByte:     ConstructByType(IFDFieldBytes);
+			case IFDFieldFormat::SShort:    ConstructByType(IFDFieldShorts);
+			case IFDFieldFormat::SLong:     ConstructByType(IFDFieldLongs);
+			case IFDFieldFormat::SRational: ConstructByType(IFDFieldRationals);
+			case IFDFieldFormat::UByte:     ConstructByType(IFDFieldUBytes);
+			case IFDFieldFormat::UShort:    ConstructByType(IFDFieldUShorts);
+			case IFDFieldFormat::ULong:     ConstructByType(IFDFieldULongs);
+			case IFDFieldFormat::URational: ConstructByType(IFDFieldURationals);
+			case IFDFieldFormat::Float:     ConstructByType(IFDFieldFloats);
+			case IFDFieldFormat::Double:    ConstructByType(IFDFieldDoubles);
+			case IFDFieldFormat::Undefined: ConstructByType(IFDFieldBytes);
+#undef ConstructByType
+			case IFDFieldFormat::AsciiString:
+				if (1)
+				{
+					auto ret = std::make_shared<IFDFieldString>(Format);
+					if (!NumComponents || NumComponents == 1)
+					{
+						ReadSZ(ret->Components);
+					}
+					else
+					{
+						ReadComponents(ret->Components, NumComponents);
+					}
+				}
 			}
+			char buf[256];
+			snprintf(buf, sizeof buf, "Unknown format 0x%x", uint16_t(Format));
+			throw BadDataError(buf);
 		}
 
 		IFD ParseIFD()
@@ -487,18 +569,18 @@ namespace UniformBitmap
 			IFD ret;
 
 			uint16_t NumFields;
-			RB += Read(NumFields);
+			Read(NumFields);
 			ret.Fields.reserve(NumFields);
 			for (size_t i = 0; i < NumFields; i++)
 			{
 				uint16_t TagType;
-				RB += Read(TagType);
+				Read(TagType);
 
 				uint16_t TagVarType; // ¶ÔÓ¦IFDFieldFormat
-				RB += Read(TagVarType);
+				Read(TagVarType);
 
 				uint32_t NumComponents;
-				RB += Read(NumComponents);
+				Read(NumComponents);
 
 				ret.Fields[TagType] = ReadIFDField(IFDFieldFormat(TagVarType), NumComponents);
 			}

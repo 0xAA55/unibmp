@@ -126,6 +126,8 @@ namespace UniformBitmap
 
 		virtual bool operator==(const IFDFieldType& other) const = default;
 
+		IFDFieldType();
+		IFDFieldType(IFDFieldFormat Type);
 		IFDFieldType(IFDFieldFormat Type, T Value);
 		IFDFieldType(IFDFieldFormat Type, const std::vector<T>& Values);
 		IFDFieldType(T Value);
@@ -137,6 +139,7 @@ namespace UniformBitmap
 	public:
 		std::string Components;
 
+		IFDFieldString();
 		IFDFieldString(IFDFieldFormat Type, const std::string& Value);
 		IFDFieldString(const std::string& Value);
 		virtual bool operator==(const IFDFieldString& other) const = default;
