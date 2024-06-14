@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <unordered_set>
 #include <unordered_map>
+#include <map>
 
 namespace UniformBitmap
 {
@@ -119,7 +120,7 @@ namespace UniformBitmap
 		virtual std::string ToString() const = 0;
 	};
 
-	using IFDData = std::unordered_map<uint16_t, std::shared_ptr<IFDFieldBase>>;
+	using IFDData = std::map<uint16_t, std::shared_ptr<IFDFieldBase>>;
 
 	template<typename T>
 	class IFDFieldType : public IFDFieldBase
