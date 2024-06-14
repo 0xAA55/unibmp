@@ -222,13 +222,17 @@ namespace UniformBitmap
 		uint32_t XPelsPerMeter = 3000;
 		uint32_t YPelsPerMeter = 3000;
 
+		// 位图名称
+		std::string Name;
+
 		// TIFF 头部信息
 		std::shared_ptr<TIFFHeader> ExifData;
 
 		Image(const std::string& FilePath);
-		Image(const void* FileInMemory, size_t FileSize);
-		Image(uint32_t Width, uint32_t Height);
-		Image(uint32_t Width, uint32_t Height, const PixelType& DefaultColor);
+		Image(const std::string& FilePath, const std::string& Name);
+		Image(const void* FileInMemory, size_t FileSize, const std::string& Name);
+		Image(uint32_t Width, uint32_t Height, const std::string& Name);
+		Image(uint32_t Width, uint32_t Height, const PixelType& DefaultColor, const std::string& Name);
 		Image(const Image& from);
 		template<typename FromType> requires (!std::is_same_v<PixelType, FromType>)
 		Image(const Image<FromType>& from);

@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <filesystem>
 #include <type_traits>
 #include <limits>
 #include <cstring>
@@ -538,7 +539,8 @@ namespace UniformBitmap
 
 	template<typename PixelType>
 	Image<PixelType>::Image(const std::string& FilePath) :
-		IsHDR(false)
+		IsHDR(false),
+		Name(std::filesystem::path(FilePath).filename())
 	{
 		if (IsLikelyBmp(FilePath))
 		{
@@ -558,8 +560,16 @@ namespace UniformBitmap
 	}
 
 	template<typename PixelType>
-	Image<PixelType>::Image(const void* FileInMemory, size_t FileSize) :
-		IsHDR(false)
+	Image<PixelType>::Image(const std::string& FilePath, const std::string& Name) :
+		Image(FilePath)
+	{
+		this->Name = Name;
+	}
+
+	template<typename PixelType>
+	Image<PixelType>::Image(const void* FileInMemory, size_t FileSize, const std::string& Name) :
+		IsHDR(false),
+		Name(Name)
 	{
 		if (IsLikelyBmp(FileInMemory, FileSize))
 		{
@@ -912,22 +922,24 @@ namespace UniformBitmap
 	}
 
 	template<typename PixelType>
-	Image<PixelType>::Image(uint32_t Width, uint32_t Height) :
-		IsHDR(std::is_floating_point_v<ChannelType>)
+	Image<PixelType>::Image(uint32_t Width, uint32_t Height, const std::string& Name) :
+		IsHDR(std::is_floating_point_v<ChannelType>),
+		Name(Name)
 	{
 		CreateBuffer(Width, Height);
 	}
 
 	template<typename PixelType>
-	Image<PixelType>::Image(uint32_t Width, uint32_t Height, const PixelType& DefaultColor) :
-		Image(Width, Height)
+	Image<PixelType>::Image(uint32_t Width, uint32_t Height, const PixelType& DefaultColor, const std::string& Name) :
+		Image(Width, Height),
+		Name(Name)
 	{
 		FillRect(0, 0, Width - 1, Height - 1, DefaultColor);
 	}
 
 	template<typename PixelType>
 	Image<PixelType>::Image(const Image& from) :
-		Image(from.GetWidth(), from.GetHeight())
+		Image(from.GetWidth(), from.GetHeight(), from.Name)
 	{
 		XPelsPerMeter = from.XPelsPerMeter;
 		YPelsPerMeter = from.YPelsPerMeter;
@@ -950,7 +962,7 @@ namespace UniformBitmap
 	template<typename PixelType>
 	template<typename FromType> requires (!std::is_same_v<PixelType, FromType>)
 	Image<PixelType>::Image(const Image<FromType>& from) :
-		Image(from.GetWidth(), from.GetHeight())
+		Image(from.GetWidth(), from.GetHeight(), from.Name)
 	{
 		XPelsPerMeter = from.XPelsPerMeter;
 		YPelsPerMeter = from.YPelsPerMeter;
@@ -1224,7 +1236,7 @@ namespace UniformBitmap
 		{
 			if (Verbose)
 			{
-				std::cout << "[INFO] No exif data for `RotateByExifData()`.\n";
+				std::cout << std::string("[INFO] For bitmap `") + Name + ": No exif data for `RotateByExifData()`.\n";
 			}
 			return;
 		}
@@ -1240,34 +1252,34 @@ namespace UniformBitmap
 					case 1:
 						if (Verbose)
 						{
-							std::cout << "[INFO] Exif data `Orientation` specified horizontal (normal).\n";
+							std::cout << std::string("[INFO] For bitmap `") + Name + ": Exif data `Orientation` specified horizontal (normal).\n";
 						}
 						break;
 					case 2:
 						if (Verbose)
 						{
-							std::cout << "[INFO] Exif data `Orientation` specified mirror horizontal.\n";
+							std::cout << std::string("[INFO] For bitmap `") + Name + ": Exif data `Orientation` specified mirror horizontal.\n";
 						}
 						FlipH();
 						break;
 					case 3:
 						if (Verbose)
 						{
-							std::cout << "[INFO] Exif data `Orientation` specified 180° rotation.\n";
+							std::cout << std::string("[INFO] For bitmap `") + Name + ": Exif data `Orientation` specified 180° rotation.\n";
 						}
 						Rotate180();
 						break;
 					case 4:
 						if (Verbose)
 						{
-							std::cout << "[INFO] Exif data `Orientation` specified mirror vertical.\n";
+							std::cout << std::string("[INFO] For bitmap `") + Name + ": Exif data `Orientation` specified mirror vertical.\n";
 						}
 						FlipV();
 						break;
 					case 5:
 						if (Verbose)
 						{
-							std::cout << "[INFO] Exif data `Orientation` specified mirror horizontal and rotate 270 CW.\n";
+							std::cout << std::string("[INFO] For bitmap `") + Name + ": Exif data `Orientation` specified mirror horizontal and rotate 270 CW.\n";
 						}
 						FlipH();
 						Rotate270_CW();
@@ -1275,14 +1287,14 @@ namespace UniformBitmap
 					case 6:
 						if (Verbose)
 						{
-							std::cout << "[INFO] Exif data `Orientation` specified rotate 90 CW.\n";
+							std::cout << std::string("[INFO] For bitmap `") + Name + ": Exif data `Orientation` specified rotate 90 CW.\n";
 						}
 						Rotate90_CW();
 						break;
 					case 7:
 						if (Verbose)
 						{
-							std::cout << "[INFO] Exif data `Orientation` specified mirror horizontal and rotate 90 CW.\n";
+							std::cout << std::string("[INFO] For bitmap `") + Name + ": Exif data `Orientation` specified mirror horizontal and rotate 90 CW.\n";
 						}
 						FlipH();
 						Rotate90_CW();
@@ -1290,12 +1302,12 @@ namespace UniformBitmap
 					case 8:
 						if (Verbose)
 						{
-							std::cout << "[INFO] Exif data `Orientation` specified rotate 270 CW.\n";
+							std::cout << std::string("[INFO] For bitmap `") + Name + ": Exif data `Orientation` specified rotate 270 CW.\n";
 						}
 						Rotate270_CW();
 						break;
 					default:
-						std::cerr << std::string("[WARN] Exif data `Orientation` specified unknown orientation `") + std::to_string(Orientation) + "`.\n";
+						std::cerr << std::string("[WARN] For bitmap `") + Name + ": Exif data `Orientation` specified unknown orientation `") + std::to_string(Orientation) + "`.\n";
 						break;
 					}
 					if (RemoveRotationFromExifData)
@@ -1308,7 +1320,7 @@ namespace UniformBitmap
 		}
 		if (Verbose)
 		{
-			std::cout << "[INFO] Exif data `Orientation` (0x0112) not found.\n";
+			std::cout << std::string("[INFO] For bitmap `") + Name + ": Exif data `Orientation` (0x0112) not found.\n";
 		}
 	}
 
