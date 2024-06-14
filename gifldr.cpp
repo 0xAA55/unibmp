@@ -267,7 +267,7 @@ namespace CPPGIF
 		auto LZW_MinCodeSize = uint8_t(0);
 		Read(is, LZW_MinCodeSize);
 		// std::cout << "LZW: 0x" << std::hex << is.tellg() << "\n";
-		auto LZW_Data = ReadDataSubBlock(is);
+		auto LZW_Data = ReadDataSubBlock(is); // 此处确保当前图像描述符的图像内容全部读完，然后开始 LZW 解压缩。
 		try
 		{
 			ImageData = UncompressLZW(LZW_Data, LZW_MinCodeSize);
