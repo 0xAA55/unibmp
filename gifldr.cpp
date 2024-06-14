@@ -341,14 +341,14 @@ namespace CPPGIF
 				return ret;
 			}
 
-			CodeType CurCodeMaxValue() const
+			CodeType CurCodeSizeMaxValue() const
 			{
 				return (CodeType(1) << CurCodeSize) - 1;
 			}
 
 			void Encode(CodeType Code)
 			{
-				if (Code > CurCodeMaxValue()) throw EncodeError(std::string("Unexpected code ") + std::to_string(Code) + " that's beyond the current max value of " + std::to_string(CurCodeMaxValue()));
+				if (Code > CurCodeSizeMaxValue()) throw EncodeError(std::string("Unexpected code ") + std::to_string(Code) + " that's beyond the current max value of " + std::to_string(CurCodeSizeMaxValue()));
 				Debug_CodeStream.push_back(Code); 
 				int BitsToEncode = CurCodeSize;
 				while (BitsToEncode)
@@ -433,15 +433,14 @@ namespace CPPGIF
 				CodeTable[CurIndexBuffer] = CodeType(CodeTable.size());
 				CurIndexBuffer.pop_back();
 				Encoder.Encode(CodeTable.at(CurIndexBuffer));
-				auto MaxCode = (1 << Encoder.CurCodeSize) - 1;
+				auto MaxCode = Encoder.CurCodeSizeMaxValue();
 				if (CodeTable.size() == MaxCode)
 				{
 					Encoder.IncreaseCodeSize();
 					if (Encoder.CurCodeSize > 12)
-					{
-						Encoder.CurCodeSize = 12;
-						Encoder.Encode(CodeTable.ClearCode);
+					{ // 要以 FirstCodeSize 编码 ClearCode
 						Encoder.CurCodeSize = FirstCodeSize;
+						Encoder.Encode(CodeTable.ClearCode);
 						CodeTable.InitCodeTable();
 					}
 				}
