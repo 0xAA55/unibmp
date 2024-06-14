@@ -234,6 +234,24 @@ namespace UniformBitmap
 
 		void FillRect(int l, int t, int r, int b, const PixelType& Color);
 		void Paint(int x, int y, int w, int h, const Image& Src, int src_x, int src_y);
+
+		size_t SaveToBmp24(const std::string& FilePath, bool InverseLineOrder = false) const;
+		size_t SaveToBmp32(const std::string& FilePath, bool InverseLineOrder = false) const;
+
+		size_t SaveToPNG(const std::string& FilePath) const;
+		size_t SaveToTGA(const std::string& FilePath) const;
+		size_t SaveToJPG(const std::string& FilePath, int Quality) const;
+		size_t SaveToHDR(const std::string& FilePath) const;
+
+		FileInMemoryType SaveToBmp24(bool InverseLineOrder = false) const;
+		FileInMemoryType SaveToBmp32(bool InverseLineOrder = false) const;
+
+		FileInMemoryType SaveToPNG() const;
+		FileInMemoryType SaveToTGA() const;
+		FileInMemoryType SaveToJPG(int Quality) const;
+		FileInMemoryType SaveToHDR() const;
+
+	public:
 		void FlipH();
 		void FlipV();
 		void FlipV_RowPtrs();
@@ -261,22 +279,6 @@ namespace UniformBitmap
 		void Rotate_CW(RotationAngle Angle);
 		void Rotate_CCW(RotationAngle Angle);
 		void Rotate(RotationAngle Angle, RotationOrient Orient);
-
-		size_t SaveToBmp24(const std::string& FilePath, bool InverseLineOrder = false) const;
-		size_t SaveToBmp32(const std::string& FilePath, bool InverseLineOrder = false) const;
-
-		size_t SaveToPNG(const std::string& FilePath) const;
-		size_t SaveToTGA(const std::string& FilePath) const;
-		size_t SaveToJPG(const std::string& FilePath, int Quality) const;
-		size_t SaveToHDR(const std::string& FilePath) const;
-
-		FileInMemoryType SaveToBmp24(bool InverseLineOrder = false) const;
-		FileInMemoryType SaveToBmp32(bool InverseLineOrder = false) const;
-
-		FileInMemoryType SaveToPNG() const;
-		FileInMemoryType SaveToTGA() const;
-		FileInMemoryType SaveToJPG(int Quality) const;
-		FileInMemoryType SaveToHDR() const;
 	};
 
 	extern template class Image<Pixel_RGBA8>;
