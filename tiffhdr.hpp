@@ -60,64 +60,98 @@ namespace UniformBitmap
 		operator std::string() const;
 	};
 
-	class LiteralTypeBase
+	template<typename T>
+	class IFDFieldType;
+	using IFDFieldBytes = IFDFieldType<int8_t>;
+	using IFDFieldShorts = IFDFieldType<int16_t>;
+	using IFDFieldLongs = IFDFieldType<int32_t>;
+	using IFDFieldRationals = IFDFieldType<Rational>;
+	using IFDFieldUBytes = IFDFieldType<uint8_t>;
+	using IFDFieldUShorts = IFDFieldType<uint16_t>;
+	using IFDFieldULongs = IFDFieldType<uint32_t>;
+	using IFDFieldURationals = IFDFieldType<URational>;
+	using IFDFieldFloats = IFDFieldType<float>;
+	using IFDFieldDoubles = IFDFieldType<double>;
+	using IFDFieldUndefined = IFDFieldBytes;
+
+	class IFDFieldString;
+
+	class IFDFieldBase
 	{
 	public:
 		IFDFieldFormat Type = IFDFieldFormat::Unknown;
+
+		IFDFieldBase() = default;
+		IFDFieldBase(const IFDFieldBase& c) = default;
+		virtual bool operator==(const IFDFieldBase& other) const = 0;
+
+		IFDFieldBase(IFDFieldFormat Type);
+
+		IFDFieldBytes& AsBytes();
+		IFDFieldShorts& AsShorts();
+		IFDFieldLongs& AsLongs();
+		IFDFieldRationals& AsRationals();
+		IFDFieldUBytes& AsUBytes();
+		IFDFieldUShorts& AsUShorts();
+		IFDFieldULongs& AsULongs();
+		IFDFieldURationals& AsURationals();
+		IFDFieldFloats& AsFloats();
+		IFDFieldDoubles& AsDoubles();
+		IFDFieldUndefined& AsUndefined();
+		IFDFieldString& AsString();
+		const IFDFieldBytes& AsBytes() const;
+		const IFDFieldShorts& AsShorts() const;
+		const IFDFieldLongs& AsLongs() const;
+		const IFDFieldRationals& AsRationals() const;
+		const IFDFieldUBytes& AsUBytes() const;
+		const IFDFieldUShorts& AsUShorts() const;
+		const IFDFieldULongs& AsULongs() const;
+		const IFDFieldURationals& AsURationals() const;
+		const IFDFieldFloats& AsFloats() const;
+		const IFDFieldDoubles& AsDoubles() const;
+		const IFDFieldUndefined& AsUndefined() const;
+		const IFDFieldString& AsString() const;
 	};
+
+	using IFDData = std::unordered_map<uint16_t, std::shared_ptr<IFDFieldBase>>;
 
 	template<typename T>
-	class LiteralType : public LiteralTypeBase
+	class IFDFieldType : public IFDFieldBase
 	{
+	protected:
+		static IFDFieldFormat GetFormatValueByType();
+
 	public:
 		std::vector<T> Components;
+
+		virtual bool operator==(const IFDFieldType& other) const = default;
+
+		IFDFieldType(IFDFieldFormat Type, T Value);
+		IFDFieldType(IFDFieldFormat Type, const std::vector<T>& Values);
+		IFDFieldType(T Value);
+		IFDFieldType(const std::vector<T>& Values);
 	};
 
-	using LiteralBytes = LiteralType<int8_t>;
-	using LiteralShorts = LiteralType<int16_t>;
-	using LiteralLongs = LiteralType<int32_t>;
-	using LiteralRationals = LiteralType<Rational>;
-	using LiteralUBytes = LiteralType<uint8_t>;
-	using LiteralUShorts = LiteralType<uint16_t>;
-	using LiteralULongs = LiteralType<uint32_t>;
-	using LiteralURationals = LiteralType<URational>;
-	using LiteralFloats = LiteralType<float>;
-	using LiteralDoubles = LiteralType<double>;
-
-	extern template class LiteralType<int8_t>;
-	extern template class LiteralType<int16_t>;
-	extern template class LiteralType<int32_t>;
-	extern template class LiteralType<Rational>;
-	extern template class LiteralType<uint8_t>;
-	extern template class LiteralType<uint16_t>;
-	extern template class LiteralType<uint32_t>;
-	extern template class LiteralType<URational>;
-	extern template class LiteralType<float>;
-	extern template class LiteralType<double>;
-
-	class IFDField
+	class IFDFieldString : public IFDFieldBase
 	{
 	public:
-		std::shared_ptr<LiteralTypeBase> Literal = nullptr;
-		std::string String;
-		std::vector<uint8_t> UnknownData;
+		std::string Components;
 
-		IFDField() = default;
-		IFDField(const IFDField& c) = default;
-		bool operator==(const IFDField& other) const;
-
-		IFDField(IFDFieldFormat Type);
-		IFDField(IFDFieldFormat Type, int32_t Number);
-		IFDField(IFDFieldFormat Type, uint32_t Number);
-		IFDField(IFDFieldFormat Type, double Number);
-
-		IFDField(const Rational& Rational);
-		IFDField(const URational& URational);
-		IFDField(const TIFFDateTime& DateTime);
-		IFDField(const std::string& String);
+		IFDFieldString(IFDFieldFormat Type, const std::string& Value);
+		IFDFieldString(const std::string& Value);
+		virtual bool operator==(const IFDFieldString& other) const = default;
 	};
 
-	using IFDData = std::unordered_map<uint16_t, IFDField>;
+	extern template class IFDFieldType<int8_t>;
+	extern template class IFDFieldType<int16_t>;
+	extern template class IFDFieldType<int32_t>;
+	extern template class IFDFieldType<Rational>;
+	extern template class IFDFieldType<uint8_t>;
+	extern template class IFDFieldType<uint16_t>;
+	extern template class IFDFieldType<uint32_t>;
+	extern template class IFDFieldType<URational>;
+	extern template class IFDFieldType<float>;
+	extern template class IFDFieldType<double>;
 
 	struct IFD
 	{
@@ -128,8 +162,8 @@ namespace UniformBitmap
 		IFD() = default;
 		bool operator==(const IFD& other) const = default;
 
-		void WriteField(uint16_t Tag, const IFDField& field);
-		void WriteField(const std::string& TagString, const IFDField& field);
+		void WriteField(uint16_t Tag, std::shared_ptr<IFDFieldBase> field);
+		void WriteField(const std::string& TagString, std::shared_ptr<IFDFieldBase> field);
 	};
 
 	using TIFFHeader = std::vector<IFD>;

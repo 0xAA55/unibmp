@@ -224,95 +224,73 @@ namespace UniformBitmap
 		{"CFAPattern", 0xa302},
 	};
 
-	bool IFDField::operator==(const IFDField& other) const
+
+	template<typename T>
+	IFDFieldType<T>::IFDFieldType(IFDFieldFormat Type, T Value) :
+		IFDFieldBase(Type)
 	{
-		if (Type != other.Type) return false;
-		switch (Type)
-		{
-		case IFDFieldFormat::Undefined:
-		case IFDFieldFormat::Unknown: return UnknownData == other.UnknownData;
-		case IFDFieldFormat::AsciiString: return String == other.String;
-		case IFDFieldFormat::UByte: return Literal.UByte == other.Literal.UByte;
-		case IFDFieldFormat::UShort: return Literal.UShort == other.Literal.UShort;
-		case IFDFieldFormat::ULong: return Literal.ULong == other.Literal.ULong;
-		case IFDFieldFormat::URational: return Literal.URational == other.Literal.URational;
-		case IFDFieldFormat::SByte: return Literal.SByte == other.Literal.SByte;
-		case IFDFieldFormat::SShort: return Literal.SShort == other.Literal.SShort;
-		case IFDFieldFormat::SLong: return Literal.SLong == other.Literal.SLong;
-		case IFDFieldFormat::SRational: return Literal.SRational == other.Literal.SRational;
-		case IFDFieldFormat::Float: return Literal.Float == other.Literal.Float;
-		case IFDFieldFormat::Double: return Literal.Double == other.Literal.Double;
-		default: throw std::invalid_argument("Unknown IFD field type.");
-		}
+		Components.push_back(Value);
 	}
 
-	IFDField::IFDField(IFDFieldFormat Type) :
+	template<typename T>
+	IFDFieldType<T>::IFDFieldType(IFDFieldFormat Type, const std::vector<T>& Values) :
+		IFDFieldBase(Type),
+		Components(Values)
+	{
+	}
+
+	template<typename T>
+	IFDFieldFormat IFDFieldType<T>::GetFormatValueByType()
+	{
+		if (std::is_same_v<T, int8_t>) return IFDFieldFormat::SByte;
+		else if (std::is_same_v<T, int16_t>) return IFDFieldFormat::SShort;
+		else if (std::is_same_v<T, int32_t>) return IFDFieldFormat::SLong;
+		else if (std::is_same_v<T, Rational>) return IFDFieldFormat::SRational;
+		else if (std::is_same_v<T, uint8_t>) return IFDFieldFormat::UByte;
+		else if (std::is_same_v<T, uint16_t>) return IFDFieldFormat::UShort;
+		else if (std::is_same_v<T, uint32_t>) return IFDFieldFormat::ULong;
+		else if (std::is_same_v<T, URational>) return IFDFieldFormat::URational;
+		else if (std::is_same_v<T, float>) return IFDFieldFormat::Float;
+		else if (std::is_same_v<T, double>) return IFDFieldFormat::Double;
+		else return IFDFieldFormat::Unknown;
+	}
+
+	template<typename T>
+	IFDFieldType<T>::IFDFieldType(T Value) :
+		IFDFieldBase(GetFormatValueByType())
+	{
+		Components.push_back(Value);
+	}
+
+	template<typename T>
+	IFDFieldType<T>::IFDFieldType(const std::vector<T>& Values) :
+		IFDFieldBase(GetFormatValueByType()),
+		Components(Values)
+	{
+	}
+
+	IFDFieldString::IFDFieldString(IFDFieldFormat Type, const std::string& Value) :
+		IFDFieldBase(Type),
+		Components(Value)
+	{
+	}
+	IFDFieldString::IFDFieldString(const std::string& Value) :
+		IFDFieldBase(IFDFieldFormat::AsciiString),
+		Components(Value)
+	{
+	}
+
+	IFDFieldBase::IFDFieldBase(IFDFieldFormat Type) :
 		Type(Type)
-	{}
-	IFDField::IFDField(IFDFieldFormat Type, int32_t Number) :
-		IFDField(Type)
-	{
-		switch (Type)
-		{
-		case IFDFieldFormat::SByte: Literal.SByte = int8_t(Number); break;
-		case IFDFieldFormat::SShort: Literal.SShort = int16_t(Number); break;
-		case IFDFieldFormat::SLong: Literal.SLong = int32_t(Number); break;
-		case IFDFieldFormat::UByte: Literal.UByte = uint8_t(Number); break;
-		case IFDFieldFormat::UShort: Literal.UShort = uint16_t(Number); break;
-		case IFDFieldFormat::ULong: Literal.ULong = uint32_t(Number); break;
-		default: throw std::invalid_argument("Unknown IFD field type.");
-		}
-	}
-	IFDField::IFDField(IFDFieldFormat Type, uint32_t Number) :
-		IFDField(Type)
-	{
-		switch (Type)
-		{
-		case IFDFieldFormat::SByte: Literal.SByte = int8_t(Number); break;
-		case IFDFieldFormat::SShort: Literal.SShort = int16_t(Number); break;
-		case IFDFieldFormat::SLong: Literal.SLong = int32_t(Number); break;
-		case IFDFieldFormat::UByte: Literal.UByte = uint8_t(Number); break;
-		case IFDFieldFormat::UShort: Literal.UShort = uint16_t(Number); break;
-		case IFDFieldFormat::ULong: Literal.ULong = uint32_t(Number); break;
-		default: throw std::invalid_argument("Unknown IFD field type.");
-		}
-	}
-	IFDField::IFDField(IFDFieldFormat Type, double Number) :
-		IFDField(Type)
-	{
-		switch (Type)
-		{
-		case IFDFieldFormat::Float: Literal.Float = float(Number); break;
-		case IFDFieldFormat::Double: Literal.Double = double(Number); break;
-		default: throw std::invalid_argument("Unknown IFD field type.");
-		}
-	}
-	IFDField::IFDField(const Rational& Rational) :
-		IFDField(IFDFieldFormat::SRational)
-	{
-		Literal.SRational = Rational;
-	}
-	IFDField::IFDField(const URational& URational) :
-		IFDField(IFDFieldFormat::URational)
-	{
-		Literal.URational = URational;
-	}
-	IFDField::IFDField(const TIFFDateTime& DateTime) :
-		IFDField(std::string(DateTime))
-	{
-	}
-	IFDField::IFDField(const std::string& String) :
-		Type(IFDFieldFormat::AsciiString),
-		String(String)
 	{
 	}
 
-	void IFD::WriteField(uint16_t Tag, const IFDField& field)
+	void IFD::WriteField(uint16_t Tag, std::shared_ptr<IFDFieldBase> field)
 	{
 		Fields[Tag] = field;
 	}
 
-	void IFD::WriteField(const std::string& TagString, const IFDField& field)
+	void IFD::WriteField(const std::string& TagString, std::shared_ptr<IFDFieldBase> field)
 	{
 		Fields[IFDTagFromStr.at(TagString)] = field;
 	}
@@ -332,6 +310,32 @@ namespace UniformBitmap
 		return buf;
 	}
 
+	IFDFieldBytes& IFDFieldBase::AsBytes() { return dynamic_cast<IFDFieldBytes&>(*this); }
+	IFDFieldShorts& IFDFieldBase::AsShorts() { return dynamic_cast<IFDFieldShorts&>(*this); }
+	IFDFieldLongs& IFDFieldBase::AsLongs() { return dynamic_cast<IFDFieldLongs&>(*this); }
+	IFDFieldRationals& IFDFieldBase::AsRationals() { return dynamic_cast<IFDFieldRationals&>(*this); }
+	IFDFieldUBytes& IFDFieldBase::AsUBytes() { return dynamic_cast<IFDFieldUBytes&>(*this); }
+	IFDFieldUShorts& IFDFieldBase::AsUShorts() { return dynamic_cast<IFDFieldUShorts&>(*this); }
+	IFDFieldULongs& IFDFieldBase::AsULongs() { return dynamic_cast<IFDFieldULongs&>(*this); }
+	IFDFieldURationals& IFDFieldBase::AsURationals() { return dynamic_cast<IFDFieldURationals&>(*this); }
+	IFDFieldFloats& IFDFieldBase::AsFloats() { return dynamic_cast<IFDFieldFloats&>(*this); }
+	IFDFieldDoubles& IFDFieldBase::AsDoubles() { return dynamic_cast<IFDFieldDoubles&>(*this); }
+	IFDFieldUndefined& IFDFieldBase::AsUndefined() { return dynamic_cast<IFDFieldUndefined&>(*this); }
+	IFDFieldString& IFDFieldBase::AsString() { return dynamic_cast<IFDFieldString&>(*this); }
+
+	const IFDFieldBytes& IFDFieldBase::AsBytes() const { return dynamic_cast<const IFDFieldBytes&>(*this); }
+	const IFDFieldShorts& IFDFieldBase::AsShorts() const { return dynamic_cast<const IFDFieldShorts&>(*this); }
+	const IFDFieldLongs& IFDFieldBase::AsLongs() const { return dynamic_cast<const IFDFieldLongs&>(*this); }
+	const IFDFieldRationals& IFDFieldBase::AsRationals() const { return dynamic_cast<const IFDFieldRationals&>(*this); }
+	const IFDFieldUBytes& IFDFieldBase::AsUBytes() const { return dynamic_cast<const IFDFieldUBytes&>(*this); }
+	const IFDFieldUShorts& IFDFieldBase::AsUShorts() const { return dynamic_cast<const IFDFieldUShorts&>(*this); }
+	const IFDFieldULongs& IFDFieldBase::AsULongs() const { return dynamic_cast<const IFDFieldULongs&>(*this); }
+	const IFDFieldURationals& IFDFieldBase::AsURationals() const { return dynamic_cast<const IFDFieldURationals&>(*this); }
+	const IFDFieldFloats& IFDFieldBase::AsFloats() const { return dynamic_cast<const IFDFieldFloats&>(*this); }
+	const IFDFieldDoubles& IFDFieldBase::AsDoubles() const { return dynamic_cast<const IFDFieldDoubles&>(*this); }
+	const IFDFieldUndefined& IFDFieldBase::AsUndefined() const { return dynamic_cast<const IFDFieldUndefined&>(*this); }
+	const IFDFieldString& IFDFieldBase::AsString() const { return dynamic_cast<const IFDFieldString&>(*this); }
+
 	TIFFHeader ConstuctTIFFHeader
 	(
 		const std::string& ImageDescription,
@@ -347,14 +351,14 @@ namespace UniformBitmap
 	{
 		auto IFD0 = IFD();
 
-		if (ImageDescription.length()) IFD0.WriteField("ImageDescription", ImageDescription);
-		if (Make.length()) IFD0.WriteField("Make", Make);
-		if (Model.length()) IFD0.WriteField("Model", Model);
-		if (XResolution) IFD0.WriteField("XResolution", *XResolution);
-		if (YResolution) IFD0.WriteField("YResolution", *YResolution);
-		IFD0.WriteField("Software", Software);
-		if (DateTime) IFD0.WriteField("DateTime", *DateTime);
-		if (CopyRight.length()) IFD0.WriteField("CopyRight", CopyRight);
+		if (ImageDescription.length()) IFD0.WriteField("ImageDescription", std::make_shared<IFDFieldString>(ImageDescription));
+		if (Make.length()) IFD0.WriteField("Make", std::make_shared<IFDFieldString>(Make));
+		if (Model.length()) IFD0.WriteField("Model", std::make_shared<IFDFieldString>(Model));
+		if (XResolution) IFD0.WriteField("XResolution", std::make_shared<IFDFieldURationals>(*XResolution));
+		if (YResolution) IFD0.WriteField("YResolution", std::make_shared<IFDFieldURationals>(*YResolution));
+		if (Software.length()) IFD0.WriteField("Software", std::make_shared<IFDFieldString>(Software));
+		if (DateTime) IFD0.WriteField("DateTime", std::make_shared<IFDFieldString>(DateTime));
+		if (CopyRight.length()) IFD0.WriteField("CopyRight", std::make_shared<IFDFieldString>(CopyRight));
 		IFD0.SubIFD = SubIFD;
 
 		return { IFD0 };
@@ -453,6 +457,53 @@ namespace UniformBitmap
 			return ret;
 		}
 
+		std::shared_ptr<IFDFieldBase> ReadIFDField(IFDFieldFormat Format, uint32_t NumComponents)
+		{
+			switch (Format)
+			{
+			case IFDFieldFormat::SByte: RB += Read(field.Literal.SByte); break;
+			case IFDFieldFormat::SShort: RB += Read(field.Literal.SShort); break;
+			case IFDFieldFormat::SLong: RB += Read(field.Literal.SLong); break;
+			case IFDFieldFormat::SRational:
+				RB += Read(field.Literal.SRational.Numerator);
+				RB += Read(field.Literal.SRational.Denominator);
+				break;
+			case IFDFieldFormat::UByte: RB += Read(field.Literal.UByte); break;
+			case IFDFieldFormat::UShort: RB += Read(field.Literal.UShort); break;
+			case IFDFieldFormat::ULong: RB += Read(field.Literal.ULong); break;
+			case IFDFieldFormat::URational:
+				RB += Read(field.Literal.URational.Numerator);
+				RB += Read(field.Literal.URational.Denominator);
+				break;
+			case IFDFieldFormat::Float: RB += Read(field.Literal.Float); break;
+			case IFDFieldFormat::Double: RB += Read(field.Literal.Double); break;
+			case IFDFieldFormat::AsciiString: RB += ReadSZ(field.String);
+			case IFDFieldFormat::Undefined: RB += ReadBytes(field.UnknownData, NumComponents);
+			}
+		}
+
+		IFD ParseIFD()
+		{
+			IFD ret;
+
+			uint16_t NumFields;
+			RB += Read(NumFields);
+			ret.Fields.reserve(NumFields);
+			for (size_t i = 0; i < NumFields; i++)
+			{
+				uint16_t TagType;
+				RB += Read(TagType);
+
+				uint16_t TagVarType; // 对应IFDFieldFormat
+				RB += Read(TagVarType);
+
+				uint32_t NumComponents;
+				RB += Read(NumComponents);
+
+				ret.Fields[TagType] = ReadIFDField(IFDFieldFormat(TagVarType), NumComponents);
+			}
+		}
+
 	public:
 		TIFFParser() = delete;
 		TIFFParser(std::istream& ifs) : ifs(ifs)
@@ -487,44 +538,9 @@ namespace UniformBitmap
 			ifs.seekg(spos, std::ios::beg);
 			ifs.seekg(OffsetOfIFD, std::ios::cur);
 
-			uint16_t NumFields;
-			RB += Read(NumFields);
-			for (size_t i = 0; i < NumFields; i++)
-			{
-				uint16_t TagType;
-				RB += Read(TagType);
+			ret.push_back(ParseIFD());
 
-				uint16_t TagVarType; // 对应IFDFieldFormat
-				RB += Read(TagVarType);
-
-				uint32_t NumComponents;
-				RB += Read(NumComponents);
-
-				// TODO：根据 NumComponents 的数量读取全部 Components
-
-				auto field = IFDField(IFDFieldFormat(TagVarType));
-				switch (IFDFieldFormat(TagVarType))
-				{
-				case IFDFieldFormat::SByte: RB += Read(field.Literal.SByte); break;
-				case IFDFieldFormat::SShort: RB += Read(field.Literal.SShort); break;
-				case IFDFieldFormat::SLong: RB += Read(field.Literal.SLong); break;
-				case IFDFieldFormat::SRational:
-					RB += Read(field.Literal.SRational.Numerator);
-					RB += Read(field.Literal.SRational.Denominator);
-					break;
-				case IFDFieldFormat::UByte: RB += Read(field.Literal.UByte); break;
-				case IFDFieldFormat::UShort: RB += Read(field.Literal.UShort); break;
-				case IFDFieldFormat::ULong: RB += Read(field.Literal.ULong); break;
-				case IFDFieldFormat::URational:
-					RB += Read(field.Literal.URational.Numerator);
-					RB += Read(field.Literal.URational.Denominator);
-					break;
-				case IFDFieldFormat::Float: RB += Read(field.Literal.Float); break;
-				case IFDFieldFormat::Double: RB += Read(field.Literal.Double); break;
-				case IFDFieldFormat::AsciiString: RB += ReadSZ(field.String);
-				case IFDFieldFormat::Undefined: RB += ReadBytes(field.UnknownData, NumComponents);
-				}
-			}
+			return ret;
 		}
 		catch (const std::ios::failure& e)
 		{
@@ -553,14 +569,14 @@ namespace UniformBitmap
 		return ParseTIFFHeader(ss);
 	}
 
-	template class LiteralType<int8_t>;
-	template class LiteralType<int16_t>;
-	template class LiteralType<int32_t>;
-	template class LiteralType<Rational>;
-	template class LiteralType<uint8_t>;
-	template class LiteralType<uint16_t>;
-	template class LiteralType<uint32_t>;
-	template class LiteralType<URational>;
-	template class LiteralType<float>;
-	template class LiteralType<double>;
+	template class IFDFieldType<int8_t>;
+	template class IFDFieldType<int16_t>;
+	template class IFDFieldType<int32_t>;
+	template class IFDFieldType<Rational>;
+	template class IFDFieldType<uint8_t>;
+	template class IFDFieldType<uint16_t>;
+	template class IFDFieldType<uint32_t>;
+	template class IFDFieldType<URational>;
+	template class IFDFieldType<float>;
+	template class IFDFieldType<double>;
 }
