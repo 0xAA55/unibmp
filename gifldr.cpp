@@ -299,18 +299,30 @@ namespace CPPGIF
 		SubBlockData = ReadDataSubBlock(is);
 	}
 
-	ApplicationExtensionType::ApplicationExtensionType(char Identifier[8], char AuthenticationCode[3], std::vector<DataSubBlock> ApplicationData) :
-		ApplicationData(ApplicationData)
+	PlainTextExtensionType::PlainTextExtensionType(std::istream& is)
 	{
-		memcpy(this->Identifier, Identifier, 8);
-		memcpy(this->AuthenticationCode, AuthenticationCode, 3);
+		Read(is, BlockSize);
+		Read(is, TextGridLeftPosition);
+		Read(is, TextGridTopPosition);
+		Read(is, TextGridWidth);
+		Read(is, TextGridHeight);
+		Read(is, CharacterCellWidth);
+		Read(is, CharacterCellHeight);
+		Read(is, TextForegroundColorIndex);
+		Read(is, TextBackgroundColorIndex);
+		PlainTextData = ReadDataSubBlock(is);
+	}
+
+	CommentExtensionType::CommentExtensionType(std::istream& is) :
+		CommentData(ReadDataSubBlock(is))
+	{
 	}
 
 	ApplicationExtensionType::ApplicationExtensionType(std::istream& is)
 	{
 		Read(is, Identifier, 8);
 		Read(is, AuthenticationCode, 3);
-		
+		ApplicationData = ReadDataSubBlock(is);
 	}
 
 	uint8_t GraphicControlExtensionType::MakeBitfields(DisposalMethodEnum DisposalMethod, bool ReactToUserInput, bool HasTransparency)
