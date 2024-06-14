@@ -42,7 +42,7 @@ namespace UniformBitmap
 
 #pragma pack(push, 1)
 
-	// Î»Í¼ÎÄ¼şÍ·
+	// ä½å›¾æ–‡ä»¶å¤´
 	struct BitmapFileHeader
 	{
 		uint16_t bfType;
@@ -52,7 +52,7 @@ namespace UniformBitmap
 		uint32_t bfOffbits;
 	};
 
-	// Î»Í¼ĞÅÏ¢Í·
+	// ä½å›¾ä¿¡æ¯å¤´
 	struct BitmapInfoHeader
 	{
 		uint32_t biSize;
@@ -100,7 +100,7 @@ namespace UniformBitmap
 			return IsLikelyBmp(buf, sizeof buf);
 		}
 		catch (const std::ios::failure&)
-		{ // ²»ÄÜ¶ÁµÄÇé¿öÈÏ×÷Â·¾¶²»ÊÇ BMP ÎÄ¼şÂ·¾¶
+		{ // ä¸èƒ½è¯»çš„æƒ…å†µè®¤ä½œè·¯å¾„ä¸æ˜¯ BMP æ–‡ä»¶è·¯å¾„
 			return false;
 		}
 	}
@@ -378,7 +378,7 @@ namespace UniformBitmap
 		BI_Bitfields = 3
 	};
 
-	// È¡µÃÎ»ÓòÎ»ÖÃ
+	// å–å¾—ä½åŸŸä½ç½®
 	static uint32_t GetBitfieldShift(uint32_t Bitfield)
 	{
 		uint32_t Shift = 0;
@@ -396,7 +396,7 @@ namespace UniformBitmap
 		return Shift - 8;
 	}
 
-	// È¡µÃÎ»ÓòÎ»Êı
+	// å–å¾—ä½åŸŸä½æ•°
 	static uint32_t GetBitfieldBitCount(uint32_t Bitfield)
 	{
 		uint32_t Count = 0;
@@ -466,7 +466,7 @@ namespace UniformBitmap
 		return BufferToWrite.size();
 	}
 
-	// ´ÓÎÄ¼ş´´½¨Î»Í¼
+	// ä»æ–‡ä»¶åˆ›å»ºä½å›¾
 	template<typename PixelType>
 	void Image<PixelType>::LoadBmp(const std::string& FilePath)
 	{
@@ -478,13 +478,11 @@ namespace UniformBitmap
 		}
 		catch (const std::ios::failure&)
 		{
-			std::stringstream sserr;
-			sserr << "Could not open `" << FilePath << "` for read.";
-			throw ReadBmpFileError(sserr.str());
+			throw ReadBmpFileError(std::string("Could not open `") + FilePath + "` for read.");
 		}
 	}
 
-	// ´ÓÄÚ´æ¼ÓÔØ Bmp
+	// ä»å†…å­˜åŠ è½½ Bmp
 	template<typename PixelType>
 	void Image<PixelType>::LoadBmp(const void* FileInMemory, size_t FileSize)
 	{
@@ -549,9 +547,9 @@ namespace UniformBitmap
 		}
 	}
 
-	// Î»Í¼²»¿ÉÒÔÊÇRLEÑ¹Ëõ£¬µ«Î»Í¼¿ÉÒÔÊÇ´øÎ»ÓòµÄÎ»Í¼¡¢´øµ÷É«°åµÄË÷ÒıÑÕÉ«Î»Í¼¡£
-	// ±»¶ÁÈëºóµÄÍ¼ÏñÊı¾İ»á±»Ç¿ÖÆ×ª»»Îª£ºARGB ¸ñÊ½£¬Ã¿Í¨µÀ 8 bit Î»Éî£¬Ã¿¸öÏñËØ4×Ö½Ú£¬·Ö±ğÊÇ£ºÀ¶£¬ÂÌ£¬ºì£¬Alpha
-	// Èç¹ûÕû¸öÍ¼ÏñµÄAlphaÍ¨µÀ½ÔÎª0£¨»òÕßÕû¸öÍ¼Ïñ²»°üº¬AlphaÍ¨µÀ£©Ôò¶Á³öÀ´µÄÎ»Í¼µÄAlphaÍ¨µÀ»á±»ÉèÖÃÎª×î´óÖµ£¨¼´ 255£©
+	// ä½å›¾ä¸å¯ä»¥æ˜¯RLEå‹ç¼©ï¼Œä½†ä½å›¾å¯ä»¥æ˜¯å¸¦ä½åŸŸçš„ä½å›¾ã€å¸¦è°ƒè‰²æ¿çš„ç´¢å¼•é¢œè‰²ä½å›¾ã€‚
+	// è¢«è¯»å…¥åçš„å›¾åƒæ•°æ®ä¼šè¢«å¼ºåˆ¶è½¬æ¢ä¸ºï¼šARGB æ ¼å¼ï¼Œæ¯é€šé“ 8 bit ä½æ·±ï¼Œæ¯ä¸ªåƒç´ 4å­—èŠ‚ï¼Œåˆ†åˆ«æ˜¯ï¼šè“ï¼Œç»¿ï¼Œçº¢ï¼ŒAlpha
+	// å¦‚æœæ•´ä¸ªå›¾åƒçš„Alphaé€šé“çš†ä¸º0ï¼ˆæˆ–è€…æ•´ä¸ªå›¾åƒä¸åŒ…å«Alphaé€šé“ï¼‰åˆ™è¯»å‡ºæ¥çš„ä½å›¾çš„Alphaé€šé“ä¼šè¢«è®¾ç½®ä¸ºæœ€å¤§å€¼ï¼ˆå³ 255ï¼‰
 	template<typename PixelType>
 	void Image<PixelType>::LoadBmp(std::istream& ifs)
 	try
@@ -559,46 +557,44 @@ namespace UniformBitmap
 		BitmapFileHeader BMFH;
 		BitmapInfoHeader BMIF;
 
-		size_t Pitch; // Ô­Î»Í¼ÎÄ¼şÃ¿ĞĞÏñËØµÄ×Ü×Ö½ÚÊı£¨°üº¬¶ÔÆë£©
-		Pixel_RGBA8 Palette[256]; // µ÷É«°å£¬Èç¹ûÓĞ£¬Òª¶ÁÈë
+		size_t Pitch; // åŸä½å›¾æ–‡ä»¶æ¯è¡Œåƒç´ çš„æ€»å­—èŠ‚æ•°ï¼ˆåŒ…å«å¯¹é½ï¼‰
+		Pixel_RGBA8 Palette[256]; // è°ƒè‰²æ¿ï¼Œå¦‚æœæœ‰ï¼Œè¦è¯»å…¥
 		unsigned PaletteColorCount = 0;
-		uint32_t Bitfields[3]; // Î»Óò£¬Èç¹ûÓĞ£¬Òª¶ÁÈë
-		uint32_t Bitfield_A = 0; // Í¸Ã÷Í¨µÀµÄÎ»Óò£¬Í¨³£Ã»ÓĞÍ¸Ã÷Í¨µÀ¡£
+		uint32_t Bitfields[3]; // ä½åŸŸï¼Œå¦‚æœæœ‰ï¼Œè¦è¯»å…¥
+		uint32_t Bitfield_A = 0; // é€æ˜é€šé“çš„ä½åŸŸï¼Œé€šå¸¸æ²¡æœ‰é€æ˜é€šé“ã€‚
 		std::unique_ptr<uint8_t[]> ReadInLineBuffer;
 		size_t i;
 
-		std::stringstream sserr;
-
-		// ¶ÁÈ¡Î»Í¼ÎÄ¼şÍ·
+		// è¯»å–ä½å›¾æ–‡ä»¶å¤´
 		ReadData(ifs, BMFH);
 		ReadData(ifs, BMIF);
 		if (BMFH.bfType != 0x4D42 || !BMFH.bfOffbits) throw ReadBmpFileError("Not a BMP file.");
 		if (!BMIF.biPlanes || !BMIF.biWidth || !BMIF.biHeight) throw ReadBmpFileError("BMP file header fields not reasonable.");
 
-		// ÅĞ¶ÏÎ»Í¼µÄÑ¹Ëõ·½Ê½
+		// åˆ¤æ–­ä½å›¾çš„å‹ç¼©æ–¹å¼
 		switch (BMIF.biCompression)
 		{
 		case BI_Bitfields:
-			// ÓĞÎ»Óò£¬¶ÁÈ¡Î»ÓòĞÅÏ¢
+			// æœ‰ä½åŸŸï¼Œè¯»å–ä½åŸŸä¿¡æ¯
 			ReadData(ifs, Bitfields);
 			break;
 		case BI_RLE4:
 		case BI_RLE8:
 			throw ReadBmpFileError("It's an RLE-compressed BMP file, not implemented to decompress.");
 		case BI_RGB:
-			// Ã»ÓĞÎ»Óò£¬µ«ÊÇÓĞµ÷É«°å£¬¶ÁÈ¡µ÷É«°åĞÅÏ¢
+			// æ²¡æœ‰ä½åŸŸï¼Œä½†æ˜¯æœ‰è°ƒè‰²æ¿ï¼Œè¯»å–è°ƒè‰²æ¿ä¿¡æ¯
 			switch (BMIF.biBitCount)
 			{
 			case 1: case 2: case 4: case 8:
 				if (BMIF.biClrUsed) PaletteColorCount = BMIF.biClrUsed;
 				else PaletteColorCount = (1u << BMIF.biBitCount);
 				ReadData(ifs, Palette, PaletteColorCount);
-				// ¼ì²âµ÷É«°åµÄAlphaÍ¨µÀÊÇ·ñ°üº¬Êı¾İ
+				// æ£€æµ‹è°ƒè‰²æ¿çš„Alphaé€šé“æ˜¯å¦åŒ…å«æ•°æ®
 				for (i = 0; i < PaletteColorCount; i++)
 				{
 					if (Palette[i].A) break;
 				}
-				// AlphaÍ¨µÀ²»°üº¬Êı¾İÊ±£¬½«AlphaÍ¨µÀÉèÖÃÎª255
+				// Alphaé€šé“ä¸åŒ…å«æ•°æ®æ—¶ï¼Œå°†Alphaé€šé“è®¾ç½®ä¸º255
 				if (i == PaletteColorCount)
 				{
 					for (i = 0; i < PaletteColorCount; i++)
@@ -620,13 +616,11 @@ namespace UniformBitmap
 				Bitfields[2] = 0x0000ff;
 				break;
 			default:
-				sserr << "Unknown bit count `" << BMIF.biBitCount << "`";
-				throw ReadBmpFileError(sserr.str());
+				throw ReadBmpFileError(std::string("Unknown bit count `") + std::to_string(BMIF.biBitCount) + "`");
 			}
 			break;
 		default:
-			sserr << "Unknown compression `" << BMIF.biCompression << "`";
-			throw ReadBmpFileError(sserr.str());
+			throw ReadBmpFileError(std::string("Unknown compression `") + std::to_string(BMIF.biCompression) + "`");
 		}
 
 		ifs.seekg(BMFH.bfOffbits);
@@ -634,7 +628,7 @@ namespace UniformBitmap
 		Width = BMIF.biWidth;
 		Height = BMIF.biHeight < 0 ? -BMIF.biHeight : BMIF.biHeight;
 
-		// ±£ÁôDPIĞÅÏ¢
+		// ä¿ç•™DPIä¿¡æ¯
 		XPelsPerMeter = BMIF.biXPelsPerMeter;
 		YPelsPerMeter = BMIF.biYPelsPerMeter;
 
@@ -658,16 +652,16 @@ namespace UniformBitmap
 		Pitch = ((size_t)(BMIF.biWidth * BMIF.biBitCount - 1) / 32 + 1) * 4;
 		ReadInLineBuffer = std::make_unique<uint8_t[]>(Pitch);
 
-		// ¿ªÊ¼¶ÁÈ¡Î»Í¼
+		// å¼€å§‹è¯»å–ä½å›¾
 		switch (BMIF.biCompression)
 		{
-			// Ô­Ê¼Î»Í¼²»°üº¬Î»ÓòĞÅÏ¢
+			// åŸå§‹ä½å›¾ä¸åŒ…å«ä½åŸŸä¿¡æ¯
 			case BI_RGB:
 			{
-				// ¸ù¾İÎ»ÊıÅĞ¶ÏÊÇ·ñÎªµ÷É«°åÑÕÉ«
+				// æ ¹æ®ä½æ•°åˆ¤æ–­æ˜¯å¦ä¸ºè°ƒè‰²æ¿é¢œè‰²
 				switch (BMIF.biBitCount)
 				{
-					// Ã¿¸ö×Ö½Ú¿ÉÄÜ°üº¬¶à¸öÏñËØ
+					// æ¯ä¸ªå­—èŠ‚å¯èƒ½åŒ…å«å¤šä¸ªåƒç´ 
 				case 1: case 2: case 4:
 				{
 					uint32_t x, y;
@@ -696,7 +690,7 @@ namespace UniformBitmap
 					}
 					break;
 				}
-				// Ò»¸ö×Ö½ÚÒ»¸öÏñËØ£¬×Ö½ÚÖµ¼´ÎªÏñËØË÷Òı
+				// ä¸€ä¸ªå­—èŠ‚ä¸€ä¸ªåƒç´ ï¼Œå­—èŠ‚å€¼å³ä¸ºåƒç´ ç´¢å¼•
 				case 8:
 				{
 					uint32_t x, y;
@@ -711,7 +705,7 @@ namespace UniformBitmap
 					}
 					break;
 				}
-				// ·ÇË÷ÒıÑÕÉ«£¬Ã¿16¸öbit°´ÕÕ´Ó¸ßµ½µÍ 1:5:5:5 ´æ´¢ ARGB ËÄ¸öÍ¨µÀ
+				// éç´¢å¼•é¢œè‰²ï¼Œæ¯16ä¸ªbitæŒ‰ç…§ä»é«˜åˆ°ä½ 1:5:5:5 å­˜å‚¨ ARGB å››ä¸ªé€šé“
 				case 16:
 				{
 					size_t x, y;
@@ -747,7 +741,7 @@ namespace UniformBitmap
 					}
 					break;
 				}
-				// ·ÇË÷ÒıÑÕÉ«£¬Ã¿Í¨µÀ1×Ö½Ú
+				// éç´¢å¼•é¢œè‰²ï¼Œæ¯é€šé“1å­—èŠ‚
 				case 24:
 				{
 					size_t x, y;
@@ -766,7 +760,7 @@ namespace UniformBitmap
 					}
 					break;
 				}
-				// ·ÇË÷ÒıÑÕÉ«£¬Ã¿Í¨µÀ1×Ö½Ú£¬¿ÉÄÜ°üº¬AlphaÍ¨µÀ
+				// éç´¢å¼•é¢œè‰²ï¼Œæ¯é€šé“1å­—èŠ‚ï¼Œå¯èƒ½åŒ…å«Alphaé€šé“
 				case 32:
 				{
 					size_t x, y;
@@ -817,8 +811,7 @@ namespace UniformBitmap
 
 			if (!BytesPerPixels)
 			{
-				sserr << "Unknown bit count `" << BMIF.biBitCount << "` for BMP file with bitfield data.";
-				throw ReadBmpFileError(sserr.str());
+				throw ReadBmpFileError(std::string("Unknown bit count `") + std::to_string(BMIF.biBitCount) + "` for BMP file with bitfield data.");
 			}
 
 			for (y = 0; y < Height; y++)
@@ -828,7 +821,7 @@ namespace UniformBitmap
 				ifs.read(reinterpret_cast<char*>(&ReadInLineBuffer[0]), Pitch);
 				for (x = 0; x < Width; x++)
 				{
-					// ½«Ò»¸öÏñËØµÄÈ«²¿Êı¾İ¶ÁÈë£¬ÔÙ²ğ³öÆäºìÂÌÀ¶¸÷¸öÍ¨µÀµÄÑÕÉ«Öµ
+					// å°†ä¸€ä¸ªåƒç´ çš„å…¨éƒ¨æ•°æ®è¯»å…¥ï¼Œå†æ‹†å‡ºå…¶çº¢ç»¿è“å„ä¸ªé€šé“çš„é¢œè‰²å€¼
 					uint32_t PixelData = *(uint32_t*)PixelPointer;
 					uint32_t RV = PixelData & ((Bitfields[0]) >> RShift);
 					uint32_t GV = PixelData & ((Bitfields[1]) >> GShift);
@@ -860,8 +853,7 @@ namespace UniformBitmap
 		}
 
 		default:
-			sserr << "Unknown BMP compression type `" << BMIF.biCompression << "`.";
-			throw ReadBmpFileError(sserr.str());
+			throw ReadBmpFileError(std::string("Unknown BMP compression type `") + std::to_string(BMIF.biCompression) + "`.");
 		}
 
 		for (size_t i = 0; i < Height; i++)
@@ -872,9 +864,7 @@ namespace UniformBitmap
 	}
 	catch (const std::ios::failure& e)
 	{
-		std::stringstream sserr;
-		sserr << "Failed to read BMP file: " << e.what();
-		throw ReadBmpFileError(sserr.str());
+		throw ReadBmpFileError(std::string("Failed to read BMP file: ") + e.what());
 	}
 
 	template<typename PixelType>
@@ -1320,9 +1310,7 @@ namespace UniformBitmap
 		}
 		catch (const std::ios::failure&)
 		{
-			std::stringstream sserr;
-			sserr << "Could not open `" << FilePath << "` for write.";
-			throw WriteBmpFileError(sserr.str());
+			throw WriteBmpFileError(std::string("Could not open `") + FilePath + "` for write.");
 		}
 	}
 
@@ -1337,9 +1325,7 @@ namespace UniformBitmap
 		}
 		catch (const std::ios::failure&)
 		{
-			std::stringstream sserr;
-			sserr << "Could not open `" << FilePath << "` for write.";
-			throw WriteBmpFileError(sserr.str());
+			throw WriteBmpFileError(std::string("Could not open `") + FilePath + "` for write.");
 		}
 	}
 
@@ -1421,20 +1407,20 @@ namespace UniformBitmap
 		uint32_t Buf32;
 
 		ReadData(ifs, Buf16);
-		if (Buf16 != 0xD8FF) return nullptr; // ²»ÊÇ JPG ÎÄ¼ş
+		if (Buf16 != 0xD8FF) return nullptr; // ä¸æ˜¯ JPG æ–‡ä»¶
 
 		ReadData(ifs, Buf16);
-		if (Buf16 != 0xE1FF) return nullptr; // Ã»ÓĞ Exif Í·
+		if (Buf16 != 0xE1FF) return nullptr; // æ²¡æœ‰ Exif å¤´
 
-		ReadData(ifs, ExifChunkSize); // ¶ÁÈ¡ Exif Í·²¿´óĞ¡
+		ReadData(ifs, ExifChunkSize); // è¯»å– Exif å¤´éƒ¨å¤§å°
 		ExifChunkSize -= 2;
 
-		// ¶ÁÈ¡ Exif ±êÊ¶
+		// è¯»å– Exif æ ‡è¯†
 		ReadData(ifs, Buf32);
 		ReadData(ifs, Buf16);
-		if (Buf32 != 0x66697845 || Buf16 != 0x0000) return nullptr; // ²»ÊÇ 'Exif' ±êÊ¶
+		if (Buf32 != 0x66697845 || Buf16 != 0x0000) return nullptr; // ä¸æ˜¯ 'Exif' æ ‡è¯†
 
-		// ºóÃæ¾Í¶¼ÊÇ TIFF Í·µÄÊı¾İÁË£¬½»¸ø `ParseTIFFHeader()`
+		// åé¢å°±éƒ½æ˜¯ TIFF å¤´çš„æ•°æ®äº†ï¼Œäº¤ç»™ `ParseTIFFHeader()`
 		return std::make_shared<TIFFHeader>(ParseTIFFHeader(ifs));;
 	}
 
@@ -1451,7 +1437,7 @@ namespace UniformBitmap
 			size_t SegmentLength = TIFFHeaderBytes.size() + 2 + 6;
 			if (SegmentLength > 0xFFFFu)
 			{
-				// Õâ¸ö Exif ½Ú³¤¶È³¬±êÁË
+				// è¿™ä¸ª Exif èŠ‚é•¿åº¦è¶…æ ‡äº†
 				std::cerr << "Warning: JPEG Exif section size too big to fit.\n";
 				return;
 			}
@@ -1461,10 +1447,10 @@ namespace UniformBitmap
 			ExifHeader[3] = SegmentLength & 0xFF;
 		}
 
-		// ×¼±¸²åÈë ExifHeader µ½ JPEG Í·²¿£¬Ìæ»»ÒÑÓĞÍ·²¿
+		// å‡†å¤‡æ’å…¥ ExifHeader åˆ° JPEG å¤´éƒ¨ï¼Œæ›¿æ¢å·²æœ‰å¤´éƒ¨
 		size_t NewOffsetToNextHdr = ExifHeader.size() + 2;
 		size_t OffsetToNextHdr = 2;
-		if (JpegFile[2] == 0xFF && // ¼ì²éÒÑÓĞµÄÍ·²¿£¬½«ÆäÉ¾³ı£¨ÖØĞÂ±ê¼ÇÏÂÒ»¸öÍ·²¿µÄÎ»ÖÃ£©
+		if (JpegFile[2] == 0xFF && // æ£€æŸ¥å·²æœ‰çš„å¤´éƒ¨ï¼Œå°†å…¶åˆ é™¤ï¼ˆé‡æ–°æ ‡è®°ä¸‹ä¸€ä¸ªå¤´éƒ¨çš„ä½ç½®ï¼‰
 			(JpegFile[3] == 0xE0 || JpegFile[3] == 0xE1))
 		{
 			OffsetToNextHdr += 2;
@@ -1474,7 +1460,7 @@ namespace UniformBitmap
 		}
 		if (JpegFile.size() <= OffsetToNextHdr) throw SaveImageError("Failed to add Exif data to JPG: corrupted file.");
 
-		// µ÷Õû JPEG ÎÄ¼ş´óĞ¡ºÍºóĞøÄÚÈİµÄÎ»ÖÃ£¬Ê¹ÄÜÈİÄÉĞÂµÄ Exif Í·²¿
+		// è°ƒæ•´ JPEG æ–‡ä»¶å¤§å°å’Œåç»­å†…å®¹çš„ä½ç½®ï¼Œä½¿èƒ½å®¹çº³æ–°çš„ Exif å¤´éƒ¨
 		size_t RemSize = JpegFile.size() - OffsetToNextHdr;
 		if (NewOffsetToNextHdr > OffsetToNextHdr)
 		{
@@ -1491,7 +1477,7 @@ namespace UniformBitmap
 			JpegFile.resize(NewOffsetToNextHdr + RemSize);
 		}
 
-		// ²åÈëĞÂµÄÍ·²¿Êı¾İ
+		// æ’å…¥æ–°çš„å¤´éƒ¨æ•°æ®
 		memcpy(&JpegFile[2], &ExifHeader[0], ExifHeader.size());
 	}
 }
@@ -1712,9 +1698,7 @@ namespace UniformBitmap
 		}
 		catch (const std::ios::failure&)
 		{
-			std::stringstream sserr;
-			sserr << "Could not open `" << FilePath << "` for write.";
-			throw ExceptionType(sserr.str());
+			throw ExceptionType(std::string("Could not open `") + FilePath + "` for write.");
 		}
 	}
 
