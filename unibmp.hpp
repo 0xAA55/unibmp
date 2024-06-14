@@ -147,8 +147,23 @@ namespace UniformBitmap
 		// 创建空的缓冲区
 		void CreateBuffer(uint32_t w, uint32_t h);
 
-		// 从图像文件加载
+		// 从图像文件加载 Bmp 格式图片
 		void LoadBmp(std::string FilePath);
+
+		// 从输入流加载 Bmp
+		void LoadBmp(std::istream& ifs);
+
+		// 从内存加载 Bmp
+		void LoadBmp(const void* FileInMemory, size_t FileSize);
+
+		// 从图像文件加载非 Bmp 格式图片
+		void LoadNonBmp(std::string FilePath);
+
+		// 从输入流加载非 Bmp 格式图片
+		void LoadNonBmp(std::istream& ifs);
+
+		// 从内存加载非 Bmp 格式图片
+		void LoadNonBmp(const void* FileInMemory, size_t FileSize);
 
 	public:
 		using ChannelType = PixelType::ChannelType;
@@ -173,6 +188,7 @@ namespace UniformBitmap
 		uint32_t YPelsPerMeter;
 
 		Image(std::string FilePath);
+		Image(const void* FileInMemory, size_t FileSize);
 		Image(uint32_t Width, uint32_t Height, uint32_t XPelsPerMeter = 3000, uint32_t YPelsPerMeter = 3000);
 		Image(const Image& from);
 		template<typename FromType> requires (!std::is_same_v<PixelType, FromType>)

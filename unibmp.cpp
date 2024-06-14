@@ -352,35 +352,99 @@ namespace UniformBitmap
 	}
 
 	template<typename T>
-	void ReadData(std::ifstream& ifs, T& v)
+	void ReadData(std::istream& ifs, T& v)
 	{
 		ifs.read(reinterpret_cast<char*>(&v), sizeof v);
 	}
 
 	template<typename T>
-	void ReadData(std::ifstream& ifs, T& v, size_t Count)
+	void ReadData(std::istream& ifs, T& v, size_t Count)
 	{
 		ifs.read(reinterpret_cast<char*>(&v[0]), sizeof v[0] * Count);
 	}
 
 	template<typename T>
-	void WriteData(std::ofstream& ofs, T& v)
+	void WriteData(std::ostream& ofs, T& v)
 	{
 		ofs.write(reinterpret_cast<char*>(&v), sizeof v);
 	}
 
 	template<typename T>
-	void WriteData(std::ofstream& ofs, T& v, size_t Count)
+	void WriteData(std::ostream& ofs, T& v, size_t Count)
 	{
 		ofs.write(reinterpret_cast<char*>(&v[0]), sizeof v[0] * Count);
 	}
 
 	// 从文件创建位图
+	template<typename PixelType>
+	void Image<PixelType>::LoadBmp(std::string FilePath)
+	{
+		std::ifstream ifs(FilePath, std::ios::binary);
+		ifs.exceptions(std::ios::badbit | std::ios::failbit);
+		if (ifs.fail())
+		{
+			std::stringstream sserr;
+			sserr << "Could not open `" << FilePath << "` for read.";
+			throw ReadBmpFileError(sserr.str());
+		}
+		return LoadBmp(ifs);
+	}
+
+	// 从内存加载 Bmp
+	template<typename PixelType>
+	void Image<PixelType>::LoadBmp(const void* FileInMemory, size_t FileSize)
+	{
+		std::istringstream str;
+		str.rdbuf()->pubsetbuf(reinterpret_cast<char*>(const_cast<void*>(FileInMemory)), FileSize);
+		str.exceptions(std::ios::badbit | std::ios::failbit);
+		LoadBmp(str);
+	}
+
+	template<typename PixelType>
+	void Image<PixelType>::LoadNonBmp(std::istream& ifs)
+	{
+		ifs.seekg(0, std::ios::end);
+		size_t size = ifs.tellg();
+		ifs.seekg(0, std::ios::beg);
+		std::vector<char> Buffer;
+		Buffer.resize(size);
+		ifs.read(&Buffer[0], size);
+		LoadNonBmp(&Buffer[0], size);
+	}
+
+	template<typename PixelType>
+	Image<PixelType>::Image(std::string FilePath) :
+		IsHDR(false)
+	{
+		try
+		{
+			LoadBmp(FilePath);
+		}
+		catch (const ReadBmpFileError&)
+		{
+			LoadNonBmp(FilePath);
+		}
+	}
+
+	template<typename PixelType>
+	Image<PixelType>::Image(const void* FileInMemory, size_t FileSize) :
+		IsHDR(false)
+	{
+		try
+		{
+			LoadBmp(FileInMemory, FileSize);
+		}
+		catch (const ReadBmpFileError&)
+		{
+			LoadNonBmp(FileInMemory, FileSize);
+		}
+	}
+
 	// 位图不可以是RLE压缩，但位图可以是带位域的位图、带调色板的索引颜色位图。
 	// 被读入后的图像数据会被强制转换为：ARGB 格式，每通道 8 bit 位深，每个像素4字节，分别是：蓝，绿，红，Alpha
 	// 如果整个图像的Alpha通道皆为0（或者整个图像不包含Alpha通道）则读出来的位图的Alpha通道会被设置为最大值（即 255）
 	template<typename PixelType>
-	void Image<PixelType>::LoadBmp(std::string FilePath)
+	void Image<PixelType>::LoadBmp(std::istream& ifs)
 	{
 		BitmapFileHeader BMFH;
 		BitmapInfoHeader BMIF;
@@ -393,15 +457,7 @@ namespace UniformBitmap
 		std::unique_ptr<uint8_t[]> ReadInLineBuffer;
 		size_t i;
 
-		std::ifstream ifs(FilePath, std::ios::binary);
-		ifs.exceptions(std::ofstream::badbit | std::ofstream::failbit);
 		std::stringstream sserr;
-
-		if (ifs.fail())
-		{
-			sserr << "Could not open `" << FilePath << "` for read.";
-			throw ReadBmpFileError(sserr.str());
-		}
 
 		// 读取位图文件头
 		ReadData(ifs, BMFH);
@@ -949,61 +1005,106 @@ namespace UniformBitmap
 	};
 
 	template<typename PixelType>
-	Image<PixelType>::Image(std::string FilePath) :
-		IsHDR(false)
+	void Image<PixelType>::LoadNonBmp(std::string FilePath)
 	{
-		try
+		int w, h, n;
+		if (std::is_floating_point_v<ChannelType>)
 		{
-			LoadBmp(FilePath);
+			auto stbi = STBITakeOver<Pixel_RGBA32F>(w, h, stbi_loadf(FilePath.c_str(), &w, &h, &n, 4));
+			CreateBuffer(w, h);
+			for (size_t y = 0; y < Height; y++)
+			{
+				auto srow = &stbi.Pixels[y * Width];
+				auto drow = RowPointers[y];
+				for (size_t x = 0; x < Width; x++)
+				{
+					drow[x] = srow[x];
+				}
+			}
+			IsHDR = true;
 		}
-		catch (const ReadBmpFileError&)
+		else if (sizeof(ChannelType) == 1)
 		{
-			int w, h, n;
-			if (std::is_floating_point_v<ChannelType>)
+			auto stbi = STBITakeOver<Pixel_RGBA8>(w, h, stbi_load(FilePath.c_str(), &w, &h, &n, 4));
+			CreateBuffer(w, h);
+			for (size_t y = 0; y < Height; y++)
 			{
-				auto stbi = STBITakeOver<Pixel_RGBA32F>(w, h, stbi_loadf(FilePath.c_str(), &w, &h, &n, 4));
-				CreateBuffer(w, h);
-				for (size_t y = 0; y < Height; y++)
+				auto srow = &stbi.Pixels[y * Width];
+				auto drow = RowPointers[y];
+				for (size_t x = 0; x < Width; x++)
 				{
-					auto srow = &stbi.Pixels[y * Width];
-					auto drow = RowPointers[y];
-					for (size_t x = 0; x < Width; x++)
-					{
-						drow[x] = srow[x];
-					}
-				}
-				IsHDR = true;
-			}
-			else if (sizeof(ChannelType) == 1)
-			{
-				auto stbi = STBITakeOver<Pixel_RGBA8>(w, h, stbi_load(FilePath.c_str(), &w, &h, &n, 4));
-				CreateBuffer(w, h);
-				for (size_t y = 0; y < Height; y++)
-				{
-					auto srow = &stbi.Pixels[y * Width];
-					auto drow = RowPointers[y];
-					for (size_t x = 0; x < Width; x++)
-					{
-						drow[x] = srow[x];
-					}
+					drow[x] = srow[x];
 				}
 			}
-			else
+		}
+		else
+		{
+			auto stbi = STBITakeOver<Pixel_RGBA16>(w, h, stbi_load_16(FilePath.c_str(), &w, &h, &n, 4));
+			CreateBuffer(w, h);
+			for (size_t y = 0; y < Height; y++)
 			{
-				auto stbi = STBITakeOver<Pixel_RGBA16>(w, h, stbi_load_16(FilePath.c_str(), &w, &h, &n, 4));
-				CreateBuffer(w, h);
-				for (size_t y = 0; y < Height; y++)
+				auto srow = &stbi.Pixels[y * Width];
+				auto drow = RowPointers[y];
+				for (size_t x = 0; x < Width; x++)
 				{
-					auto srow = &stbi.Pixels[y * Width];
-					auto drow = RowPointers[y];
-					for (size_t x = 0; x < Width; x++)
-					{
-						drow[x] = srow[x];
-					}
+					drow[x] = srow[x];
 				}
 			}
 		}
 	}
+
+#pragma warning(push)
+#pragma warning(disable: 4267)
+
+	template<typename PixelType>
+	void Image<PixelType>::LoadNonBmp(const void* FileInMemory, size_t FileSize)
+	{
+		int w, h, n;
+		if (std::is_floating_point_v<ChannelType>)
+		{
+			auto stbi = STBITakeOver<Pixel_RGBA32F>(w, h, stbi_loadf_from_memory(reinterpret_cast<const uint8_t*>(FileInMemory), FileSize, &w, &h, &n, 4));
+			CreateBuffer(w, h);
+			for (size_t y = 0; y < Height; y++)
+			{
+				auto srow = &stbi.Pixels[y * Width];
+				auto drow = RowPointers[y];
+				for (size_t x = 0; x < Width; x++)
+				{
+					drow[x] = srow[x];
+				}
+			}
+			IsHDR = true;
+		}
+		else if (sizeof(ChannelType) == 1)
+		{
+			auto stbi = STBITakeOver<Pixel_RGBA8>(w, h, stbi_load_from_memory(reinterpret_cast<const uint8_t*>(FileInMemory), FileSize, &w, &h, &n, 4));
+			CreateBuffer(w, h);
+			for (size_t y = 0; y < Height; y++)
+			{
+				auto srow = &stbi.Pixels[y * Width];
+				auto drow = RowPointers[y];
+				for (size_t x = 0; x < Width; x++)
+				{
+					drow[x] = srow[x];
+				}
+			}
+		}
+		else
+		{
+			auto stbi = STBITakeOver<Pixel_RGBA16>(w, h, stbi_load_16_from_memory(reinterpret_cast<const uint8_t*>(FileInMemory), FileSize, &w, &h, &n, 4));
+			CreateBuffer(w, h);
+			for (size_t y = 0; y < Height; y++)
+			{
+				auto srow = &stbi.Pixels[y * Width];
+				auto drow = RowPointers[y];
+				for (size_t x = 0; x < Width; x++)
+				{
+					drow[x] = srow[x];
+				}
+			}
+		}
+	}
+#pragma warning(pop)
 
 	template<typename PixelType>
 	void Image<PixelType>::SaveToPNG(std::string FilePath) const
