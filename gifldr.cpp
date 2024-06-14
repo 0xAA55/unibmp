@@ -31,12 +31,12 @@ namespace CPPGIF
 		return Version;
 	}
 
-	const LSD_Type& GIFLoader::GetLogicalScreenDescriptor() const
+	const LogicalScreenDescriptorType& GIFLoader::GetLogicalScreenDescriptor() const
 	{
 		return LogicalScreenDescriptor;
 	}
 
-	LSD_Type::LSD_Type(uint16_t LogicalScreenWidth, uint16_t LogicalScreenHeight, uint8_t Bitfields, uint8_t BackgroundColorIndex, std::shared_ptr<ColorTableArray> GlobalColorTable) :
+	LogicalScreenDescriptorType::LogicalScreenDescriptorType(uint16_t LogicalScreenWidth, uint16_t LogicalScreenHeight, uint8_t Bitfields, uint8_t BackgroundColorIndex, std::shared_ptr<ColorTableArray> GlobalColorTable) :
 		LogicalScreenWidth(LogicalScreenWidth),
 		LogicalScreenHeight(LogicalScreenHeight),
 		Bitfields(Bitfields),
@@ -45,13 +45,13 @@ namespace CPPGIF
 	{
 	}
 
-	uint8_t LSD_Type::MakeBitfields(bool HasGCT, uint8_t ColorResolution, bool ColorIsSorted, size_t SizeOfGlobalColorTable)
+	uint8_t LogicalScreenDescriptorType::MakeBitfields(bool HasGCT, uint8_t ColorResolution, bool ColorIsSorted, size_t SizeOfGlobalColorTable)
 	{
 		uint8_t ret = 0;
 		if (HasGCT) ret = 0x80;
 		if (ColorResolution < 1 || ColorResolution > 8)
 		{
-			throw std::invalid_argument(std::string("LSD_Type::MakeBitfields(): bad `ColorResolution` (") + std::to_string(ColorResolution) + "): should be in [1, 8].");
+			throw std::invalid_argument(std::string("LogicalScreenDescriptorType::MakeBitfields(): bad `ColorResolution` (") + std::to_string(ColorResolution) + "): should be in [1, 8].");
 		}
 		ret |= ((ColorResolution - 1) << 4);
 		if (ColorIsSorted) ret |= 0x08;
@@ -61,32 +61,32 @@ namespace CPPGIF
 		}
 		catch (const std::out_of_range&)
 		{
-			throw std::invalid_argument(std::string("LSD_Type::MakeBitfields(): bad `SizeOfGlobalColorTable` (") + std::to_string(ColorResolution) + "): should be one of 2, 4, 8, 16, 32, 64, 128, 256.");
+			throw std::invalid_argument(std::string("LogicalScreenDescriptorType::MakeBitfields(): bad `SizeOfGlobalColorTable` (") + std::to_string(ColorResolution) + "): should be one of 2, 4, 8, 16, 32, 64, 128, 256.");
 		}
 		return;
 	}
 
-	bool LSD_Type::HasGCT() const
+	bool LogicalScreenDescriptorType::HasGCT() const
 	{
 		return ((Bitfields & 0x80) == 0x80) ? true : false;
 	}
 
-	uint8_t LSD_Type::ColorResolution() const
+	uint8_t LogicalScreenDescriptorType::ColorResolution() const
 	{
 		return 1 << ((Bitfields & 0x70) >> 4);
 	}
 
-	bool LSD_Type::ColorIsSorted() const
+	bool LogicalScreenDescriptorType::ColorIsSorted() const
 	{
 		return ((Bitfields & 0x08) == 0x08) ? true : false;
 	}
 
-	size_t LSD_Type::SizeOfGlobalColorTable() const
+	size_t LogicalScreenDescriptorType::SizeOfGlobalColorTable() const
 	{
 		return 1 << (Bitfields & 0x07);
 	}
 
-	void LSD_Type::BreakBitfields(bool& HasGCT, uint8_t& ColorResolution, bool& ColorIsSorted, size_t& SizeOfGlobalColorTable)
+	void LogicalScreenDescriptorType::BreakBitfields(bool& HasGCT, uint8_t& ColorResolution, bool& ColorIsSorted, size_t& SizeOfGlobalColorTable)
 	{
 		HasGCT = this->HasGCT();
 		ColorResolution = this->ColorResolution();
@@ -104,17 +104,17 @@ namespace CPPGIF
 		return LogicalScreenDescriptor.GetLogicalScreenHeight();
 	}
 
-	uint16_t LSD_Type::GetLogicalScreenWidth() const
+	uint16_t LogicalScreenDescriptorType::GetLogicalScreenWidth() const
 	{
 		return LogicalScreenWidth;
 	}
 
-	uint16_t LSD_Type::GetLogicalScreenHeight() const
+	uint16_t LogicalScreenDescriptorType::GetLogicalScreenHeight() const
 	{
 		return LogicalScreenHeight;
 	}
 
-	const ColorTableArray& LSD_Type::GetGlobalColorTable() const
+	const ColorTableArray& LogicalScreenDescriptorType::GetGlobalColorTable() const
 	{
 		return *GlobalColorTable;
 	}

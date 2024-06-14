@@ -35,7 +35,7 @@ namespace CPPGIF
 		std::vector<uint8_t> Data;
 	};
 
-	struct LSD_Type
+	struct LogicalScreenDescriptorType
 	{ // LogicalScreenDescriptor
 	protected:
 		uint16_t LogicalScreenWidth = 0;
@@ -45,8 +45,8 @@ namespace CPPGIF
 		std::shared_ptr<ColorTableArray> GlobalColorTable = nullptr;
 
 	public:
-		LSD_Type() = default;
-		LSD_Type(uint16_t LogicalScreenWidth, uint16_t LogicalScreenHeight, uint8_t Bitfields, uint8_t BackgroundColorIndex, std::shared_ptr<ColorTableArray> GlobalColorTable);
+		LogicalScreenDescriptorType() = default;
+		LogicalScreenDescriptorType(uint16_t LogicalScreenWidth, uint16_t LogicalScreenHeight, uint8_t Bitfields, uint8_t BackgroundColorIndex, std::shared_ptr<ColorTableArray> GlobalColorTable);
 
 		static uint8_t MakeBitfields(bool HasGCT, uint8_t ColorResolution, bool ColorIsSorted, size_t SizeOfGlobalColorTable);
 		void BreakBitfields(bool& HasGCT, uint8_t& ColorResolution, bool& ColorIsSorted, size_t& SizeOfGlobalColorTable);
@@ -68,13 +68,13 @@ namespace CPPGIF
 	protected:
 		std::string Version; // gif87a / gif89a
 
-		// ¬ﬂº≠∆¡ƒª√Ë ˆ∑˚
-		LSD_Type LogicalScreenDescriptor;
-
-		
-		
-
+		// ÈÄªËæëÂ±èÂπïÊèèËø∞Á¨¶
+		LogicalScreenDescriptorType LogicalScreenDescriptor;
 		std::shared_ptr<AppExtension> ApplicationExtension;
+
+		
+		
+
 
 	public:
 		GIFLoader(const std::string& LoadFrom);
@@ -84,7 +84,7 @@ namespace CPPGIF
 		const uint16_t GetHeight() const;
 		const ColorTableArray& GetGlobalColorTable(uint32_t& numColorsOut) const;
 
-		const LSD_Type& GetLogicalScreenDescriptor() const;
+		const LogicalScreenDescriptorType& GetLogicalScreenDescriptor() const;
 		
 	};
 }
