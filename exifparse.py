@@ -51,3 +51,7 @@ if __name__ == '__main__':
 	parsed = ParseExifHtmlTable('exif.xml')
 	with open('exif.json', 'w', encoding='utf-8') as f:
 		json.dump(parsed, f, indent=4)
+
+	for tid, tdata in parsed.items():
+		if '-->' in tdata['Values /Notes']:
+			print(tid)
