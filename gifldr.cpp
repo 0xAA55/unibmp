@@ -288,7 +288,7 @@ namespace CPPGIF
 		auto UnpackedCodes = LZWCodeUnpackedVectorType();
 
 		auto CodeTable = CodeTableType(LZW_MinCodeSize);
-		bool IsFirstStep = true;
+		bool DoFirstStep = true;
 		bool EOIReached = false;
 		bool ExpectCC = true; // 需要立刻获得一个 Clear Code
 
@@ -341,7 +341,7 @@ namespace CPPGIF
 						CodeTable.InitCodeTable();
 						CurCodeSize = FirstCodeSize;
 						CurCodeMaxVal = (1 << CurCodeSize) - 1;
-						IsFirstStep = true;
+						DoFirstStep = true;
 						ExpectCC = false;
 					}
 					if (CurCode == CodeTable.EOICode)
@@ -349,9 +349,9 @@ namespace CPPGIF
 						EOIReached = true;
 						break;
 					}
-					else if (IsFirstStep)
+					else if (DoFirstStep)
 					{
-						IsFirstStep = false;
+						DoFirstStep = false;
 						auto& ToOutput = CodeTable[CurCode];
 						Output.insert(Output.end(), ToOutput.cbegin(), ToOutput.cend());
 					}
@@ -377,6 +377,7 @@ namespace CPPGIF
 						CurCodeSize++;
 						if (CurCodeSize > MaxCodeSize) 
 						{
+							// CodeTable.InitCodeTable();
 							ExpectCC = true;
 							CurCodeSize = FirstCodeSize;
 						}
