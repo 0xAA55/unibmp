@@ -81,7 +81,6 @@ namespace UniformBitmap
 	extern template Pixel_RGBA32F::Pixel_RGBA(const Pixel_RGBA32& from);
 	extern template Pixel_RGBA32F::Pixel_RGBA(const Pixel_RGBA32F& from);
 
-	template<typename PixelType>
 	class Point
 	{
 	public:
@@ -92,14 +91,9 @@ namespace UniformBitmap
 
 		struct Hash
 		{
-			size_t operator()(const Point<PixelType>& p) const;
+			size_t operator()(const Point& p) const;
 		};
 	};
-
-	extern template class Point<Pixel_RGBA8>;
-	extern template class Point<Pixel_RGBA16>;
-	extern template class Point<Pixel_RGBA32>;
-	extern template class Point<Pixel_RGBA32F>;
 
 	template<typename PixelType>
 	class PixelRef
@@ -133,9 +127,9 @@ namespace UniformBitmap
 	{
 	public:
 		using ChannelType = PixelType::ChannelType;
-		using Point = PixelRef<PixelType>;
-		using PointHash = Point::Hash;
-		using FloodFillEdgeType = std::unordered_set<Point, PointHash>;
+		using PXR = PixelRef<PixelType>;
+		using PXRHash = PXR::Hash;
+		using FloodFillEdgeType = std::unordered_set<PXR, PXRHash>;
 		using FileInMemoryType = std::vector<uint8_t>;
 
 	protected:

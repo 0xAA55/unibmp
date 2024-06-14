@@ -279,11 +279,9 @@ namespace UniformBitmap
 	template Pixel_RGBA32F::Pixel_RGBA(const Pixel_RGBA32& from);
 	template Pixel_RGBA32F::Pixel_RGBA(const Pixel_RGBA32F& from);
 
-	template<typename PixelType>
-	Point<PixelType>::Point(uint32_t x, uint32_t y) : x(x), y(y)
+	Point::Point(uint32_t x, uint32_t y) : x(x), y(y)
 	{}
-	template<typename PixelType>
-	size_t Point<PixelType>::Hash::operator()(const Point<PixelType>& p) const
+	size_t Point::Hash::operator()(const Point& p) const
 	{
 		return p.x + (size_t(p.y) << 6);
 	}
@@ -302,11 +300,6 @@ namespace UniformBitmap
 	{
 		return reinterpret_cast<size_t>(&p.Pixel);
 	}
-
-	template class Point<Pixel_RGBA8>;
-	template class Point<Pixel_RGBA16>;
-	template class Point<Pixel_RGBA32>;
-	template class Point<Pixel_RGBA32F>;
 
 	template class PixelRef<Pixel_RGBA8>;
 	template class PixelRef<Pixel_RGBA16>;
@@ -1067,10 +1060,10 @@ namespace UniformBitmap
 					continue;
 				}
 				SetPixel(Pixel, Color);
-				if (p.x > min_x) NewEdgePoints->insert(Point(p.x - 1, p.y, GetPixelRef(p.x - 1, p.y)));
-				if (p.y > min_y) NewEdgePoints->insert(Point(p.x, p.y - 1, GetPixelRef(p.x, p.y - 1)));
-				if (p.x < max_x) NewEdgePoints->insert(Point(p.x + 1, p.y, GetPixelRef(p.x + 1, p.y)));
-				if (p.y < max_y) NewEdgePoints->insert(Point(p.x, p.y + 1, GetPixelRef(p.x, p.y + 1)));
+				if (p.x > min_x) NewEdgePoints->insert(PXR(p.x - 1, p.y, GetPixelRef(p.x - 1, p.y)));
+				if (p.y > min_y) NewEdgePoints->insert(PXR(p.x, p.y - 1, GetPixelRef(p.x, p.y - 1)));
+				if (p.x < max_x) NewEdgePoints->insert(PXR(p.x + 1, p.y, GetPixelRef(p.x + 1, p.y)));
+				if (p.y < max_y) NewEdgePoints->insert(PXR(p.x, p.y + 1, GetPixelRef(p.x, p.y + 1)));
 			}
 			EdgePoints = std::move(NewEdgePoints);
 			NewEdgePoints = std::make_unique<std::unordered_set<Point, PointHash>>();
