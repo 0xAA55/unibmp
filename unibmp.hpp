@@ -185,6 +185,9 @@ namespace UniformBitmap
 		bool FindExifDataFromJpeg(std::istream& ifs);
 		bool FindExifDataFromJpeg(const void* FileInMemory, size_t FileSize);
 
+		// 插入ExifData 到已经生成出来的 JPEG 文件字节里
+		void ModifyJpegToInsertExif(FileInMemoryType& JpegFile) const;
+
 	public:
 		inline uint32_t GetWidth() const { return Width; }
 		inline uint32_t GetHeight() const { return Height; }

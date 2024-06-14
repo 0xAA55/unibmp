@@ -1343,6 +1343,66 @@ namespace UniformBitmap
 	}
 
 	template<typename PixelType>
+	void Image<PixelType>::ModifyJpegToInsertExif(FileInMemoryType& JpegFile) const
+	{
+		if (!ExifData) return;
+		
+		FileInMemoryType ExifHeader = {
+			0xFF, 0xE1,
+			0, 0,
+			'E', 'x', 'i', 'f', 0, 0
+		};
+		if (1)
+		{
+			auto TIFFHeaderBytes = StoreTIFFHeader(*ExifData);
+			size_t SegmentLength = TIFFHeaderBytes.size() + 2 + 6;
+			if (SegmentLength > 0xFFFFu)
+			{
+				// 这个 Exif 节长度超标了
+				std::cerr << "Warning: JPEG Exif section size too big to fit.\n";
+				return;
+			}
+			WriteData(ExifHeader, TIFFHeaderBytes);
+
+			ExifHeader[2] = (SegmentLength >> 8) & 0xFF;
+			ExifHeader[3] = SegmentLength & 0xFF;
+		}
+		
+		// 准备插入 ExifHeader 到 JPEG 头部，替换已有头部
+		size_t NewOffsetToNextHdr = ExifHeader.size() + 2;
+		size_t OffsetToNextHdr = 2;
+		if (JpegFile[2] == 0xFF && // 检查已有的头部，将其删除（重新标记下一个头部的位置）
+			(JpegFile[3] == 0xE0 || JpegFile[3] == 0xE1))
+		{
+			OffsetToNextHdr += 2;
+			OffsetToNextHdr +=
+				(size_t(JpegFile[4]) << 8) +
+				JpegFile[5];
+		}
+		if (JpegFile.size() <= OffsetToNextHdr) throw SaveImageError("Failed to add Exif data to JPG: corrupted file.");
+
+		// 调整 JPEG 文件大小和后续内容的位置，使能容纳新的 Exif 头部
+		size_t RemSize = JpegFile.size() - OffsetToNextHdr;
+		if (NewOffsetToNextHdr > OffsetToNextHdr)
+		{
+			JpegFile.resize(NewOffsetToNextHdr + RemSize);
+			memmove(&JpegFile[NewOffsetToNextHdr],
+				&JpegFile[OffsetToNextHdr],
+				RemSize);
+		}
+		else if (NewOffsetToNextHdr < OffsetToNextHdr)
+		{
+			memmove(&JpegFile[NewOffsetToNextHdr],
+				&JpegFile[OffsetToNextHdr],
+				RemSize);
+			JpegFile.resize(NewOffsetToNextHdr + RemSize);
+		}
+
+		// 插入新的头部数据
+		memcpy(&JpegFile[2], &ExifHeader[0], ExifHeader.size());
+	}
+
+	template<typename PixelType>
 	FileInMemoryType Image<PixelType>::SaveToPNG() const
 	{
 		if (!std::is_same_v<PixelType, Pixel_RGBA8>)
@@ -1381,6 +1441,7 @@ namespace UniformBitmap
 
 		FileInMemoryType ret;
 		if (!stbi_write_jpg_to_func(stbi_WriteToFileInMemory, &ret, Width, Height, 4, GetBitmapDataPtr(), Quality)) throw SaveImageError(stbi_failure_reason());
+		ModifyJpegToInsertExif(ret);
 		return ret;
 	}
 
