@@ -10,11 +10,15 @@ OBJS=
 OBJS+=test.o
 OBJS+=tiffhdr.o
 OBJS+=unibmp.o
+OBJS+=gifldr.o
 
 all: ubtest
 
 ubtest: $(OBJS)
 	$(LD) $(LDFLAGS) $^ -o $@ $(LDLIBS)
+
+test:
+	./ubtest
 
 clean:
 	rm -f ubtest
