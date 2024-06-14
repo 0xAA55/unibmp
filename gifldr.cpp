@@ -266,7 +266,7 @@ namespace CPPGIF
 		// https://giflib.sourceforge.net/whatsinagif/lzw_image_data.html
 		auto LZW_MinCodeSize = uint8_t(0);
 		Read(is, LZW_MinCodeSize);
-		std::cout << "LZW: 0x" << std::hex << is.tellg() << "\n";
+		// std::cout << "LZW: 0x" << std::hex << is.tellg() << "\n";
 		auto LZW_Data = ReadDataSubBlock(is);
 		try
 		{
@@ -275,7 +275,6 @@ namespace CPPGIF
 		catch (const DecodeError& e)
 		{
 			std::cerr << "GIF: " << e.what() << "\n";
-			// ImageData.resize(Width * Height);
 		}
 	}
 
