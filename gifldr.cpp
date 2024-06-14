@@ -278,10 +278,51 @@ namespace CPPGIF
 		}
 	}
 
-	// DataSubBlock ImageDescriptorType::CompressLZW(const DataSubBlock& Data, uint8_t LZW_MinCodeSize)
-	// {
-	// 	// https://giflib.sourceforge.net/whatsinagif/lzw_image_data.html
-	// }
+	DataSubBlock ImageDescriptorType::CompressLZW(const DataSubBlock& Data, uint8_t LZW_MinCodeSize)
+	{
+		// https://giflib.sourceforge.net/whatsinagif/lzw_image_data.html
+
+		struct CodeStream 
+		{
+		protected:
+			DataSubBlock Bytes;
+
+		public:
+			int CurCodeSize;
+
+			CodeStream() = delete;
+			CodeStream(int InitCodeSize) :
+				CurCodeSize(InitCodeSize)
+			{
+			}
+
+			DataSubBlock GetEncodedBytes() const
+			{
+				return Bytes;
+			}
+
+			void EncodeCode(uint16_t Code)
+			{
+
+			}
+		};
+
+		using Hasher_DataSubBlock = std::hash<DataSubBlock>;
+
+		struct CodaTable : public std::unordered_map<DataSubBlock, uint16_t, Hasher_DataSubBlock>
+		{
+
+		};
+
+
+
+
+
+		if (1)
+		{
+			return DataSubBlock(Data); // 临时代码，仅用于确保项目编译通过
+		}
+	}
 
 	DataSubBlock ImageDescriptorType::UncompressLZW(const DataSubBlock& Compressed, uint8_t LZW_MinCodeSize)
 	{
