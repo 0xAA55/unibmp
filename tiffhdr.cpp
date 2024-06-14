@@ -280,6 +280,17 @@ namespace UniformBitmap
 	{
 	}
 
+	template class IFDFieldType<int8_t>;
+	template class IFDFieldType<int16_t>;
+	template class IFDFieldType<int32_t>;
+	template class IFDFieldType<Rational>;
+	template class IFDFieldType<uint8_t>;
+	template class IFDFieldType<uint16_t>;
+	template class IFDFieldType<uint32_t>;
+	template class IFDFieldType<URational>;
+	template class IFDFieldType<float>;
+	template class IFDFieldType<double>;
+
 	IFDFieldString::IFDFieldString() :
 		IFDFieldBase(IFDFieldFormat::AsciiString)
 	{
@@ -745,15 +756,4 @@ namespace UniformBitmap
 		ss.rdbuf()->pubsetbuf(reinterpret_cast<char*>(const_cast<uint8_t*>(TIFFData)), TIFFDataSize);
 		return ParseTIFFHeader(ss);
 	}
-
-	template class IFDFieldType<int8_t>;
-	template class IFDFieldType<int16_t>;
-	template class IFDFieldType<int32_t>;
-	template class IFDFieldType<Rational>;
-	template class IFDFieldType<uint8_t>;
-	template class IFDFieldType<uint16_t>;
-	template class IFDFieldType<uint32_t>;
-	template class IFDFieldType<URational>;
-	template class IFDFieldType<float>;
-	template class IFDFieldType<double>;
 }

@@ -135,6 +135,17 @@ namespace UniformBitmap
 		IFDFieldType(const std::vector<T>& Values);
 	};
 
+	extern template class IFDFieldType<int8_t>;
+	extern template class IFDFieldType<int16_t>;
+	extern template class IFDFieldType<int32_t>;
+	extern template class IFDFieldType<Rational>;
+	extern template class IFDFieldType<uint8_t>;
+	extern template class IFDFieldType<uint16_t>;
+	extern template class IFDFieldType<uint32_t>;
+	extern template class IFDFieldType<URational>;
+	extern template class IFDFieldType<float>;
+	extern template class IFDFieldType<double>;
+
 	class IFDFieldString : public IFDFieldBase
 	{
 	public:
@@ -148,17 +159,6 @@ namespace UniformBitmap
 		IFDFieldString(const IFDFieldString& c) = default;
 		bool operator==(const IFDFieldString& other) const = default;
 	};
-
-	extern template class IFDFieldType<int8_t>;
-	extern template class IFDFieldType<int16_t>;
-	extern template class IFDFieldType<int32_t>;
-	extern template class IFDFieldType<Rational>;
-	extern template class IFDFieldType<uint8_t>;
-	extern template class IFDFieldType<uint16_t>;
-	extern template class IFDFieldType<uint32_t>;
-	extern template class IFDFieldType<URational>;
-	extern template class IFDFieldType<float>;
-	extern template class IFDFieldType<double>;
 
 	struct IFD
 	{
