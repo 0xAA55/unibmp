@@ -360,7 +360,7 @@ namespace CPPGIF
 						CodeTable.push_back(CodesToAdd);
 					}
 
-					if (CodeTable.size() == CurCodeMaxVal)
+					if (CodeTable.size() - 1 == CurCodeMaxVal)
 					{
 						CurCodeSize++;
 						if (CurCodeSize > MaxCodeSize) 
@@ -384,19 +384,6 @@ namespace CPPGIF
 		{
 			throw MoreDataNeeded("GIF: LZW decompressing: expected more bytes/bits to read, got end of data.");
 		}
-
-
-
-
-
-
-
-
-
-
-
-
-
 		return Output;
 	}
 
@@ -567,7 +554,6 @@ namespace CPPGIF
 				{
 				case 0x01: PlainTextExtension.push_back(PlainTextExtensionType(is)); break;
 				case 0x2C: throw UnexpectedData(std::string("GIF: Read error: got an unexpectd Image Descriptor (0x2C) here."));
-				case 0x3B: ReadToTrailer = true; break;
 				case 0xF9: GraphicControlExtension.push_back(GraphicControlExtensionType(is)); break;
 				case 0xFE: CommentExtension.push_back(CommentExtensionType(is)); break;
 				case 0xFF: ApplicationExtension.push_back(ApplicationExtensionType(is)); break;
@@ -580,6 +566,7 @@ namespace CPPGIF
 					} while (0);
 				}
 				break;
+			case 0x3B: ReadToTrailer = true; break;
 			default:
 				do
 				{
