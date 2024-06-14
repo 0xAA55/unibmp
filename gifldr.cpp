@@ -87,48 +87,18 @@ namespace CPPGIF
 		return LogicalScreenDescriptor.GetGlobalColorTable();
 	}
 
-	DataSubBlock::DataSubBlock(const uint8_t* src, uint8_t count)
-	{
-		if (!src) throw std::invalid_argument("GIF DataSubBlock::DataSubBlock(): Null pointer given.");
-		
-		if (count) 
-		{
-			resize(count);
-			memcpy(&front(), src, count);
-		}
-	}
-
-	uint8_t DataSubBlock::GetBlockSize() const
-	{
-		auto BlockSize = size();
-		if (BlockSize > 255) throw std::runtime_error(std::string("GIF: misconstructed `DataSubBlock` with data size = ") + std::to_string(BlockSize));
-		return uint8_t(BlockSize);
-	}
-
-	DataSubBlock::DataSubBlock(std::istream& is)
+	static DataSubBlock ReadDataSubBlock(std::istream& is)
 	{
 		auto BlockSize = uint8_t(0);
+		auto ret = DataSubBlock();
 		Read(is, BlockSize);
-		if (BlockSize) Read(is, &front(), BlockSize);
-	}
-
-	DataSubBlock::DataSubBlock(std::istream& is, uint8_t BlockSize)
-	{
-		if (BlockSize)
+		while(BlockSize)
 		{
-			resize(BlockSize);
-			Read(is, &front(), BlockSize);
+			size_t i = ret.size();
+			ret.resize(i + BlockSize);
+			Read(is, &ret[i], BlockSize);
+			Read(is, BlockSize);
 		}
-	}
-
-	std::vector<DataSubBlock> DataSubBlock::ReadDataSubBlocks(std::istream& is)
-	{
-		auto BlockSize = uint8_t(0);
-		auto ret = std::vector<DataSubBlock>();
-		do
-		{
-			ret.push_back(DataSubBlock(is));
-		} while (ret.back().GetBlockSize());
 		return ret;
 	}
 
@@ -317,7 +287,7 @@ namespace CPPGIF
 	GraphicControlExtensionType::GraphicControlExtensionType(uint8_t BlockSize, uint8_t Bitfields, uint16_t DelayTime, uint8_t TransparentColorIndex, DataSubBlock* SubBlock_Optional) :
 		BlockSize(BlockSize), Bitfields(Bitfields), DelayTime(DelayTime), TransparentColorIndex(TransparentColorIndex)
 	{
-		if (SubBlock_Optional) SubBlock = *SubBlock_Optional;
+		if (SubBlock_Optional) SubBlockData = *SubBlock_Optional;
 	}
 
 	GraphicControlExtensionType::GraphicControlExtensionType(std::istream& is)
@@ -326,7 +296,7 @@ namespace CPPGIF
 		Read(is, Bitfields);
 		Read(is, DelayTime);
 		Read(is, TransparentColorIndex);
-		SubBlocks = DataSubBlock::ReadDataSubBlocks(is);
+		SubBlockData = ReadDataSubBlock(is);
 	}
 
 	ApplicationExtensionType::ApplicationExtensionType(char Identifier[8], char AuthenticationCode[3], std::vector<DataSubBlock> ApplicationData) :

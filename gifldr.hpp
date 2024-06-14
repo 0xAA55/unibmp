@@ -29,24 +29,7 @@ namespace CPPGIF
 	constexpr size_t MaxColorTableItems = 256;
 	using ColorTableArray = std::array<ColorTableItem, MaxColorTableItems>;
 
-	struct DataSubBlock : public std::vector<uint8_t>
-	{
-	public:
-		using std::vector<uint8_t>::vector;
-
-		DataSubBlock(const uint8_t* src, uint8_t count);
-
-		uint8_t GetBlockSize() const;
-
-	public:
-		DataSubBlock(std::istream& is);
-		DataSubBlock(std::istream& is, uint8_t BlockSize);
-
-		using DataSubBlocks = std::vector<DataSubBlock>;
-		static DataSubBlocks ReadDataSubBlocks(std::istream& is);
-	};
-
-	using DataSubBlocks = DataSubBlock::DataSubBlocks;
+	using DataSubBlock = std::vector<uint8_t>;
 
 	struct LogicalScreenDescriptorType
 	{ // LogicalScreenDescriptor
@@ -86,7 +69,7 @@ namespace CPPGIF
 		uint16_t Height = 0;
 		uint8_t Bitfields = 0;
 		std::shared_ptr<ColorTableArray> LocalColorTable = nullptr;
-		DataSubBlocks ImageData;
+		DataSubBlock ImageData;
 
 	public:
 		ImageDescriptorType() = default;
@@ -118,7 +101,7 @@ namespace CPPGIF
 		uint8_t Bitfields = 0;
 		uint16_t DelayTime = 0;
 		uint8_t TransparentColorIndex = 0;
-		DataSubBlocks SubBlocks;
+		DataSubBlock SubBlockData;
 		std::vector<ImageDescriptorType> ImageDescriptors;
 
 	public:
@@ -179,11 +162,10 @@ namespace CPPGIF
 		// 逻辑屏幕描述符
 		LogicalScreenDescriptorType LogicalScreenDescriptor;
 
-
-
 		std::shared_ptr<GraphicControlExtensionType> GraphicControlExtension;
-		std::shared_ptr<ApplicationExtensionType> ApplicationExtension;
 
+		std::shared_ptr<CommentExtensionType> CommentExtension;
+		std::shared_ptr<ApplicationExtensionType> ApplicationExtension;
 
 	public:
 		GIFLoader(const std::string& LoadFrom);
