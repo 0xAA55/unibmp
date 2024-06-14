@@ -147,7 +147,7 @@ namespace UniformBitmap
 		// 创建空的缓冲区
 		void CreateBuffer(uint32_t w, uint32_t h);
 
-		// 从 BMP 加载
+		// 从图像文件加载
 		void LoadBmp(std::string FilePath);
 
 	public:
