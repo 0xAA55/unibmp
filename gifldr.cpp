@@ -4,6 +4,11 @@
 #include <unordered_map>
 namespace CPPGIF
 {
+	EncodeError::EncodeError(const std::string& what) noexcept :
+		std::runtime_error(what)
+	{
+	}
+
 	DecodeError::DecodeError(const std::string& what) noexcept :
 		std::runtime_error(what)
 	{
