@@ -64,7 +64,7 @@ namespace UniformBitmap
 	{
 	public:
 		IFDFieldFormat Type = IFDFieldFormat::Unknown;
-		union
+		union LiteralType
 		{
 			uint8_t UByte;
 			uint16_t UShort;
@@ -76,7 +76,8 @@ namespace UniformBitmap
 			Rational SRational;
 			float Float;
 			double Double;
-		} Literal = {};
+		};
+		LiteralType Literal = {};
 		std::string String;
 		std::vector<uint8_t> UnknownData;
 
@@ -84,6 +85,7 @@ namespace UniformBitmap
 		IFDField(const IFDField& c) = default;
 		bool operator==(const IFDField& other) const;
 
+		IFDField(IFDFieldFormat Type);
 		IFDField(IFDFieldFormat Type, int32_t Number);
 		IFDField(IFDFieldFormat Type, uint32_t Number);
 		IFDField(IFDFieldFormat Type, double Number);

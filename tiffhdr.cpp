@@ -246,9 +246,11 @@ namespace UniformBitmap
 		}
 	}
 
-
-	IFDField::IFDField(IFDFieldFormat Type, int32_t Number) :
+	IFDField::IFDField(IFDFieldFormat Type) :
 		Type(Type)
+	{}
+	IFDField::IFDField(IFDFieldFormat Type, int32_t Number) :
+		IFDField(Type)
 	{
 		switch (Type)
 		{
@@ -262,7 +264,7 @@ namespace UniformBitmap
 		}
 	}
 	IFDField::IFDField(IFDFieldFormat Type, uint32_t Number) :
-		Type(Type)
+		IFDField(Type)
 	{
 		switch (Type)
 		{
@@ -276,7 +278,7 @@ namespace UniformBitmap
 		}
 	}
 	IFDField::IFDField(IFDFieldFormat Type, double Number) :
-		Type(Type)
+		IFDField(Type)
 	{
 		switch (Type)
 		{
@@ -286,12 +288,12 @@ namespace UniformBitmap
 		}
 	}
 	IFDField::IFDField(const Rational& Rational) :
-		Type(IFDFieldFormat::SRational)
+		IFDField(IFDFieldFormat::SRational)
 	{
 		Literal.SRational = Rational;
 	}
 	IFDField::IFDField(const URational& URational) :
-		Type(IFDFieldFormat::URational)
+		IFDField(IFDFieldFormat::URational)
 	{
 		Literal.URational = URational;
 	}
@@ -422,7 +424,28 @@ namespace UniformBitmap
 			return (sizeof r);
 		}
 
-		template<typename T> requires std::is_integral_v<T> && (!std::is_same_v<T, bool>)
+		size_t ReadSZ(std::string& s)
+		{
+			std::stringstream ss;
+			size_t RB = 0;
+			for(;;)
+			{
+				char c;
+				RB += ReadRaw(c);
+				if (!c) break;
+				else ss << c;
+			}
+			s = ss.str();
+			return RB;
+		}
+
+		size_t ReadBytes(std::vector<uint8_t>& r, size_t BytesToRead)
+		{
+			ifs.read(reinterpret_cast<char*>(&r[0]), BytesToRead);
+			return BytesToRead;
+		}
+
+		template<typename T> requires (std::is_integral_v<T> || std::is_floating_point_v<T>) && (!std::is_same_v<T, bool>)
 		size_t Read(T& r)
 		{
 			auto ret = ReadRaw(r);
@@ -448,10 +471,11 @@ namespace UniformBitmap
 		try
 		{
 			TIFFHeader ret;
+			auto spos = ifs.tellg();
 
 			uint32_t II_MM;
 			RB += ReadRaw(II_MM);
-			switch (RB)
+			switch (II_MM)
 			{
 			case 0x2A004949: IsMotorola = false; break;
 			case 0x2A004D4D: IsMotorola = true; break;
@@ -460,8 +484,45 @@ namespace UniformBitmap
 
 			uint32_t OffsetOfIFD;
 			RB += Read(OffsetOfIFD);
+			ifs.seekg(spos, std::ios::beg);
+			ifs.seekg(OffsetOfIFD, std::ios::cur);
 
+			uint16_t NumFields;
+			RB += Read(NumFields);
+			for (size_t i = 0; i < NumFields; i++)
+			{
+				uint16_t TagType;
+				RB += Read(TagType);
 
+				uint16_t TagVarType; // ¶ÔÓ¦IFDFieldFormat
+				RB += Read(TagVarType);
+
+				uint32_t NumComponents;
+				RB += Read(NumComponents);
+
+				auto field = IFDField(IFDFieldFormat(TagVarType));
+				switch (IFDFieldFormat(TagVarType))
+				{
+				case IFDFieldFormat::SByte: RB += Read(field.Literal.SByte); break;
+				case IFDFieldFormat::SShort: RB += Read(field.Literal.SShort); break;
+				case IFDFieldFormat::SLong: RB += Read(field.Literal.SLong); break;
+				case IFDFieldFormat::SRational:
+					RB += Read(field.Literal.SRational.Numerator);
+					RB += Read(field.Literal.SRational.Denominator);
+					break;
+				case IFDFieldFormat::UByte: RB += Read(field.Literal.UByte); break;
+				case IFDFieldFormat::UShort: RB += Read(field.Literal.UShort); break;
+				case IFDFieldFormat::ULong: RB += Read(field.Literal.ULong); break;
+				case IFDFieldFormat::URational:
+					RB += Read(field.Literal.URational.Numerator);
+					RB += Read(field.Literal.URational.Denominator);
+					break;
+				case IFDFieldFormat::Float: RB += Read(field.Literal.Float); break;
+				case IFDFieldFormat::Double: RB += Read(field.Literal.Double); break;
+				case IFDFieldFormat::AsciiString: RB += ReadSZ(field.String);
+				case IFDFieldFormat::Undefined: RB += ReadBytes(field.UnknownData, NumComponents);
+				}
+			}
 		}
 		catch (const std::ios::failure& e)
 		{
