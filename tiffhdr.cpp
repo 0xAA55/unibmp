@@ -438,7 +438,6 @@ namespace UniformBitmap
 	protected:
 		std::istream& ifs;
 		bool IsMotorola = false;
-		size_t RB = 0;
 
 		template<typename T>
 		size_t ReadRaw(T& r)
@@ -466,7 +465,6 @@ namespace UniformBitmap
 		size_t ReadBytes(std::vector<uint8_t>& r, size_t BytesToRead)
 		{
 			ifs.read(reinterpret_cast<char*>(&r[0]), BytesToRead);
-			RB += BytesToRead;
 			return BytesToRead;
 		}
 
@@ -495,7 +493,6 @@ namespace UniformBitmap
 			{
 				uint32_t Offset;
 				auto ret = Read(Offset);
-				auto CurRB = RB;
 				auto CurPos = ifs.tellg();
 				ifs.seekg(Offset, std::ios::beg);
 				for (size_t i = 0; i < NumComponents; i++)
@@ -503,7 +500,6 @@ namespace UniformBitmap
 					Read(ReadInto[i]);
 				}
 				ifs.seekg(CurPos, std::ios::beg);
-				RB = CurRB;
 				return ret;
 			}
 			else
@@ -534,7 +530,6 @@ namespace UniformBitmap
 			else
 			{
 				ifs.read(reinterpret_cast<char*>(&s[0]), Length);
-				RB += Length;
 			}
 			return Length;
 		}
@@ -544,11 +539,9 @@ namespace UniformBitmap
 			uint32_t Offset;
 			auto ret = Read(Offset);
 			auto CurPos = ifs.tellg();
-			auto CurRB = RB;
 			ifs.seekg(Offset, std::ios::beg);
 			ReadSZ(s);
 			ifs.seekg(CurPos, std::ios::beg);
-			RB = CurRB;
 			return ret;
 		}
 
