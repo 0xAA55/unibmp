@@ -282,16 +282,25 @@ namespace UniformBitmap
 	template Pixel_RGBA32F::Pixel_RGBA(const Pixel_RGBA32F& from);
 
 	template<typename PixelType>
-	Point<PixelType>::Point(uint32_t x, uint32_t y, PixelType& p) : x(x), y(y), Pixel(p)
+	Point<PixelType>::Point(uint32_t x, uint32_t y) : x(x), y(y)
 	{}
 	template<typename PixelType>
-	bool Point<PixelType>::operator == (const Point& p) const
+	size_t Point<PixelType>::Hash::operator()(const Point<PixelType>& p) const
+	{
+		return p.x + size_t(p.y << 6);
+	}
+
+	template<typename PixelType>
+	PixelRef<PixelType>::PixelRef(uint32_t x, uint32_t y, PixelType& p) : x(x), y(y), Pixel(p)
+	{}
+	template<typename PixelType>
+	bool PixelRef<PixelType>::operator == (const PixelRef& p) const
 	{
 		return &Pixel == &p.Pixel;
 	}
 
 	template<typename PixelType>
-	size_t PointHash<PixelType>::operator()(const Point<PixelType>& p) const
+	size_t PixelRef<PixelType>::Hash::operator()(const PixelRef<PixelType>& p) const
 	{
 		return reinterpret_cast<size_t>(&p.Pixel);
 	}
@@ -301,10 +310,10 @@ namespace UniformBitmap
 	template Point<Pixel_RGBA32>;
 	template Point<Pixel_RGBA32F>;
 
-	template PointHash<Pixel_RGBA8>;
-	template PointHash<Pixel_RGBA16>;
-	template PointHash<Pixel_RGBA32>;
-	template PointHash<Pixel_RGBA32F>;
+	template PixelRef<Pixel_RGBA8>;
+	template PixelRef<Pixel_RGBA16>;
+	template PixelRef<Pixel_RGBA32>;
+	template PixelRef<Pixel_RGBA32F>;
 
 	enum BitmapCompression
 	{

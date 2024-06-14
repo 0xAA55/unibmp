@@ -85,15 +85,14 @@ namespace UniformBitmap
 	struct Point
 	{
 		uint32_t x, y;
-		PixelType& Pixel;
 		Point() = delete;
-		Point(uint32_t x, uint32_t y, PixelType& p);
-		bool operator == (const Point& p) const;
-	};
-	template<typename PixelType>
-	struct PointHash
-	{
-		size_t operator()(const Point<PixelType>& p) const;
+		Point(uint32_t x, uint32_t y);
+		bool operator == (const Point& p) const = default;
+
+		struct Hash
+		{
+			size_t operator()(const Point<PixelType>& p) const;
+		};
 	};
 
 	extern template Point<Pixel_RGBA8>;
@@ -101,10 +100,25 @@ namespace UniformBitmap
 	extern template Point<Pixel_RGBA32>;
 	extern template Point<Pixel_RGBA32F>;
 
-	extern template PointHash<Pixel_RGBA8>;
-	extern template PointHash<Pixel_RGBA16>;
-	extern template PointHash<Pixel_RGBA32>;
-	extern template PointHash<Pixel_RGBA32F>;
+	template<typename PixelType>
+	struct PixelRef
+	{
+		uint32_t x, y;
+		PixelType& Pixel;
+		PixelRef() = delete;
+		PixelRef(uint32_t x, uint32_t y, PixelType& p);
+		bool operator == (const PixelRef& p) const;
+
+		struct Hash
+		{
+			size_t operator()(const PixelRef<PixelType>& p) const;
+		};
+	};
+
+	extern template PixelRef<Pixel_RGBA8>;
+	extern template PixelRef<Pixel_RGBA16>;
+	extern template PixelRef<Pixel_RGBA32>;
+	extern template PixelRef<Pixel_RGBA32F>;
 
 	template<typename PixelType> class Image;
 	using Image_RGBA8 = Image<Pixel_RGBA8>;
@@ -136,8 +150,8 @@ namespace UniformBitmap
 
 	public:
 		using ChannelType = PixelType::ChannelType;
-		using Point = Point<PixelType>;
-		using PointHash = PointHash<PixelType>;
+		using Point = PixelRef<PixelType>;
+		using PointHash = Point::Hash;
 		using FloodFillEdgeType = std::unordered_set<Point, PointHash>;
 
 		inline uint32_t GetWidth() const { return Width; }
