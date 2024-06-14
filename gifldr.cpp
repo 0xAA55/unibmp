@@ -310,7 +310,7 @@ namespace CPPGIF
 			}
 		};
 
-		auto UnpackedCodes = LZWCodeUnpackedVectorType();
+		// auto UnpackedCodes = LZWCodeUnpackedVectorType();
 
 		auto CodeTable = CodeTableType(LZW_MinCodeSize);
 		bool DoFirstStep = true;
@@ -360,7 +360,7 @@ namespace CPPGIF
 					CurCode >>= MaxUnpackedBits - CurCodeSize; // 将堆积到高位的数值移回本来的位置
 
 					// 为调试：记录每个 Code 值
-					UnpackedCodes.push_back(CurCode);
+					// UnpackedCodes.push_back(CurCode);
 
 					if (ExpectCC && CurCode != CodeTable.ClearCode)
 					{
