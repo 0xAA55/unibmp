@@ -231,6 +231,8 @@ namespace CPPGIF
 	{
 		auto ret = DataSubBlock();
 
+		auto ClearCode = uint8_t(1 << LZW_MinCodeSize);
+		auto EOI = ClearCode + 1;
 
 
 
@@ -240,6 +242,11 @@ namespace CPPGIF
 	const ColorTableArray& ImageDescriptorType::GetLocalColorTable() const
 	{
 		return *LocalColorTable;
+	}
+
+	const DataSubBlock& ImageDescriptorType::GetImageData() const
+	{
+		return ImageData;
 	}
 
 	GraphicControlExtensionType::GraphicControlExtensionType(uint8_t BlockSize, uint8_t Bitfields, uint16_t DelayTime, uint8_t TransparentColorIndex, DataSubBlock* SubBlock_Optional) :
