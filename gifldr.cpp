@@ -280,16 +280,50 @@ namespace CPPGIF
 		};
 
 		// 先把 LZW 的字节序列以动态位数长度的编码转变为定长的编码。
-		auto FirstCodeSize = LZW_MinCodeSize + 1;
-		auto CurCodeSize = FirstCodeSize;
-		auto MaxCodeSize = 12;
 		auto LZWCodeUnpacked = LZWCodeUnpackedVectorType();
+		auto FirstCodeSize = LZW_MinCodeSize + 1;
+		auto MaxCodeSize = 12;
 		auto CurCode = LZWCodeUnpackedType(0);
-		auto CurBitsNeeded = FirstCodeSize;
-		auto CurBitsAdded = 0;
-		for (size_t i = 0; i < Compressed.size(); i++)
-		{
+		auto CurCodeSize = FirstCodeSize;
+		auto CurCodeMaxVal = (1 << CurCodeSize) - 1;
 
+		auto CurCodeBitsNeeded = CurCodeSize;
+		for (size_t i = 0; i < Compressed.size();)
+		{
+			auto CurByte = LZWCodeUnpackedType(Compressed[i]);
+			auto CurByteRemains = 8;
+			while(CurByteRemains)
+			{
+				auto BitsToGet = CurCodeBitsNeeded;
+				if (BitsToGet > CurByteRemains) BitsToGet = CurByteRemains;
+				auto BitsMask = (1 << BitsToGet) - 1;
+				CurCode <<= BitsToGet;
+				CurCode |= (CurByte & BitsMask);
+				CurByte >>= BitsToGet;
+				CurByteRemains -= BitsToGet;
+				CurCodeBitsNeeded -= BitsToGet;
+				if (!CurByteRemains)
+				{
+					i++;
+					if (i >= Compressed.size()) break;
+				}
+				if (!CurCodeBitsNeeded)
+				{ // 全部位数获取完
+					LZWCodeUnpacked.push_back(CurCode);
+					if (CurCode == CurCodeMaxVal)
+					{
+						CurCodeSize++;
+						if (CurCodeSize > MaxCodeSize) CurCodeSize = FirstCodeSize;
+						CurCodeMaxVal = (1 << CurCodeSize) - 1;
+					}
+					CurCodeBitsNeeded = CurCodeSize;
+					CurCode = 0;
+				}
+			}
+		}
+		if (CurCodeBitsNeeded)
+		{
+			throw MoreDataNeeded("GIF: LZW decompressing: expected more bytes/bits to read, got end of data.");
 		}
 
 		auto CodeTable = CodeTableType(LZW_MinCodeSize);
