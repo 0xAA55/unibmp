@@ -33,7 +33,7 @@ namespace CPPGIF
 
 	const LSD_Type& GIFLoader::GetLogicalScreenDescriptor() const
 	{
-
+		return LogicalScreenDescriptor;
 	}
 
 	LSD_Type::LSD_Type(uint16_t LogicalScreenWidth, uint16_t LogicalScreenHeight, uint8_t Bitfields, uint8_t BackgroundColorIndex, std::shared_ptr<ColorTableArray> GlobalColorTable) :
