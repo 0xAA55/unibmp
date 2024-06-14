@@ -60,24 +60,45 @@ namespace UniformBitmap
 		operator std::string() const;
 	};
 
-	class IFDField
+	class LiteralTypeBase
 	{
 	public:
 		IFDFieldFormat Type = IFDFieldFormat::Unknown;
-		union LiteralType
-		{
-			uint8_t UByte;
-			uint16_t UShort;
-			uint32_t ULong;
-			URational URational;
-			int8_t SByte;
-			int16_t SShort;
-			int32_t SLong;
-			Rational SRational;
-			float Float;
-			double Double;
-		};
-		LiteralType Literal = {};
+	};
+
+	template<typename T>
+	class LiteralType : public LiteralTypeBase
+	{
+	public:
+		std::vector<T> Components;
+	};
+
+	using LiteralBytes = LiteralType<int8_t>;
+	using LiteralShorts = LiteralType<int16_t>;
+	using LiteralLongs = LiteralType<int32_t>;
+	using LiteralRationals = LiteralType<Rational>;
+	using LiteralUBytes = LiteralType<uint8_t>;
+	using LiteralUShorts = LiteralType<uint16_t>;
+	using LiteralULongs = LiteralType<uint32_t>;
+	using LiteralURationals = LiteralType<URational>;
+	using LiteralFloats = LiteralType<float>;
+	using LiteralDoubles = LiteralType<double>;
+
+	extern template class LiteralType<int8_t>;
+	extern template class LiteralType<int16_t>;
+	extern template class LiteralType<int32_t>;
+	extern template class LiteralType<Rational>;
+	extern template class LiteralType<uint8_t>;
+	extern template class LiteralType<uint16_t>;
+	extern template class LiteralType<uint32_t>;
+	extern template class LiteralType<URational>;
+	extern template class LiteralType<float>;
+	extern template class LiteralType<double>;
+
+	class IFDField
+	{
+	public:
+		std::shared_ptr<LiteralTypeBase> Literal = nullptr;
 		std::string String;
 		std::vector<uint8_t> UnknownData;
 

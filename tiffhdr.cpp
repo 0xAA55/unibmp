@@ -500,6 +500,8 @@ namespace UniformBitmap
 				uint32_t NumComponents;
 				RB += Read(NumComponents);
 
+				// TODO：根据 NumComponents 的数量读取全部 Components
+
 				auto field = IFDField(IFDFieldFormat(TagVarType));
 				switch (IFDFieldFormat(TagVarType))
 				{
@@ -550,4 +552,15 @@ namespace UniformBitmap
 		ss.rdbuf()->pubsetbuf(reinterpret_cast<char*>(const_cast<uint8_t*>(TIFFData)), TIFFDataSize);
 		return ParseTIFFHeader(ss);
 	}
+
+	template class LiteralType<int8_t>;
+	template class LiteralType<int16_t>;
+	template class LiteralType<int32_t>;
+	template class LiteralType<Rational>;
+	template class LiteralType<uint8_t>;
+	template class LiteralType<uint16_t>;
+	template class LiteralType<uint32_t>;
+	template class LiteralType<URational>;
+	template class LiteralType<float>;
+	template class LiteralType<double>;
 }
