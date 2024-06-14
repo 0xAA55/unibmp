@@ -246,7 +246,9 @@ namespace CPPGIF
 		// https://giflib.sourceforge.net/whatsinagif/lzw_image_data.html
 		auto LZW_MinCodeSize = uint8_t(0);
 		Read(is, LZW_MinCodeSize);
-		ImageData = UncompressLZW(ReadDataSubBlock(is), LZW_MinCodeSize);
+		std::cout << "LZW: 0x" << std::hex << is.tellg() << "\n";
+		auto LZW_Data = ReadDataSubBlock(is);
+		ImageData = UncompressLZW(LZW_Data, LZW_MinCodeSize);
 	}
 
 	DataSubBlock ImageDescriptorType::UncompressLZW(const DataSubBlock& Compressed, uint8_t LZW_MinCodeSize)
