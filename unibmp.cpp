@@ -285,7 +285,7 @@ namespace UniformBitmap
 	template<typename PixelType>
 	size_t Point<PixelType>::Hash::operator()(const Point<PixelType>& p) const
 	{
-		return p.x + size_t(p.y << 6);
+		return p.x + (size_t(p.y) << 6);
 	}
 
 	template<typename PixelType>
