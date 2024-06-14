@@ -380,9 +380,9 @@ namespace CPPGIF
 					if (ExpectCC && CurCode != CodeTable.ClearCode)
 					{
 						char buf[256];
-						snprintf(buf, sizeof buf, "GIF decompression: expect Clear Code, got 0x%04X\n", CurCode);
+						snprintf(buf, sizeof buf, "GIF decompression: expect Clear Code, got 0x%04X", CurCode);
 						throw UnexpectedData(buf);
-						// std::cerr << buf;
+						// std::cerr << buf << "\n";
 					}
 					if (CurCode == CodeTable.ClearCode)
 					{
