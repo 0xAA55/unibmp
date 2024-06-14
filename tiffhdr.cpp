@@ -437,7 +437,21 @@ namespace UniformBitmap
 	{
 	protected:
 		std::istream& ifs;
+		std::streampos BaseOffset;
 		bool IsMotorola = false;
+		TIFFHeader Parsed;
+
+		void RewindToBase()
+		{
+			ifs.seekg(BaseOffset, std::ios::beg);
+		}
+
+		template<typename T>
+		void SeekToOffset(const T& Offset)
+		{
+			RewindToBase();
+			ifs.seekg(Offset, std::ios::cur);
+		}
 
 		template<typename T>
 		size_t ReadRaw(T& r)
@@ -494,7 +508,7 @@ namespace UniformBitmap
 				uint32_t Offset;
 				auto ret = Read(Offset);
 				auto CurPos = ifs.tellg();
-				ifs.seekg(Offset, std::ios::beg);
+				SeekToOffset(Offset);
 				for (size_t i = 0; i < NumComponents; i++)
 				{
 					Read(ReadInto[i]);
@@ -522,7 +536,7 @@ namespace UniformBitmap
 				uint32_t Offset;
 				auto ret = Read(Offset);
 				auto CurPos = ifs.tellg();
-				ifs.seekg(Offset, std::ios::beg);
+				SeekToOffset(Offset);
 				ifs.read(reinterpret_cast<char*>(&s[0]), Length);
 				ifs.seekg(CurPos, std::ios::beg);
 				return ret;
@@ -539,7 +553,7 @@ namespace UniformBitmap
 			uint32_t Offset;
 			auto ret = Read(Offset);
 			auto CurPos = ifs.tellg();
-			ifs.seekg(Offset, std::ios::beg);
+			SeekToOffset(Offset);
 			ReadSZ(s);
 			ifs.seekg(CurPos, std::ios::beg);
 			return ret;
@@ -604,25 +618,11 @@ namespace UniformBitmap
 			return ret;
 		}
 
-	public:
-		TIFFParser() = delete;
-		TIFFParser(std::istream& ifs) : ifs(ifs)
-		{
-			try
-			{
-				ifs.exceptions(std::ios::failbit | std::ios::badbit);
-			}
-			catch (const std::ios::failure& e)
-			{
-				throw ReadDataError(std::string("Invalid data input, ") + e.what());
-			}
-		}
 
-		TIFFHeader Parse()
+		void Parse()
 		try
 		{
-			TIFFHeader ret;
-			auto spos = ifs.tellg();
+			BaseOffset = ifs.tellg();
 
 			uint32_t II_MM;
 			ReadRaw(II_MM);
@@ -635,16 +635,33 @@ namespace UniformBitmap
 
 			uint32_t OffsetOfIFD;
 			Read(OffsetOfIFD);
-			ifs.seekg(spos, std::ios::beg);
-			ifs.seekg(OffsetOfIFD, std::ios::cur);
+			SeekToOffset(OffsetOfIFD);
 
-			ret.push_back(ParseIFD());
-
-			return ret;
+			Parsed.push_back(ParseIFD());
 		}
 		catch (const std::ios::failure& e)
 		{
 			throw ReadDataError(std::string("Read data failed, ") + e.what());
+		}
+
+	public:
+		TIFFParser() = delete;
+		TIFFParser(std::istream& ifs) : ifs(ifs)
+		{
+			try
+			{
+				ifs.exceptions(std::ios::failbit | std::ios::badbit);
+				Parse();
+			}
+			catch (const std::ios::failure& e)
+			{
+				throw ReadDataError(std::string("Invalid data input, ") + e.what());
+			}
+		}
+
+		const TIFFHeader& GetParsed() const
+		{
+			return Parsed;
 		}
 	};
 
@@ -658,8 +675,7 @@ namespace UniformBitmap
 
 	TIFFHeader ParseTIFFHeader(std::istream& ifs)
 	{
-		auto parser = TIFFParser(ifs);
-		return parser.Parse();
+		return TIFFParser(ifs).GetParsed();
 	}
 
 	TIFFHeader ParseTIFFHeader(const uint8_t* TIFFData, size_t& TIFFDataSize)
