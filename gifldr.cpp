@@ -320,7 +320,7 @@ namespace CPPGIF
 
 		public:
 			uint8_t CurCodeSize;
-			CodeStreamType Debug_CodeStream;
+			// CodeStreamType Debug_CodeStream;
 
 			CodeStreamEncoder() = delete;
 			CodeStreamEncoder(int InitCodeSize) : CurCodeSize(InitCodeSize)
@@ -349,7 +349,7 @@ namespace CPPGIF
 			void Encode(CodeType Code)
 			{
 				if (Code > CurCodeSizeMaxValue()) throw EncodeError(std::string("Unexpected code ") + std::to_string(Code) + " that's beyond the current max value of " + std::to_string(CurCodeSizeMaxValue()));
-				Debug_CodeStream.push_back(Code); 
+				// Debug_CodeStream.push_back(Code); 
 				int BitsToEncode = CurCodeSize;
 				while (BitsToEncode)
 				{
@@ -369,11 +369,6 @@ namespace CPPGIF
 						BitsToEncode -= BitsCanEncode;
 					}
 				}
-			}
-
-			void Encode(const CodeStreamType& cs)
-			{
-				for (auto& c : cs) Encode(c);
 			}
 
 			uint8_t& IncreaseCodeSize()
@@ -411,6 +406,7 @@ namespace CPPGIF
 			}
 		};
 
+		constexpr auto MaxCodeSize = 12;
 		const auto FirstCodeSize = LZW_MinCodeSize + 1;
 		auto Encoder = CodeStreamEncoder(FirstCodeSize);
 		auto CodeTable = CodaTableType(LZW_MinCodeSize);
@@ -433,18 +429,19 @@ namespace CPPGIF
 				CodeTable[CurIndexBuffer] = CodeType(CodeTable.size());
 				CurIndexBuffer.pop_back();
 				Encoder.Encode(CodeTable.at(CurIndexBuffer));
+				CurIndexBuffer = { Index };
+
 				auto MaxCode = Encoder.CurCodeSizeMaxValue();
-				if (CodeTable.size() == MaxCode)
+				if (CodeTable.size() - 1 >= MaxCode)
 				{
 					Encoder.IncreaseCodeSize();
-					if (Encoder.CurCodeSize > 12)
+					if (Encoder.CurCodeSize > MaxCodeSize)
 					{ // 要以 FirstCodeSize 编码 ClearCode
 						Encoder.CurCodeSize = FirstCodeSize;
 						Encoder.Encode(CodeTable.ClearCode);
 						CodeTable.InitCodeTable();
 					}
 				}
-				CurIndexBuffer = { Index };
 			}
 		}
 
