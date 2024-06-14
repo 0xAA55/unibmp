@@ -174,7 +174,7 @@ namespace UniformBitmap
 
 		Image(std::string FilePath);
 		Image(uint32_t Width, uint32_t Height, uint32_t XPelsPerMeter = 3000, uint32_t YPelsPerMeter = 3000);
-		Image(const Image& from) = default;
+		Image(const Image& from);
 		template<typename FromType> requires (!std::is_same_v<PixelType, FromType>)
 		Image(const Image<FromType>& from);
 

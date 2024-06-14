@@ -726,6 +726,23 @@ namespace UniformBitmap
 	}
 
 	template<typename PixelType>
+		Image<PixelType>::Image(const Image& from) :
+		Image(from.GetWidth(), from.GetHeight(), from.XPelsPerMeter, from.YPelsPerMeter)
+	{
+		IsHDR = false;
+		for (size_t y = 0; y < Height; y++)
+		{
+			auto srow = from.GetBitmapRowPtr(y);
+			auto drow = RowPointers[y];
+			for (size_t x = 0; x < Width; x++)
+			{
+				drow[x] = srow[x];
+			}
+		}
+		if (std::is_floating_point_v<ChannelType>) IsHDR = from.GetIsHDR();
+	}
+
+	template<typename PixelType>
 	template<typename FromType> requires (!std::is_same_v<PixelType, FromType>)
 	Image<PixelType>::Image(const Image<FromType>& from) :
 		Image(from.GetWidth(), from.GetHeight(), from.XPelsPerMeter, from.YPelsPerMeter)
