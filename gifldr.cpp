@@ -331,6 +331,8 @@ namespace CPPGIF
 					if (CurCode == CodeTable.ClearCode)
 					{
 						CodeTable.InitCodeTable();
+						CurCodeSize = FirstCodeSize;
+						CurCodeMaxVal = (1 << CurCodeSize) - 1;
 					}
 					else if (CurCode == CodeTable.EOICode)
 					{
@@ -365,6 +367,7 @@ namespace CPPGIF
 						CurCodeSize++;
 						if (CurCodeSize > MaxCodeSize) 
 						{
+							CodeTable.InitCodeTable();
 							CurCodeSize = FirstCodeSize;
 						}
 						CurCodeMaxVal = (1 << CurCodeSize) - 1;
