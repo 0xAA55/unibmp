@@ -161,9 +161,24 @@ namespace CPPGIF
 		return LogicalScreenHeight;
 	}
 
+	uint8_t LogicalScreenDescriptorType::GetBackgroundColorIndex() const
+	{
+		return BackgroundColorIndex;
+	}
+
+	uint8_t LogicalScreenDescriptorType::GetPixelAspectRatio() const
+	{
+		return PixelAspectRatio;
+	}
+
 	const ColorTableArray& LogicalScreenDescriptorType::GetGlobalColorTable() const
 	{
 		return *GlobalColorTable;
+	}
+
+	const ColorTableItem& LogicalScreenDescriptorType::GetBackgroundColor() const
+	{
+		return GetGlobalColorTable().at(BackgroundColorIndex);
 	}
 
 	ImageDescriptorType::ImageDescriptorType(uint16_t Left, uint16_t Top, uint16_t Width, uint16_t Height, uint8_t Bitfields, std::shared_ptr<ColorTableArray> LocalColorTable):
@@ -650,6 +665,7 @@ namespace CPPGIF
 	ImageAnim GIFLoader::ConvertToImageAnim() const
 	{
 		auto ret = ImageAnim(GetWidth(), GetHeight());
+		auto& BackgroundColor = LogicalScreenDescriptor.GetBackgroundColor();
 
 		for (auto& Graphic : GraphicControlExtension)
 		{

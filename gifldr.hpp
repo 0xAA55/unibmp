@@ -75,7 +75,10 @@ namespace CPPGIF
 
 		uint16_t GetLogicalScreenWidth() const;
 		uint16_t GetLogicalScreenHeight() const;
+		uint8_t GetBackgroundColorIndex() const;
+		uint8_t GetPixelAspectRatio() const;
 		const ColorTableArray& GetGlobalColorTable() const;
+		const ColorTableItem& GetBackgroundColor() const;
 
 	public:
 		LogicalScreenDescriptorType(std::istream& LoadFrom);
