@@ -519,10 +519,13 @@ namespace UniformBitmap
 			else
 			{
 				size_t ret = 0;
+				auto CurPos = ifs.tellg();
 				for (size_t i = 0; i < NumComponents; i++)
 				{
 					ret += Read(ReadInto[i]);
 				}
+				ifs.seekg(CurPos, std::ios::beg);
+				ifs.seekg(4, std::ios::cur);
 				return ret;
 			}
 		}
@@ -543,7 +546,10 @@ namespace UniformBitmap
 			}
 			else
 			{
+				auto CurPos = ifs.tellg();
 				ifs.read(reinterpret_cast<char*>(&s[0]), Length);
+				ifs.seekg(CurPos, std::ios::beg);
+				ifs.seekg(4, std::ios::cur);
 			}
 			return Length;
 		}
