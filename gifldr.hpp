@@ -216,9 +216,12 @@ namespace CPPGIF
 		std::vector<CommentExtensionType> CommentExtension;
 		std::vector<ApplicationExtensionType> ApplicationExtension;
 
+		std::string Name;
+
 	public:
 		GIFLoader(const std::string& LoadFrom);
-		GIFLoader(std::istream& LoadFrom);
+		GIFLoader(const std::string& LoadFrom, const std::string& Name);
+		GIFLoader(std::istream& LoadFrom, const std::string& Name);
 
 		const std::string& GetVersion() const;
 		const uint16_t GetWidth() const;
@@ -253,6 +256,7 @@ namespace CPPGIF
 
 	public:
 		std::vector<ImageAnimFrame> Frames;
+		std::string Name;
 
 	public:
 		ImageAnim(uint32_t Width, uint32_t Height);

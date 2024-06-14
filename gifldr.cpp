@@ -1,5 +1,6 @@
 ﻿#include "gifldr.hpp"
 
+#include <filesystem>
 #include <type_traits>
 #include <unordered_map>
 namespace CPPGIF
@@ -666,7 +667,7 @@ namespace CPPGIF
 
 	ImageAnimFrame GraphicControlExtensionType::ConvertToFrame(const GIFLoader& ldr) const
 	{
-		auto Img = ImageAnimFrame(ldr.GetWidth(), ldr.GetHeight(), Pixel_RGBA8(0, 0, 0, 0));
+		auto Img = ImageAnimFrame(ldr.GetWidth(), ldr.GetHeight(), Pixel_RGBA8(0, 0, 0, 0), "GIF file");
 
 		DrawToFrame(Img, ldr);
 
@@ -791,7 +792,8 @@ namespace CPPGIF
 		return ImageDescriptors;
 	}
 
-	GIFLoader::GIFLoader(const std::string& LoadFrom)
+	GIFLoader::GIFLoader(const std::string& LoadFrom) :
+		Name(std::filesystem::path(LoadFrom).filename().string())
 	{
 		std::ifstream ifs;
 		ifs.exceptions(std::ios::failbit | std::ios::badbit);
@@ -799,7 +801,14 @@ namespace CPPGIF
 		LoadGIF(ifs);
 	}
 
-	GIFLoader::GIFLoader(std::istream& LoadFrom)
+	GIFLoader::GIFLoader(const std::string& LoadFrom, const std::string& Name) :
+		GIFLoader(LoadFrom)
+	{
+		this->Name = Name;
+	}
+
+	GIFLoader::GIFLoader(std::istream& LoadFrom, const std::string& Name) :
+		Name(Name)
 	{
 		LoadGIF(LoadFrom);
 	}
@@ -953,7 +962,7 @@ namespace CPPGIF
 		auto numFrames = Frames.size();
 		auto CanvasW = TrueForVertical ? Width : Width * numFrames;
 		auto CanvasH = TrueForVertical ? Height * numFrames : Height;
-		auto Canvas = Image_RGBA8(uint32_t(CanvasW), uint32_t(CanvasH), Pixel_RGBA8(0, 0, 0, 0));
+		auto Canvas = Image_RGBA8(uint32_t(CanvasW), uint32_t(CanvasH), Pixel_RGBA8(0, 0, 0, 0), Name);
 
 		auto DrawX = 0;
 		auto DrawY = 0;
