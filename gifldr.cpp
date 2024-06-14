@@ -260,7 +260,7 @@ namespace CPPGIF
 		catch (const DecodeError& e)
 		{
 			std::cerr << "GIF: " << e.what() << "\n";
-			ImageData.resize(Width * Height);
+			// ImageData.resize(Width * Height);
 		}
 	}
 
