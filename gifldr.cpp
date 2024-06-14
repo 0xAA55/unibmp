@@ -431,8 +431,7 @@ namespace CPPGIF
 				Encoder.Encode(CodeTable.at(CurIndexBuffer));
 				CurIndexBuffer = { Index };
 
-				auto MaxCode = Encoder.CurCodeSizeMaxValue();
-				if (CodeTable.size() - 1 >= MaxCode)
+				if (CodeTable.size() - 2 == Encoder.CurCodeSizeMaxValue())
 				{
 					Encoder.IncreaseCodeSize();
 					if (Encoder.CurCodeSize > MaxCodeSize)
