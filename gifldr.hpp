@@ -37,6 +37,7 @@ namespace CPPGIF
 	// GIF 加载器的转换目标类
 	class ImageAnim;
 	class ImageAnimFrame;
+	class GIFLoader;
 
 	struct ColorTableItem
 	{
@@ -153,7 +154,7 @@ namespace CPPGIF
 	public:
 		GraphicControlExtensionType(std::istream& is);
 
-		Image_RGBA8 ConvertToImage() const;
+		Image_RGBA8 ConvertToImage(const GIFLoader& ldr) const;
 
 	protected:
 		void DrawImageDesc(Image_RGBA8& DrawTo, const ImageDescriptorType& ImgDesc) const;
@@ -223,10 +224,13 @@ namespace CPPGIF
 
 	class ImageAnimFrame : public Image_RGBA8
 	{
-	protected:
+	public:
 		int Duration = 0;
 
 	public:
+		ImageAnimFrame(const Image_RGBA8& c, int Duration);
+
+		using Image_RGBA8::Image;
 		int GetDuration() const;
 	};
 

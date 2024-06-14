@@ -473,9 +473,21 @@ namespace CPPGIF
 		}
 	}
 
-	Image_RGBA8 GraphicControlExtensionType::ConvertToImage() const
+	ImageAnimFrame GraphicControlExtensionType::ConvertToFrame(const GIFLoader& ldr) const
 	{
-		// TODO
+		auto Img = ImageAnimFrame(ldr.GetWidth(), ldr.GetHeight(), Pixel_RGBA8(0, 0, 0, 0));
+
+		// 每一个帧是由多个子图像构成的
+		for (auto& ImgDesc : ImageDescriptors)
+		{
+			DrawImageDesc(Img, ImgDesc);
+		}
+
+		// 设置帧属性
+		Img.Duration = DelayTime;
+
+		// 返回帧
+		return Img;
 	}
 
 	void GraphicControlExtensionType::DrawImageDesc(Image_RGBA8& DrawTo, const ImageDescriptorType& ImgDesc) const
@@ -603,8 +615,10 @@ namespace CPPGIF
 	{
 		auto ret = ImageAnim(GetWidth(), GetHeight());
 
-		// TODO
-
+		for (auto& Graphic : GraphicControlExtension)
+		{
+			ret.Frames.push_back(Graphic.ConvertToFrame(*this));
+		}
 
 		return ret;
 	}
@@ -651,6 +665,11 @@ namespace CPPGIF
 				} while (0);
 			}
 		}
+	}
+
+	ImageAnimFrame::ImageAnimFrame(const Image_RGBA8& c, int Duration) :
+		Image_RGBA8(c), Duration(Duration)
+	{
 	}
 
 	int ImageAnimFrame::GetDuration() const
