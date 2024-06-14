@@ -1,4 +1,4 @@
-#include "gifldr.hpp"
+﻿#include "gifldr.hpp"
 
 #include <type_traits>
 #include <unordered_map>
@@ -366,8 +366,8 @@ namespace CPPGIF
 					{
 						char buf[256];
 						snprintf(buf, sizeof buf, "GIF decompression: expect Clear Code, got 0x%04X\n", CurCode);
-						// throw UnexpectedData(buf);
-						std::cerr << buf;
+						throw UnexpectedData(buf);
+						// std::cerr << buf;
 					}
 					if (CurCode == CodeTable.ClearCode)
 					{
@@ -412,8 +412,6 @@ namespace CPPGIF
 							if (CurCodeSize > MaxCodeSize)
 							{
 								ExpectCC = true;
-								CodeTable.InitCodeTable();
-								DoFirstStep = true;
 								CurCodeSize = FirstCodeSize;
 							}
 							CurCodeMaxVal = (1 << CurCodeSize) - 1;
