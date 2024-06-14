@@ -86,7 +86,7 @@ namespace CPPGIF
 		if (HasGlobalColorTable())
 		{
 			GlobalColorTable = std::make_shared<ColorTableArray>();
-			Read(LoadFrom, &GlobalColorTable.get()[0], SizeOfGlobalColorTable());
+			Read(LoadFrom, &(GlobalColorTable.get())[0], SizeOfGlobalColorTable());
 		}
 	}
 
@@ -128,7 +128,7 @@ namespace CPPGIF
 
 	size_t LogicalScreenDescriptorType::SizeOfGlobalColorTable() const
 	{
-		return size_t(1) << (Bitfields & 0x07);
+		return size_t(1) << ((Bitfields & 0x07) + 1);
 	}
 
 	void LogicalScreenDescriptorType::BreakBitfields(bool& HasGlobalColorTable, uint8_t& ColorResolution, bool& ColorIsSorted, size_t& SizeOfGlobalColorTable) const
@@ -249,9 +249,13 @@ namespace CPPGIF
 		auto ClearCode = uint8_t(1 << LZW_MinCodeSize);
 		auto EOI = ClearCode + 1;
 
+		using CodeTableType = std::vector<DataSubBlock>;
+		auto CodeTable = CodeTableType();
 
 
 
+
+		return ret;
 	}
 
 	const ColorTableArray& ImageDescriptorType::GetLocalColorTable() const
