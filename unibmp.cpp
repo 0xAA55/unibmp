@@ -2,11 +2,13 @@
 #include <sstream>
 #include <type_traits>
 #include <limits>
+#include <cstring>
 
 #include "unibmp.hpp"
 
 namespace UniformBitmap
 {
+	using FileInMemoryType = std::vector<uint8_t>;
 
 	ReadBmpFileError::ReadBmpFileError(std::string what) noexcept :
 		std::runtime_error(what)
@@ -363,21 +365,53 @@ namespace UniformBitmap
 		ifs.read(reinterpret_cast<char*>(&v[0]), sizeof v[0] * Count);
 	}
 
-	template<typename T>
-	void WriteData(std::ostream& ofs, T& v)
+	template<typename T> requires (!std::is_same_v<T, std::vector<uint8_t>>)
+	size_t WriteData(std::ostream& ofs, T& v)
 	{
 		ofs.write(reinterpret_cast<char*>(&v), sizeof v);
+		return sizeof v;
 	}
 
-	template<typename T>
-	void WriteData(std::ostream& ofs, T& v, size_t Count)
+	size_t WriteData(std::ostream& ofs, const void *Data, size_t size)
 	{
-		ofs.write(reinterpret_cast<char*>(&v[0]), sizeof v[0] * Count);
+		ofs.write(reinterpret_cast<const char*>(Data), size);
+		return size;
+	}
+
+	size_t WriteData(std::ostream& ofs, const std::vector<uint8_t>& Buffer)
+	{
+		ofs.write(reinterpret_cast<const char*>(&Buffer[0]), Buffer.size());
+		return Buffer.size();
+	}
+
+	template<typename T> requires (!std::is_same_v<T, std::vector<uint8_t>>)
+	size_t WriteData(std::vector<uint8_t>& Buffer, T& v)
+	{
+		size_t Pos = Buffer.size();
+		Buffer.resize(Pos + (sizeof v));
+		memcpy(&Buffer[Pos], &v, sizeof v);
+		return sizeof v;
+	}
+
+	size_t WriteData(std::vector<uint8_t>& Buffer, const void* Data, size_t size)
+	{
+		size_t Pos = Buffer.size();
+		Buffer.resize(Pos + size);
+		memcpy(&Buffer[Pos], Data, size);
+		return size;
+	}
+
+	size_t WriteData(std::vector<uint8_t>& Buffer, const std::vector<uint8_t>& BufferToWrite)
+	{
+		size_t Pos = Buffer.size();
+		Buffer.resize(Pos + BufferToWrite.size());
+		memcpy(&Buffer[Pos], &BufferToWrite[0], BufferToWrite.size());
+		return BufferToWrite.size();
 	}
 
 	// 从文件创建位图
 	template<typename PixelType>
-	void Image<PixelType>::LoadBmp(std::string FilePath)
+	void Image<PixelType>::LoadBmp(const std::string& FilePath)
 	{
 		std::ifstream ifs(FilePath, std::ios::binary);
 		ifs.exceptions(std::ios::badbit | std::ios::failbit);
@@ -833,25 +867,18 @@ namespace UniformBitmap
 		}
 	}
 
-	template<typename PixelType>
-	void Image<PixelType>::SaveToBmp24(std::string FilePath, bool InverseLineOrder) const
+	template<typename PixelType, typename T>
+	size_t SaveBmp24(const Image<PixelType>& img, T& t, bool InverseLineOrder)
 	{
 		size_t Pitch;
 		uint32_t x, y;
 		BitmapFileHeader BMFH = { 0 };
 		BitmapInfoHeader BMIF = { 0 };
-
-		std::ofstream ofs(FilePath, std::ios::binary);
-		if (ofs.fail())
-		{
-			std::stringstream sserr;
-			sserr << "Could not open `" << FilePath << "` for write.";
-			throw WriteBmpFileError(sserr.str());
-		}
+		size_t Written = 0;
 
 		BMIF.biSize = 40;
-		BMIF.biWidth = Width;
-		BMIF.biHeight = Height;
+		BMIF.biWidth = img.GetWidth();
+		BMIF.biHeight = img.GetHeight();
 		BMIF.biPlanes = 1;
 		BMIF.biBitCount = 24;
 		BMIF.biCompression = 0;
@@ -864,48 +891,43 @@ namespace UniformBitmap
 		Pitch = ((size_t)(BMIF.biWidth * BMIF.biBitCount - 1) / 32 + 1) * 4;
 
 		BMFH.bfType = 0x4D42;
-		BMFH.bfSize = (uint32_t)(sizeof BMFH + sizeof BMIF + Pitch * Height);
+		BMFH.bfSize = (uint32_t)(sizeof BMFH + sizeof BMIF + Pitch * img.GetHeight());
 		BMFH.bfReserved1 = 0;
 		BMFH.bfReserved2 = 0;
 		BMFH.bfOffbits = sizeof BMFH + sizeof BMIF;
 
-		WriteData(ofs, BMFH);
-		WriteData(ofs, BMIF);
+		Written += WriteData(t, BMFH);
+		Written += WriteData(t, BMIF);
 
-		auto Buffer = std::make_unique<uint8_t[]>(Pitch);
-		for (y = 0; y < Height; y++)
+		auto Buffer = std::vector<uint8_t>();
+		Buffer.resize(Pitch);
+		for (y = 0; y < img.GetHeight(); y++)
 		{
-			auto RowPtr = RowPointers[InverseLineOrder ? y : static_cast<size_t>(Height) - 1 - y];
+			auto RowPtr = img.GetBitmapRowPtr(InverseLineOrder ? y : static_cast<size_t>(img.GetHeight()) - 1 - y);
 			uint8_t* Ptr = &Buffer[0];
-			for (x = 0; x < Width; x++)
+			for (x = 0; x < img.GetWidth(); x++)
 			{
-				*Ptr++ = ChannelConvert<ChannelType, uint8_t>(RowPtr[x].B);
-				*Ptr++ = ChannelConvert<ChannelType, uint8_t>(RowPtr[x].G);
-				*Ptr++ = ChannelConvert<ChannelType, uint8_t>(RowPtr[x].R);
+				*Ptr++ = ChannelConvert<typename PixelType::ChannelType, uint8_t>(RowPtr[x].B);
+				*Ptr++ = ChannelConvert<typename PixelType::ChannelType, uint8_t>(RowPtr[x].G);
+				*Ptr++ = ChannelConvert<typename PixelType::ChannelType, uint8_t>(RowPtr[x].R);
 			}
-			ofs.write(reinterpret_cast<char*>(&Buffer[0]), Pitch);
+			Written += WriteData(t, Buffer);
 		}
+		return Written;
 	}
 
-	template<typename PixelType>
-	void Image<PixelType>::SaveToBmp32(std::string FilePath, bool InverseLineOrder) const
+	template<typename PixelType, typename T>
+	size_t SaveBmp32(const Image<PixelType>& img, T& t, bool InverseLineOrder)
 	{
 		size_t Pitch;
 		uint32_t y;
 		BitmapFileHeader BMFH = { 0 };
 		BitmapInfoHeader BMIF = { 0 };
-
-		std::ofstream ofs(FilePath, std::ios::binary);
-		if (ofs.fail())
-		{
-			std::stringstream sserr;
-			sserr << "Could not open `" << FilePath << "` for write.";
-			throw WriteBmpFileError(sserr.str());
-		}
+		size_t Written = 0;
 
 		BMIF.biSize = 40;
-		BMIF.biWidth = Width;
-		BMIF.biHeight = Height;
+		BMIF.biWidth = img.GetWidth();
+		BMIF.biHeight = img.GetHeight();
 		BMIF.biPlanes = 1;
 		BMIF.biBitCount = 32;
 		BMIF.biCompression = 0;
@@ -918,29 +940,101 @@ namespace UniformBitmap
 		Pitch = (size_t)BMIF.biWidth * 4;
 
 		BMFH.bfType = 0x4D42;
-		BMFH.bfSize = (uint32_t)(sizeof BMFH + sizeof BMIF + Pitch * Height);
+		BMFH.bfSize = (uint32_t)(sizeof BMFH + sizeof BMIF + Pitch * img.GetHeight());
 		BMFH.bfReserved1 = 0;
 		BMFH.bfReserved2 = 0;
 		BMFH.bfOffbits = sizeof BMFH + sizeof BMIF;
 
-		WriteData(ofs, BMFH);
-		WriteData(ofs, BMIF);
+		Written += WriteData(t, BMFH);
+		Written += WriteData(t, BMIF);
 
-		auto Buffer = std::make_unique<uint8_t[]>(Pitch);
-		for (y = 0; y < Height; y++)
+		auto Buffer = std::vector<uint8_t>();
+		Buffer.resize(Pitch);
+		for (y = 0; y < img.GetHeight(); y++)
 		{
-			auto RowPtr = RowPointers[InverseLineOrder ? y : static_cast<size_t>(Height) - 1 - y];
+			auto RowPtr = img.GetBitmapRowPtr(InverseLineOrder ? y : static_cast<size_t>(img.GetHeight()) - 1 - y);
 			uint8_t* Ptr = &Buffer[0];
-			for (uint32_t x = 0; x < Width; x++)
+			for (uint32_t x = 0; x < img.GetWidth(); x++)
 			{
-				*Ptr++ = ChannelConvert<ChannelType, uint8_t>(RowPtr[x].B);
-				*Ptr++ = ChannelConvert<ChannelType, uint8_t>(RowPtr[x].G);
-				*Ptr++ = ChannelConvert<ChannelType, uint8_t>(RowPtr[x].R);
-				*Ptr++ = ChannelConvert<ChannelType, uint8_t>(RowPtr[x].A);
+				*Ptr++ = ChannelConvert<typename PixelType::ChannelType, uint8_t>(RowPtr[x].B);
+				*Ptr++ = ChannelConvert<typename PixelType::ChannelType, uint8_t>(RowPtr[x].G);
+				*Ptr++ = ChannelConvert<typename PixelType::ChannelType, uint8_t>(RowPtr[x].R);
+				*Ptr++ = ChannelConvert<typename PixelType::ChannelType, uint8_t>(RowPtr[x].A);
 			}
-			ofs.write(reinterpret_cast<char*>(&Buffer[0]), Pitch);
+			Written += WriteData(t, Buffer);
 		}
+		return Written;
 	}
+
+	template<typename PixelType>
+	size_t Image<PixelType>::SaveToBmp24(std::ostream& ofs, bool InverseLineOrder) const
+	{
+		return SaveBmp24(*this, ofs, InverseLineOrder);
+	}
+
+	template<typename PixelType>
+	size_t Image<PixelType>::SaveToBmp32(std::ostream& ofs, bool InverseLineOrder) const
+	{
+		return SaveBmp32(*this, ofs, InverseLineOrder);
+	}
+
+	template<typename PixelType>
+	size_t Image<PixelType>::SaveToBmp24(FileInMemoryType& mf, bool InverseLineOrder) const
+	{
+		return SaveBmp24(*this, mf, InverseLineOrder);
+	}
+
+	template<typename PixelType>
+	size_t Image<PixelType>::SaveToBmp32(FileInMemoryType& mf, bool InverseLineOrder) const
+	{
+		return SaveBmp32(*this, mf, InverseLineOrder);
+	}
+
+	template<typename PixelType>
+	size_t Image<PixelType>::SaveToBmp24(const std::string& FilePath, bool InverseLineOrder) const
+	{
+		std::ofstream ofs(FilePath, std::ios::binary);
+		if (ofs.fail())
+		{
+			std::stringstream sserr;
+			sserr << "Could not open `" << FilePath << "` for write.";
+			throw WriteBmpFileError(sserr.str());
+		}
+
+		return SaveToBmp24(ofs, InverseLineOrder);
+	}
+
+	template<typename PixelType>
+	size_t Image<PixelType>::SaveToBmp32(const std::string& FilePath, bool InverseLineOrder) const
+	{
+
+		std::ofstream ofs(FilePath, std::ios::binary);
+		if (ofs.fail())
+		{
+			std::stringstream sserr;
+			sserr << "Could not open `" << FilePath << "` for write.";
+			throw WriteBmpFileError(sserr.str());
+		}
+
+		return SaveToBmp32(ofs, InverseLineOrder);
+	}
+
+	template<typename PixelType>
+	FileInMemoryType Image<PixelType>::SaveToBmp24(bool InverseLineOrder) const
+	{
+		FileInMemoryType ret;
+		SaveToBmp24(ret, InverseLineOrder);
+		return ret;
+	}
+
+	template<typename PixelType>
+	FileInMemoryType Image<PixelType>::SaveToBmp32(bool InverseLineOrder) const
+	{
+		FileInMemoryType ret;
+		SaveToBmp32(ret, InverseLineOrder);
+		return ret;
+	}
+
 	template<typename PixelType>
 	Image<PixelType>::FloodFillEdgeType Image<PixelType>::FloodFill(uint32_t x, uint32_t y, const PixelType& Color, bool RetrieveEdge, bool(*IsSamePixel)(const PixelType& a, const PixelType& b), void (*SetPixel)(PixelType& dst, const PixelType& src))
 	{
@@ -1005,7 +1099,7 @@ namespace UniformBitmap
 	};
 
 	template<typename PixelType>
-	void Image<PixelType>::LoadNonBmp(std::string FilePath)
+	void Image<PixelType>::LoadNonBmp(const std::string& FilePath)
 	{
 		int w, h, n;
 		if (std::is_floating_point_v<ChannelType>)
@@ -1106,56 +1200,105 @@ namespace UniformBitmap
 	}
 #pragma warning(pop)
 
+	static void stbi_WriteToFileInMemory(void* context, void* data, int size)
+	{
+		auto& wt = *reinterpret_cast<FileInMemoryType*>(context);
+		WriteData(wt, data, size_t(size));
+	}
+
+
 	template<typename PixelType>
-	void Image<PixelType>::SaveToPNG(std::string FilePath) const
+	FileInMemoryType Image<PixelType>::SaveToPNG() const
 	{
 		if (!std::is_same_v<PixelType, Pixel_RGBA8>)
 		{
 			auto conv = Image_RGBA8(*this);
-			conv.SaveToPNG(FilePath);
-			return;
+			return conv.SaveToPNG();
 		}
 
-		if (!stbi_write_png(FilePath.c_str(), Width, Height, 4, GetBitmapDataPtr(), 0)) throw SaveImageError(stbi_failure_reason());
+		FileInMemoryType ret;
+		if (!stbi_write_png_to_func(stbi_WriteToFileInMemory, &ret, Width, Height, 4, GetBitmapDataPtr(), 0)) throw SaveImageError(stbi_failure_reason());
+		return ret;
 	}
 
 	template<typename PixelType>
-	void Image<PixelType>::SaveToTGA(std::string FilePath) const
+	FileInMemoryType Image<PixelType>::SaveToTGA() const
 	{
 		if (!std::is_same_v<PixelType, Pixel_RGBA8>)
 		{
 			auto conv = Image_RGBA8(*this);
-			conv.SaveToTGA(FilePath);
-			return;
+			return conv.SaveToTGA();
 		}
 
-		if (!stbi_write_tga(FilePath.c_str(), Width, Height, 4, GetBitmapDataPtr())) throw SaveImageError(stbi_failure_reason());
+		FileInMemoryType ret;
+		if (!stbi_write_tga_to_func(stbi_WriteToFileInMemory, &ret, Width, Height, 4, GetBitmapDataPtr())) throw SaveImageError(stbi_failure_reason());
+		return ret;
 	}
 
 	template<typename PixelType>
-	void Image<PixelType>::SaveToJPG(std::string FilePath, int Quality) const
+	FileInMemoryType Image<PixelType>::SaveToJPG(int Quality) const
 	{
 		if (!std::is_same_v<PixelType, Pixel_RGBA8>)
 		{
 			auto conv = Image_RGBA8(*this);
-			conv.SaveToJPG(FilePath, Quality);
-			return;
+			return conv.SaveToJPG(Quality);
 		}
 
-		if (!stbi_write_jpg(FilePath.c_str(), Width, Height, 4, GetBitmapDataPtr(), Quality)) throw SaveImageError(stbi_failure_reason());
+		FileInMemoryType ret;
+		if (!stbi_write_jpg_to_func(stbi_WriteToFileInMemory, &ret, Width, Height, 4, GetBitmapDataPtr(), Quality)) throw SaveImageError(stbi_failure_reason());
+		return ret;
 	}
 
 	template<typename PixelType>
-	void Image<PixelType>::SaveToHDR(std::string FilePath) const
+	FileInMemoryType Image<PixelType>::SaveToHDR() const
 	{
 		if (!std::is_same_v<PixelType, Pixel_RGBA32F>)
 		{
 			auto conv = Image_RGBA32F(*this);
-			conv.SaveToHDR(FilePath);
-			return;
+			return conv.SaveToHDR();
 		}
 
-		if (!stbi_write_hdr(FilePath.c_str(), Width, Height, 4, reinterpret_cast<const float*>(GetBitmapDataPtr()))) throw SaveImageError(stbi_failure_reason());
+		FileInMemoryType ret;
+		if (!stbi_write_hdr_to_func(stbi_WriteToFileInMemory, &ret, Width, Height, 4, reinterpret_cast<const float*>(GetBitmapDataPtr()))) throw SaveImageError(stbi_failure_reason());
+		return ret;
+	}
+
+	template<typename ExceptionType = SaveImageError>
+	static size_t WriteFileFromMemory(const std::string& FilePath, const FileInMemoryType& fm)
+	{
+		auto ofs = std::ofstream(FilePath, std::ios::binary);
+		if (ofs.fail())
+		{
+			std::stringstream sserr;
+			sserr << "Could not open `" << FilePath << "` for write.";
+			throw ExceptionType(sserr.str());
+		}
+
+		return WriteData(ofs, fm);
+	}
+
+	template<typename PixelType>
+	size_t Image<PixelType>::SaveToPNG(const std::string& FilePath) const
+	{
+		return WriteFileFromMemory(FilePath, SaveToPNG());
+	}
+
+	template<typename PixelType>
+	size_t Image<PixelType>::SaveToTGA(const std::string& FilePath) const
+	{
+		return WriteFileFromMemory(FilePath, SaveToTGA());
+	}
+
+	template<typename PixelType>
+	size_t Image<PixelType>::SaveToJPG(const std::string& FilePath, int Quality) const
+	{
+		return WriteFileFromMemory(FilePath, SaveToJPG(Quality));
+	}
+
+	template<typename PixelType>
+	size_t Image<PixelType>::SaveToHDR(const std::string& FilePath) const
+	{
+		return WriteFileFromMemory(FilePath, SaveToHDR());
 	}
 
 	template class Image<Pixel_RGBA8>;

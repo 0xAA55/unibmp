@@ -131,6 +131,13 @@ namespace UniformBitmap
 	template<typename PixelType>
 	class Image
 	{
+	public:
+		using ChannelType = PixelType::ChannelType;
+		using Point = PixelRef<PixelType>;
+		using PointHash = Point::Hash;
+		using FloodFillEdgeType = std::unordered_set<Point, PointHash>;
+		using FileInMemoryType = std::vector<uint8_t>;
+
 	protected:
 		// 位图信息
 		uint32_t Width;
@@ -148,7 +155,7 @@ namespace UniformBitmap
 		void CreateBuffer(uint32_t w, uint32_t h);
 
 		// 从图像文件加载 Bmp 格式图片
-		void LoadBmp(std::string FilePath);
+		void LoadBmp(const std::string& FilePath);
 
 		// 从输入流加载 Bmp
 		void LoadBmp(std::istream& ifs);
@@ -157,7 +164,7 @@ namespace UniformBitmap
 		void LoadBmp(const void* FileInMemory, size_t FileSize);
 
 		// 从图像文件加载非 Bmp 格式图片
-		void LoadNonBmp(std::string FilePath);
+		void LoadNonBmp(const std::string& FilePath);
 
 		// 从输入流加载非 Bmp 格式图片
 		void LoadNonBmp(std::istream& ifs);
@@ -165,12 +172,15 @@ namespace UniformBitmap
 		// 从内存加载非 Bmp 格式图片
 		void LoadNonBmp(const void* FileInMemory, size_t FileSize);
 
-	public:
-		using ChannelType = PixelType::ChannelType;
-		using Point = PixelRef<PixelType>;
-		using PointHash = Point::Hash;
-		using FloodFillEdgeType = std::unordered_set<Point, PointHash>;
+		// 存储 Bmp 到文件流
+		size_t SaveToBmp24(std::ostream& ofs, bool InverseLineOrder = false) const;
+		size_t SaveToBmp32(std::ostream& ofs, bool InverseLineOrder = false) const;
 
+		// 存储 Bmp 到字节数组
+		size_t SaveToBmp24(FileInMemoryType& mf, bool InverseLineOrder = false) const;
+		size_t SaveToBmp32(FileInMemoryType& mf, bool InverseLineOrder = false) const;
+
+	public:
 		inline uint32_t GetWidth() const { return Width; }
 		inline uint32_t GetHeight() const { return Height; }
 		inline bool GetIsHDR() const { return IsHDR; }
@@ -196,13 +206,21 @@ namespace UniformBitmap
 
 		void BGR2RGB();
 
-		void SaveToBmp24(std::string FilePath, bool InverseLineOrder = false) const;
-		void SaveToBmp32(std::string FilePath, bool InverseLineOrder = false) const;
+		size_t SaveToBmp24(const std::string& FilePath, bool InverseLineOrder = false) const;
+		size_t SaveToBmp32(const std::string& FilePath, bool InverseLineOrder = false) const;
 
-		void SaveToPNG(std::string FilePath) const;
-		void SaveToTGA(std::string FilePath) const;
-		void SaveToJPG(std::string FilePath, int Quality) const;
-		void SaveToHDR(std::string FilePath) const;
+		size_t SaveToPNG(const std::string& FilePath) const;
+		size_t SaveToTGA(const std::string& FilePath) const;
+		size_t SaveToJPG(const std::string& FilePath, int Quality) const;
+		size_t SaveToHDR(const std::string& FilePath) const;
+
+		FileInMemoryType SaveToBmp24(bool InverseLineOrder = false) const;
+		FileInMemoryType SaveToBmp32(bool InverseLineOrder = false) const;
+
+		FileInMemoryType SaveToPNG() const;
+		FileInMemoryType SaveToTGA() const;
+		FileInMemoryType SaveToJPG(int Quality) const;
+		FileInMemoryType SaveToHDR() const;
 	};
 
 	extern template class Image<Pixel_RGBA8>;
