@@ -322,7 +322,15 @@ namespace CPPGIF
 				if (!CurByteRemains)
 				{ // 用完一个字节
 					i++;
-					if (i >= Compressed.size()) break;
+					if (i >= Compressed.size()) 
+					{
+						if (!CurCodeBitsNeeded)
+						{
+							CurCode >>= MaxUnpackedBits - CurCodeSize;
+							if (CurCode == CodeTable.EOICode) EOIReached = true;
+						}
+						break;
+					}
 				}
 				if (!CurCodeBitsNeeded)
 				{ // 全部位数获取完，此处获取到了一个 LZW 编码数值
