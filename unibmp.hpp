@@ -180,14 +180,6 @@ namespace UniformBitmap
 		size_t SaveToBmp24(FileInMemoryType& mf, bool InverseLineOrder = false) const;
 		size_t SaveToBmp32(FileInMemoryType& mf, bool InverseLineOrder = false) const;
 
-		// 从 Jpeg 文件里查找 Exif 信息块，更新到 ExifData 成员里
-		bool FindExifDataFromJpeg(const std::string& FilePath);
-		bool FindExifDataFromJpeg(std::istream& ifs);
-		bool FindExifDataFromJpeg(const void* FileInMemory, size_t FileSize);
-
-		// 插入ExifData 到已经生成出来的 JPEG 文件字节里
-		void ModifyJpegToInsertExif(FileInMemoryType& JpegFile) const;
-
 	public:
 		inline uint32_t GetWidth() const { return Width; }
 		inline uint32_t GetHeight() const { return Height; }
@@ -233,6 +225,15 @@ namespace UniformBitmap
 		FileInMemoryType SaveToTGA() const;
 		FileInMemoryType SaveToJPG(int Quality) const;
 		FileInMemoryType SaveToHDR() const;
+
+		// 从 Jpeg 文件里查找 Exif 信息块，更新到 ExifData 成员里
+		static std::shared_ptr<TIFFHeader> FindExifDataFromJpeg(FileInMemoryType& JpegFile);
+		static std::shared_ptr<TIFFHeader> FindExifDataFromJpeg(const std::string& FilePath);
+		static std::shared_ptr<TIFFHeader> FindExifDataFromJpeg(std::istream& ifs);
+		static std::shared_ptr<TIFFHeader> FindExifDataFromJpeg(const void* FileInMemory, size_t FileSize);
+
+		// 插入ExifData 到已经生成出来的 JPEG 文件字节里
+		static void ModifyJpegToInsertExif(FileInMemoryType& JpegFile, const TIFFHeader& ExifData);
 	};
 
 	extern template class Image<Pixel_RGBA8>;

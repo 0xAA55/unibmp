@@ -1105,7 +1105,7 @@ namespace UniformBitmap
 
 
 	template<typename PixelType>
-	bool Image<PixelType>::FindExifDataFromJpeg(const std::string& FilePath)
+	std::shared_ptr<TIFFHeader> Image<PixelType>::FindExifDataFromJpeg(const std::string& FilePath)
 	try
 	{
 		auto ifs = std::ifstream(FilePath, std::ios::binary);
@@ -1114,12 +1114,11 @@ namespace UniformBitmap
 	}
 	catch (const std::ios::failure&)
 	{
-		ExifData = nullptr;
-		return false;
+		return nullptr;
 	}
 
 	template<typename PixelType>
-	bool Image<PixelType>::FindExifDataFromJpeg(std::istream& ifs)
+	std::shared_ptr<TIFFHeader> Image<PixelType>::FindExifDataFromJpeg(std::istream& ifs)
 	try
 	{
 		uint16_t Buf16;
@@ -1141,22 +1140,25 @@ namespace UniformBitmap
 		if (Buf32 != 0x66697845 || Buf16 != 0x0000) return false; // 不是 'Exif' 标识
 
 		// 后面就都是 TIFF 头的数据了，交给 `ParseTIFFHeader()`
-		ExifData = std::make_shared<TIFFHeader>(ParseTIFFHeader(ifs));
-		return true;
+		return std::make_shared<TIFFHeader>(ParseTIFFHeader(ifs));;
 	}
 	catch (const ReadDataError&)
 	{
-		ExifData = nullptr;
-		return false;
+		return nullptr;
 	}
 	catch (const std::ios::failure&)
 	{
-		ExifData = nullptr;
-		return false;
+		return nullptr;
 	}
 
 	template<typename PixelType>
-	bool Image<PixelType>::FindExifDataFromJpeg(const void* FileInMemory, size_t FileSize)
+	static std::shared_ptr<TIFFHeader> Image<PixelType>::FindExifDataFromJpeg(FileInMemoryType& JpegFile)
+	{
+		return FindExifDataFromJpeg(reinterpret_cast<void*>(&JpegFile.front()), JpegFile.size());
+	}
+
+	template<typename PixelType>
+	std::shared_ptr<TIFFHeader> Image<PixelType>::FindExifDataFromJpeg(const void* FileInMemory, size_t FileSize)
 	{
 		std::stringstream ss;
 		ss.rdbuf()->pubsetbuf(reinterpret_cast<char*>(const_cast<void*>(FileInMemory)), FileSize);
@@ -1264,7 +1266,7 @@ namespace UniformBitmap
 					drow[x] = srow[x];
 				}
 			}
-			FindExifDataFromJpeg(FilePath);
+			ExifData = FindExifDataFromJpeg(FilePath);
 		}
 		else
 		{
@@ -1343,10 +1345,8 @@ namespace UniformBitmap
 	}
 
 	template<typename PixelType>
-	void Image<PixelType>::ModifyJpegToInsertExif(FileInMemoryType& JpegFile) const
+	void Image<PixelType>::ModifyJpegToInsertExif(FileInMemoryType& JpegFile, const TIFFHeader& ExifData)
 	{
-		if (!ExifData) return;
-		
 		FileInMemoryType ExifHeader = {
 			0xFF, 0xE1,
 			0, 0,
@@ -1354,7 +1354,7 @@ namespace UniformBitmap
 		};
 		if (1)
 		{
-			auto TIFFHeaderBytes = StoreTIFFHeader(*ExifData);
+			auto TIFFHeaderBytes = StoreTIFFHeader(ExifData);
 			size_t SegmentLength = TIFFHeaderBytes.size() + 2 + 6;
 			if (SegmentLength > 0xFFFFu)
 			{
@@ -1441,7 +1441,7 @@ namespace UniformBitmap
 
 		FileInMemoryType ret;
 		if (!stbi_write_jpg_to_func(stbi_WriteToFileInMemory, &ret, Width, Height, 4, GetBitmapDataPtr(), Quality)) throw SaveImageError(stbi_failure_reason());
-		ModifyJpegToInsertExif(ret);
+		if (ExifData) ModifyJpegToInsertExif(ret, *ExifData);
 		return ret;
 	}
 
