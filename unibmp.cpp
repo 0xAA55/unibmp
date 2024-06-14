@@ -479,6 +479,7 @@ namespace UniformBitmap
 	// 如果整个图像的Alpha通道皆为0（或者整个图像不包含Alpha通道）则读出来的位图的Alpha通道会被设置为最大值（即 255）
 	template<typename PixelType>
 	void Image<PixelType>::LoadBmp(std::istream& ifs)
+	try
 	{
 		BitmapFileHeader BMFH;
 		BitmapInfoHeader BMIF;
@@ -794,6 +795,12 @@ namespace UniformBitmap
 		}
 		BGR2RGB();
 	}
+	catch (const std::ios::failure& e)
+	{
+		std::stringstream sserr;
+		sserr << "Failed to read BMP file: " << e.what();
+		throw ReadBmpFileError(sserr.str());
+	}
 
 	template<typename PixelType>
 	void Image<PixelType>::CreateBuffer(uint32_t w, uint32_t h)
@@ -869,6 +876,7 @@ namespace UniformBitmap
 
 	template<typename PixelType, typename T>
 	size_t SaveBmp24(const Image<PixelType>& img, T& t, bool InverseLineOrder)
+	try
 	{
 		size_t Pitch;
 		uint32_t x, y;
@@ -915,9 +923,16 @@ namespace UniformBitmap
 		}
 		return Written;
 	}
+	catch (const std::ios::failure&)
+	{
+		std::stringstream sserr;
+		sserr << "Write BMP24 file to `" << FilePath << "` failed.";
+		throw WriteBmpFileError(sserr.str());
+	}
 
 	template<typename PixelType, typename T>
 	size_t SaveBmp32(const Image<PixelType>& img, T& t, bool InverseLineOrder)
+	try
 	{
 		size_t Pitch;
 		uint32_t y;
@@ -965,6 +980,12 @@ namespace UniformBitmap
 		}
 		return Written;
 	}
+	catch (const std::ios::failure&)
+	{
+		std::stringstream sserr;
+		sserr << "Write BMP32 file to `" << FilePath << "` failed.";
+		throw WriteBmpFileError(sserr.str());
+	}
 
 	template<typename PixelType>
 	size_t Image<PixelType>::SaveToBmp24(std::ostream& ofs, bool InverseLineOrder) const
@@ -994,28 +1015,15 @@ namespace UniformBitmap
 	size_t Image<PixelType>::SaveToBmp24(const std::string& FilePath, bool InverseLineOrder) const
 	{
 		std::ofstream ofs(FilePath, std::ios::binary);
-		if (ofs.fail())
-		{
-			std::stringstream sserr;
-			sserr << "Could not open `" << FilePath << "` for write.";
-			throw WriteBmpFileError(sserr.str());
-		}
-
+		ofs.exceptions(std::ios::badbit | std::ios::failbit);
 		return SaveToBmp24(ofs, InverseLineOrder);
 	}
 
 	template<typename PixelType>
 	size_t Image<PixelType>::SaveToBmp32(const std::string& FilePath, bool InverseLineOrder) const
 	{
-
 		std::ofstream ofs(FilePath, std::ios::binary);
-		if (ofs.fail())
-		{
-			std::stringstream sserr;
-			sserr << "Could not open `" << FilePath << "` for write.";
-			throw WriteBmpFileError(sserr.str());
-		}
-
+		ofs.exceptions(std::ios::badbit | std::ios::failbit);
 		return SaveToBmp32(ofs, InverseLineOrder);
 	}
 
@@ -1101,7 +1109,7 @@ namespace UniformBitmap
 	template<typename PixelType>
 	void Image<PixelType>::LoadNonBmp(const std::string& FilePath)
 	{
-		int w, h, n;
+		int w = 0, h = 0, n = 0;
 		if (std::is_floating_point_v<ChannelType>)
 		{
 			auto stbi = STBITakeOver<Pixel_RGBA32F>(w, h, stbi_loadf(FilePath.c_str(), &w, &h, &n, 4));
@@ -1148,12 +1156,12 @@ namespace UniformBitmap
 	}
 
 #pragma warning(push)
-#pragma warning(disable: 4267)
+#pragma warning(disable: 4267) // size_t <==> int
 
 	template<typename PixelType>
 	void Image<PixelType>::LoadNonBmp(const void* FileInMemory, size_t FileSize)
 	{
-		int w, h, n;
+		int w = 0, h = 0, n = 0;
 		if (std::is_floating_point_v<ChannelType>)
 		{
 			auto stbi = STBITakeOver<Pixel_RGBA32F>(w, h, stbi_loadf_from_memory(reinterpret_cast<const uint8_t*>(FileInMemory), FileSize, &w, &h, &n, 4));
@@ -1266,14 +1274,17 @@ namespace UniformBitmap
 	static size_t WriteFileFromMemory(const std::string& FilePath, const FileInMemoryType& fm)
 	{
 		auto ofs = std::ofstream(FilePath, std::ios::binary);
-		if (ofs.fail())
+		ofs.exceptions(std::ios::badbit | std::ios::failbit);
+		try
+		{
+			return WriteData(ofs, fm);
+		}
+		catch (const std::ios::failure&)
 		{
 			std::stringstream sserr;
 			sserr << "Could not open `" << FilePath << "` for write.";
 			throw ExceptionType(sserr.str());
 		}
-
-		return WriteData(ofs, fm);
 	}
 
 	template<typename PixelType>
