@@ -6,6 +6,7 @@
 #include <memory>
 #include <stdexcept>
 #include <unordered_set>
+#include "tiffhdr.hpp"
 
 namespace UniformBitmap
 {
@@ -179,6 +180,11 @@ namespace UniformBitmap
 		size_t SaveToBmp24(FileInMemoryType& mf, bool InverseLineOrder = false) const;
 		size_t SaveToBmp32(FileInMemoryType& mf, bool InverseLineOrder = false) const;
 
+		// 从 Jpeg 文件里查找 Exif 信息块，更新到 ExifData 成员里
+		bool FindExifDataFromJpeg(const std::string& FilePath);
+		bool FindExifDataFromJpeg(std::istream& ifs);
+		bool FindExifDataFromJpeg(const void* FileInMemory, size_t FileSize);
+
 	public:
 		inline uint32_t GetWidth() const { return Width; }
 		inline uint32_t GetHeight() const { return Height; }
@@ -196,6 +202,9 @@ namespace UniformBitmap
 		// 位图DPI信息
 		uint32_t XPelsPerMeter;
 		uint32_t YPelsPerMeter;
+
+		// TIFF 头部信息
+		std::shared_ptr<TIFFHeader> ExifData;
 
 		Image(const std::string& FilePath);
 		Image(const void* FileInMemory, size_t FileSize);

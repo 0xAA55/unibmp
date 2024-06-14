@@ -1,6 +1,5 @@
 #include "tiffhdr.hpp"
 
-#include <fstream>
 #include <sstream>
 
 namespace UniformBitmap
@@ -441,7 +440,7 @@ namespace UniformBitmap
 			}
 			catch (const std::ios::failure& e)
 			{
-				throw ReadDataError("Invalid data input, " + e.what());
+				throw ReadDataError(std::string("Invalid data input, ") + e.what());
 			}
 		}
 
@@ -456,11 +455,17 @@ namespace UniformBitmap
 			{
 			case 0x2A004949: IsMotorola = false; break;
 			case 0x2A004D4D: IsMotorola = true; break;
+			default: throw BadDataError("Bad TIFF header signature.");
 			}
+
+			uint32_t OffsetOfIFD;
+			RB += Read(OffsetOfIFD);
+
+
 		}
 		catch (const std::ios::failure& e)
 		{
-			throw ReadDataError("Read data failed, " + e.what());
+			throw ReadDataError(std::string("Read data failed, ") + e.what());
 		}
 	};
 
@@ -471,13 +476,17 @@ namespace UniformBitmap
 		return (sizeof r);
 	}
 
+
+	TIFFHeader ParseTIFFHeader(std::istream& ifs)
+	{
+		auto parser = TIFFParser(ifs);
+		return parser.Parse();
+	}
+
 	TIFFHeader ParseTIFFHeader(const uint8_t* TIFFData, size_t& TIFFDataSize)
 	{
-		size_t RB = 0;
 		std::stringstream ss;
 		ss.rdbuf()->pubsetbuf(reinterpret_cast<char*>(const_cast<uint8_t*>(TIFFData)), TIFFDataSize);
-		auto parser = TIFFParser(ss);
-
-		return parser.Parse();
+		return ParseTIFFHeader(ss);
 	}
 }

@@ -474,6 +474,8 @@ namespace UniformBitmap
 		Buffer.resize(size);
 		ifs.read(&Buffer[0], size);
 		LoadNonBmp(&Buffer[0], size);
+		ifs.seekg(0, std::ios::beg);
+		FindExifDataFromJpeg(ifs);
 	}
 
 	template<typename PixelType>
@@ -1101,6 +1103,66 @@ namespace UniformBitmap
 		return ret;
 	}
 
+
+	template<typename PixelType>
+	bool Image<PixelType>::FindExifDataFromJpeg(const std::string& FilePath)
+	try
+	{
+		auto ifs = std::ifstream(FilePath, std::ios::binary);
+		ifs.exceptions(std::ios::badbit | std::ios::failbit);
+		return FindExifDataFromJpeg(ifs);
+	}
+	catch (const std::ios::failure&)
+	{
+		ExifData = nullptr;
+		return false;
+	}
+
+	template<typename PixelType>
+	bool Image<PixelType>::FindExifDataFromJpeg(std::istream& ifs)
+	try
+	{
+		uint16_t Buf16;
+		uint16_t ExifChunkSize;
+		uint32_t Buf32;
+
+		ReadData(ifs, Buf16);
+		if (Buf16 != 0xD8FF) return false; // 不是 JPG 文件
+
+		ReadData(ifs, Buf16);
+		if (Buf16 != 0xE1FF) return false; // 没有 Exif 头
+
+		ReadData(ifs, ExifChunkSize); // 读取 Exif 头部大小
+		ExifChunkSize -= 2;
+
+		// 读取 Exif 标识
+		ReadData(ifs, Buf32);
+		ReadData(ifs, Buf16);
+		if (Buf32 != 0x66697845 || Buf16 != 0x0000) return false; // 不是 'Exif' 标识
+
+		// 后面就都是 TIFF 头的数据了，交给 `ParseTIFFHeader()`
+		ExifData = std::make_shared<TIFFHeader>(ParseTIFFHeader(ifs));
+		return true;
+	}
+	catch (const ReadDataError&)
+	{
+		ExifData = nullptr;
+		return false;
+	}
+	catch (const std::ios::failure&)
+	{
+		ExifData = nullptr;
+		return false;
+	}
+
+	template<typename PixelType>
+	bool Image<PixelType>::FindExifDataFromJpeg(const void* FileInMemory, size_t FileSize)
+	{
+		std::stringstream ss;
+		ss.rdbuf()->pubsetbuf(reinterpret_cast<char*>(const_cast<void*>(FileInMemory)), FileSize);
+		return FindExifDataFromJpeg(ss);
+	}
+
 	template<typename PixelType>
 	Image<PixelType>::FloodFillEdgeType Image<PixelType>::FloodFill(uint32_t x, uint32_t y, const PixelType& Color, bool RetrieveEdge, bool(*IsSamePixel)(const PixelType& a, const PixelType& b), void (*SetPixel)(PixelType& dst, const PixelType& src))
 	{
@@ -1202,6 +1264,7 @@ namespace UniformBitmap
 					drow[x] = srow[x];
 				}
 			}
+			FindExifDataFromJpeg(FilePath);
 		}
 		else
 		{
@@ -1254,6 +1317,7 @@ namespace UniformBitmap
 					drow[x] = srow[x];
 				}
 			}
+			FindExifDataFromJpeg(FileInMemory, FileSize);
 		}
 		else
 		{

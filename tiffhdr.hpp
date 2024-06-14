@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <unordered_map>
@@ -142,10 +143,13 @@ namespace UniformBitmap
 
 	// 函数：解析 TIFF 头
 	// 参数：
+	//   ifs：输入文件流
+	//   - 或者
 	//   TIFFData：一个指针指向内存中的图片文件中的 TIFF 数据部分（即开头是 II 或者 MM 的数据）
 	//   TIFFDataSize：TIFF 的数据的大小，这里实际用于限制读取的范围。
 	//     这个参数同时用于接收实际读取的 TIFF 数据的大小
 	// 返回值：经过初步解析的结构化的 TIFF 数据
+	TIFFHeader ParseTIFFHeader(std::istream& ifs);
 	TIFFHeader ParseTIFFHeader(const uint8_t* TIFFData, size_t& TIFFDataSize);
 
 	// 函数：将解析好的 TIFF 头再做成字节数组
