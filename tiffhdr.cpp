@@ -1198,7 +1198,6 @@ namespace UniformBitmap
 
 			uint16_t NumFields;
 			Read(NumFields);
-			ret.Fields.reserve(NumFields);
 			for (size_t i = 0; i < NumFields; i++)
 			{
 				uint16_t TagType;
@@ -1304,11 +1303,11 @@ namespace UniformBitmap
 			char buf[256];
 			try
 			{
-				snprintf(buf, sizeof buf, "  %s:\t", IFDTagToStr.at(field.first).c_str());
+				snprintf(buf, sizeof buf, "  (0x%04X)%s:\t", field.first, IFDTagToStr.at(field.first).c_str());
 			}
 			catch (const std::out_of_range&)
 			{
-				snprintf(buf, sizeof buf, "  <Unknown tag 0x%04X>:\t", field.first);
+				snprintf(buf, sizeof buf, "  (0x%04X)<Unknown Tag ID>:\t", field.first);
 			}
 			ss << buf << field.second->ToString() << "\n";
 		}
@@ -1382,15 +1381,17 @@ namespace UniformBitmap
 		size_t GetSerializedSize() const
 		{
 			size_t SizeOfExtras = Extra.size();
-			return FieldsBytesTotal + SizeOfExtras;
+			return FieldsBytesTotal + SizeOfExtras + 2; // 两字节的字段数
 		}
 		std::vector<uint8_t> Serialize() const
 		{
 			std::vector<uint8_t> ret;
 			size_t SizeOfExtras = Extra.size();
 			ret.resize(GetSerializedSize());
-			memcpy(&ret[0], &Fields[0], std::min(FieldsBytesTotal, sizeof(IFDBinItem) * Fields.size()));
-			memcpy(&ret[FieldsBytesTotal], &Extra[0], SizeOfExtras);
+			ret[0] = FieldsCountTotal & 0xFF;
+			ret[1] = (FieldsCountTotal >> 8) & 0xFF;
+			memcpy(&ret[2], &Fields[0], std::min(FieldsBytesTotal, sizeof(IFDBinItem) * Fields.size()));
+			memcpy(&ret[2 + FieldsBytesTotal], &Extra[0], SizeOfExtras);
 			return ret;
 		}
 
@@ -1398,6 +1399,7 @@ namespace UniformBitmap
 		template<typename IFDFT>
 		void AddField(IFDBinItem& CurItem, const IFDFT& FT)
 		{
+			CurItem.NumComponents = uint32_t(FT.Components.size());
 			size_t SizeUsage = FT.Components.size() * sizeof(FT.Components[0]);
 			if (!SizeUsage)
 			{
@@ -1474,7 +1476,7 @@ namespace UniformBitmap
 			FieldsBytesTotal = sizeof(IFDBinItem)* FieldsCountTotal;
 
 			Fields.reserve(FieldsCountTotal);
-			BeginOfExtra = BaseOffset + FieldsCountTotal * sizeof(IFDBinItem);
+			BeginOfExtra = BaseOffset + 2 + FieldsBytesTotal;
 
 			for (auto& kv : IfdToAdd.Fields)
 			{
