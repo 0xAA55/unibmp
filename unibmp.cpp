@@ -1347,8 +1347,24 @@ namespace UniformBitmap
 	template Image_RGBA32F::Image(const Image_RGBA16& from);
 	template Image_RGBA32F::Image(const Image_RGBA32& from);
 
-	bool IsImage16bpps(std::string FilePath)
+	bool IsImage16bpps(const std::string& FilePath)
 	{
 		return stbi_is_16_bit(FilePath.c_str()) ? true : false;
+	}
+
+	void GetImageInfo(const std::string& FilePath, uint32_t& Width, uint32_t& Height)
+	{
+		int x = 0, y = 0, c = 0;
+		stbi_info(FilePath.c_str(), &x, &y, &c);
+		Width = x;
+		Height = y;
+	}
+
+	void GetImageInfo(const void* Memory, size_t MemPicSize, uint32_t& Width, uint32_t& Height)
+	{
+		int x = 0, y = 0, c = 0;
+		stbi_info_from_memory(reinterpret_cast<const uint8_t*>(Memory), int(MemPicSize), &x, &y, &c);
+		Width = x;
+		Height = y;
 	}
 }

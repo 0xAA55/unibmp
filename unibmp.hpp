@@ -122,6 +122,10 @@ namespace UniformBitmap
 	using Image_RGBA32 = Image<Pixel_RGBA32>;
 	using Image_RGBA32F = Image<Pixel_RGBA32F>;
 
+	bool IsImage16bpps(const std::string& FilePath);
+	void GetImageInfo(const std::string& FilePath, uint32_t& Width, uint32_t& Height);
+	void GetImageInfo(const void* Memory, size_t MemPicSize, uint32_t& Width, uint32_t& Height);
+
 	template<typename PixelType>
 	class Image
 	{
@@ -239,6 +243,4 @@ namespace UniformBitmap
 	extern template Image_RGBA32F::Image(const Image_RGBA8& from);
 	extern template Image_RGBA32F::Image(const Image_RGBA16& from);
 	extern template Image_RGBA32F::Image(const Image_RGBA32& from);
-
-	bool IsImage16bpps(std::string FilePath);
 }
