@@ -335,7 +335,7 @@ namespace CPPGIF
 						snprintf(buf, sizeof buf, "[WARN] GIF decompression: expect Clear Code, got 0x%04X\n", CurCode);
 						throw UnexpectedData(buf);
 					}
-					if (CurCode == CodeTable.ClearCode || ExpectCC)
+					if (CurCode == CodeTable.ClearCode)
 					{
 						CodeTable.InitCodeTable();
 						CurCodeSize = FirstCodeSize;
