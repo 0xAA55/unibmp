@@ -290,6 +290,7 @@ namespace CPPGIF
 		auto CodeTable = CodeTableType(LZW_MinCodeSize);
 		bool IsFirstStep = true;
 		bool EOIReached = false;
+		bool ExpectCC = true;
 
 		// 先把 LZW 的字节序列以动态位数长度的编码转变为定长的编码。
 		const auto FirstCodeSize = LZW_MinCodeSize + 1;
@@ -328,11 +329,17 @@ namespace CPPGIF
 					// 为调试：记录每个 Code 值
 					UnpackedCodes.push_back(CurCode);
 
-					if (CurCode == CodeTable.ClearCode)
+					if (ExpectCC && CurCode != CodeTable.ClearCode)
+					{
+						fprintf(stderr, "[WARN] GIF decompression: expect Clear Code, got 0x%04X\n", CurCode);
+					}
+					if (CurCode == CodeTable.ClearCode || ExpectCC)
 					{
 						CodeTable.InitCodeTable();
 						CurCodeSize = FirstCodeSize;
 						CurCodeMaxVal = (1 << CurCodeSize) - 1;
+						IsFirstStep = true;
+						ExpectCC = false;
 					}
 					else if (CurCode == CodeTable.EOICode)
 					{
@@ -367,7 +374,8 @@ namespace CPPGIF
 						CurCodeSize++;
 						if (CurCodeSize > MaxCodeSize) 
 						{
-							CodeTable.InitCodeTable();
+							// CodeTable.InitCodeTable();
+							ExpectCC = true;
 							CurCodeSize = FirstCodeSize;
 						}
 						CurCodeMaxVal = (1 << CurCodeSize) - 1;
