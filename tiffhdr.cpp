@@ -642,7 +642,15 @@ namespace UniformBitmap
 			Read(OffsetOfIFD);
 			SeekToOffset(OffsetOfIFD);
 
-			Parsed.push_back(ParseIFD());
+			for (;;)
+			{
+				Parsed.push_back(ParseIFD());
+
+				uint32_t OffsetOfNextIFD;
+				Read(OffsetOfNextIFD);
+				if (!OffsetOfNextIFD) break;
+				SeekToOffset(OffsetOfNextIFD);
+			}
 		}
 		catch (const std::ios::failure& e)
 		{
