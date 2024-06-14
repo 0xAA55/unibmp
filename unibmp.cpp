@@ -1166,6 +1166,101 @@ namespace UniformBitmap
 		std::reverse(RowPointers.begin(), RowPointers.end());
 	}
 
+	template<typename PixelType>
+	void Image<PixelType>::RotateByExifData(bool RemoveRotationFromExifData, bool Verbose)
+	{
+		if (!ExifData)
+		{
+			if (Verbose)
+			{
+				std::cout << "No exif data for `RotateByExifData()`.\n";
+			}
+			return;
+		}
+		for (auto& IFD : *ExifData)
+		{
+			for (auto& Field : IFD.Fields)
+			{
+				if (Field.first == 0x0112)
+				{
+					auto& Orientation = Field.second->AsUShorts().Components[0];
+					switch (Orientation)
+					{
+					case 1:
+						if (Verbose)
+						{
+							std::cout << "[INFO] Exif data `Orientation` specified horizontal (normal).\n";
+						}
+						break;
+					case 2:
+						if (Verbose)
+						{
+							std::cout << "[INFO] Exif data `Orientation` specified mirror horizontal.\n";
+						}
+						FlipH();
+						break;
+					case 3:
+						if (Verbose)
+						{
+							std::cout << "[INFO] Exif data `Orientation` specified 180° rotation.\n";
+						}
+						Rotate180();
+						break;
+					case 4:
+						if (Verbose)
+						{
+							std::cout << "[INFO] Exif data `Orientation` specified mirror vertical.\n";
+						}
+						FlipV();
+						break;
+					case 5:
+						if (Verbose)
+						{
+							std::cout << "[INFO] Exif data `Orientation` specified mirror horizontal and rotate 270 CW.\n";
+						}
+						FlipH();
+						Rotate270_CW();
+						break;
+					case 6:
+						if (Verbose)
+						{
+							std::cout << "[INFO] Exif data `Orientation` specified rotate 90 CW.\n";
+						}
+						Rotate90_CW();
+						break;
+					case 7:
+						if (Verbose)
+						{
+							std::cout << "[INFO] Exif data `Orientation` specified mirror horizontal and rotate 90 CW.\n";
+						}
+						FlipH();
+						Rotate90_CW();
+						break;
+					case 8:
+						if (Verbose)
+						{
+							std::cout << "[INFO] Exif data `Orientation` specified rotate 270 CW.\n";
+						}
+						Rotate270_CW();
+						break;
+					default:
+						std::cerr << std::string("[WARN] Exif data `Orientation` specified unknown orientation `") + std::to_string(Orientation) + "`.\n";
+						break;
+					}
+					if (RemoveRotationFromExifData)
+					{
+						Orientation = 1;
+					}
+					return;
+				}
+			}
+		}
+		if (Verbose)
+		{
+			std::cout << "[INFO] Exif data `Orientation` (0x0112) not found.\n";
+		}
+	}
+
 	template<typename PixelType, typename T>
 	size_t SaveBmp24(const Image<PixelType>& img, T& t, bool InverseLineOrder)
 	try
