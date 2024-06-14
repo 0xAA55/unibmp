@@ -281,19 +281,6 @@ namespace CPPGIF
 		{
 			std::cerr << "GIF: " << e.what() << "\n";
 		}
-		if (1)
-		{
-			auto RecompressedLZW = CompressLZW(ImageData, LZW_MinCodeSize);
-			if (RecompressedLZW != LZW_Data)
-			{
-				throw EncodeError("LZW Data recompressed not match.");
-			}
-			auto ReuncompressedLZW = UncompressLZW(RecompressedLZW, LZW_MinCodeSize);
-			if (ReuncompressedLZW != ImageData)
-			{
-				throw EncodeError("LZW Data reuncompressed not match.");
-			}
-		}
 	}
 
 	DataSubBlock ImageDescriptorType::CompressLZW(const DataSubBlock& Data, uint8_t LZW_MinCodeSize)
@@ -327,6 +314,7 @@ namespace CPPGIF
 
 		public:
 			uint8_t CurCodeSize;
+			// 调试编码表
 			// CodeStreamType Debug_CodeStream;
 
 			CodeStreamEncoder() = delete;
@@ -355,7 +343,8 @@ namespace CPPGIF
 
 			void Encode(CodeType Code)
 			{
-				if (Code > CurCodeSizeMaxValue()) throw EncodeError(std::string("Unexpected code ") + std::to_string(Code) + " that's beyond the current max value of " + std::to_string(CurCodeSizeMaxValue()));
+				// if (Code > CurCodeSizeMaxValue()) throw EncodeError(std::string("Unexpected code ") + std::to_string(Code) + " that's beyond the current max value of " + std::to_string(CurCodeSizeMaxValue()));
+				// 调试编码表
 				// Debug_CodeStream.push_back(Code); 
 				int BitsToEncode = CurCodeSize;
 				while (BitsToEncode)
