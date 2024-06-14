@@ -639,6 +639,42 @@ namespace UniformBitmap
 		{"MoireFilter", 0xfe58},
 	};
 
+	constexpr std::pair<const char*, uint16_t> GPSTagData[] =
+	{
+		{"GPSVersionID", 0x0000},
+		{"GPSLatitudeRef", 0x0001},
+		{"GPSLatitude", 0x0002},
+		{"GPSLongitudeRef", 0x0003},
+		{"GPSLongitude", 0x0004},
+		{"GPSAltitudeRef", 0x0005},
+		{"GPSAltitude", 0x0006},
+		{"GPSTimeStamp", 0x0007},
+		{"GPSSatellites", 0x0008},
+		{"GPSStatus", 0x0009},
+		{"GPSMeasureMode", 0x000a},
+		{"GPSDOP", 0x000b},
+		{"GPSSpeedRef", 0x000c},
+		{"GPSSpeed", 0x000d},
+		{"GPSTrackRef", 0x000e},
+		{"GPSTrack", 0x000f},
+		{"GPSImgDirectionRef", 0x0010},
+		{"GPSImgDirection", 0x0011},
+		{"GPSMapDatum", 0x0012},
+		{"GPSDestLatitudeRef", 0x0013},
+		{"GPSDestLatitude", 0x0014},
+		{"GPSDestLongitudeRef", 0x0015},
+		{"GPSDestLongitude", 0x0016},
+		{"GPSDestBearingRef", 0x0017},
+		{"GPSDestBearing", 0x0018},
+		{"GPSDestDistanceRef", 0x0019},
+		{"GPSDestDistance", 0x001a},
+		{"GPSProcessingMethod", 0x001b},
+		{"GPSAreaInformation", 0x001c},
+		{"GPSDateStamp", 0x001d},
+		{"GPSDifferential", 0x001e},
+		{"GPSHPositioningError", 0x001f},
+	};
+
 	constexpr uint16_t IFDPointerTagsData[] = {
 		0x0103, 0x014a, 0x0190, 0x02bc, 0x4748, 0x8290, 0x83bb, 0x8568,
 		0x8606, 0x8649, 0x8769, 0x8773, 0x8825, 0x888a, 0x9208, 0x9209,
@@ -710,6 +746,8 @@ namespace UniformBitmap
 
 	const std::unordered_map<uint16_t, std::string> IFDTagToStr = DataToMapE2S(IFDTagData);
 	const std::unordered_map<std::string, uint16_t> IFDTagFromStr = DataToMapS2E(IFDTagData);
+	const std::unordered_map<uint16_t, std::string> GPSTagToStr = DataToMapE2S(GPSTagData);
+	const std::unordered_map<std::string, uint16_t> GPSTagFromStr = DataToMapS2E(GPSTagData);
 	const std::unordered_set<uint16_t> IFDPointerTags = DataToSet(IFDPointerTagsData);
 	const std::unordered_map<IFDFieldFormat, std::string> IFDFormatToStringMap = DataToMapE2S(IFDFormatStringData);
 	const std::unordered_map<std::string, IFDFieldFormat> StringToIFDFormatMap = DataToMapS2E(IFDFormatStringData);
@@ -1341,6 +1379,23 @@ namespace UniformBitmap
 		return ParseTIFFHeader(ss);
 	}
 
+	static void ShowGPSFields(std::stringstream& ss, const IFDData& GPSFields)
+	{
+		for (auto& field : GPSFields)
+		{
+			char buf[256];
+			try
+			{
+				snprintf(buf, sizeof buf, "  (0x%04X)%s:\t", field.first, GPSTagToStr.at(field.first).c_str());
+			}
+			catch (const std::out_of_range&)
+			{
+				snprintf(buf, sizeof buf, "  (0x%04X)<Unknown Tag ID>:\t", field.first);
+			}
+			ss << buf << field.second->ToString() << "\n";
+		}
+	}
+
 	static void ShowIFDFields(std::stringstream& ss, const IFD& Ifd)
 	{
 		for (auto& field : Ifd.Fields)
@@ -1364,7 +1419,7 @@ namespace UniformBitmap
 		if (Ifd.GPSSubIFD)
 		{
 			ss << "- GPS SubIFD:\n";
-			ShowIFDFields(ss, *Ifd.GPSSubIFD);
+			ShowGPSFields(ss, Ifd.GPSSubIFD->Fields);
 		}
 		if (Ifd.InteroperabilityIFD)
 		{
