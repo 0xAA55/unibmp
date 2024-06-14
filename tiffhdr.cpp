@@ -674,6 +674,7 @@ namespace UniformBitmap
 		{"GPSHPositioningError", 0x001f},
 	};
 
+	// 这几个 Tag 的数据都是 TIFF 头内偏移，因此读取后不存回新文件（因为不好处理）
 	constexpr uint16_t IFDPointerTagsData[] = {
 		0x0103, 0x014a, 0x0190, 0x02bc, 0x4748, 0x8290, 0x83bb, 0x8568,
 		0x8606, 0x8649, 0x8769, 0x8773, 0x8825, 0x888a, 0x9208, 0x9209,
@@ -699,6 +700,7 @@ namespace UniformBitmap
 		{"Double", IFDFieldFormat::Double},
 	};
 
+	// 将 constexpr 方式存储的常量数组转换为 std::unordered_map，用字符串 TagName 对应 TagID
 	template<typename TagType, size_t N>
 	const std::unordered_map<std::string, TagType> DataToMapS2E(const std::pair<const char*, TagType>(&cdata)[N])
 	{
@@ -710,6 +712,7 @@ namespace UniformBitmap
 		return ret;
 	}
 
+	// 找出两个字符串的共同前缀
 	std::string FindPrefix(const std::string& a, const std::string& b)
 	{
 		size_t s = std::min(a.length(), b.length());
@@ -725,6 +728,7 @@ namespace UniformBitmap
 		return "";
 	}
 
+	// 将 constexpr 方式存储的常量数组转换为 std::unordered_map，用 TagID 对应字符串 TagName
 	template<typename TagType, size_t N>
 	const std::unordered_map<TagType, std::string> DataToMapE2S(const std::pair<const char*, TagType>(&cdata)[N])
 	{
@@ -738,10 +742,7 @@ namespace UniformBitmap
 
 			if (ret.contains(tag))
 			{
-				// auto& s = ret[tag];
-				// s += "|";
-				// s += val;
-				// ret[tag] = FindPrefix(ret[tag], val);
+				// 发现相同的 TagID 有不同的字符串，存储以进行后续处理
 				if (dup[tag].empty()) dup[tag].push_back(ret[tag]);
 				dup[tag].push_back(val);
 			}
@@ -750,6 +751,7 @@ namespace UniformBitmap
 				ret[tag] = val;
 			}
 		}
+		// 处理所有带有相同 TagID 的字符串，判断它是否拥有一个共同前缀
 		for (auto& kv : dup)
 		{
 			auto tag = kv.first;
@@ -763,12 +765,14 @@ namespace UniformBitmap
 				if (Sum.length()) Sum += "|";
 				Sum += s;
 			}
+			// 有共同前缀则使用这个前缀，否则使用“|”字符拼接所有字符串
 			if (Prefix.length()) ret[tag] = Prefix;
 			else ret[tag] = Sum;
 		}
 		return ret;
 	}
 
+	// 将 constexpr 方式存储的数值数组转换为集合
 	template<typename EnumType, size_t N>
 	const std::unordered_set<EnumType> DataToSet(const EnumType(&data)[N])
 	{
@@ -788,19 +792,20 @@ namespace UniformBitmap
 	const std::unordered_map<IFDFieldFormat, std::string> IFDFormatToStringMap = DataToMapE2S(IFDFormatStringData);
 	const std::unordered_map<std::string, IFDFieldFormat> StringToIFDFormatMap = DataToMapS2E(IFDFormatStringData);
 
+	// 根据数据类型盲猜存储格式
 	template<typename T>
 	IFDFieldFormat IFDFieldType<T>::GetFormatValueByType()
 	{
-		if (std::is_same_v<T, int8_t>) return IFDFieldFormat::SByte;
-		else if (std::is_same_v<T, int16_t>) return IFDFieldFormat::SShort;
-		else if (std::is_same_v<T, int32_t>) return IFDFieldFormat::SLong;
-		else if (std::is_same_v<T, Rational>) return IFDFieldFormat::SRational;
-		else if (std::is_same_v<T, uint8_t>) return IFDFieldFormat::UByte;
-		else if (std::is_same_v<T, uint16_t>) return IFDFieldFormat::UShort;
-		else if (std::is_same_v<T, uint32_t>) return IFDFieldFormat::ULong;
-		else if (std::is_same_v<T, URational>) return IFDFieldFormat::URational;
-		else if (std::is_same_v<T, float>) return IFDFieldFormat::Float;
-		else if (std::is_same_v<T, double>) return IFDFieldFormat::Double;
+		if constexpr (std::is_same_v<T, int8_t>) return IFDFieldFormat::SByte;
+		else if constexpr (std::is_same_v<T, int16_t>) return IFDFieldFormat::SShort;
+		else if constexpr (std::is_same_v<T, int32_t>) return IFDFieldFormat::SLong;
+		else if constexpr (std::is_same_v<T, Rational>) return IFDFieldFormat::SRational;
+		else if constexpr (std::is_same_v<T, uint8_t>) return IFDFieldFormat::UByte;
+		else if constexpr (std::is_same_v<T, uint16_t>) return IFDFieldFormat::UShort;
+		else if constexpr (std::is_same_v<T, uint32_t>) return IFDFieldFormat::ULong;
+		else if constexpr (std::is_same_v<T, URational>) return IFDFieldFormat::URational;
+		else if constexpr (std::is_same_v<T, float>) return IFDFieldFormat::Float;
+		else if constexpr (std::is_same_v<T, double>) return IFDFieldFormat::Double;
 		else return IFDFieldFormat::Unknown;
 	}
 
@@ -820,6 +825,7 @@ namespace UniformBitmap
 	IFDFieldType<T>::IFDFieldType(IFDFieldFormat Type, T Value) :
 		IFDFieldBase(Type)
 	{
+		// 只有单个数值的情况
 		Components.push_back(Value);
 	}
 
@@ -850,6 +856,38 @@ namespace UniformBitmap
 		return buf;
 	}
 
+	// 粗略判断一个数据是不是长得像字符串
+	// 不判断是否合法 UTF-8 字符串
+	bool IsLookLikeString(const std::vector<uint8_t>& data)
+	{
+		bool has0 = false;
+		for (auto i = data.cbegin(); i != data.cend(); i++)
+		{
+			// 判断控制字符
+			if (*i < 0x20)
+			{
+				switch (*i)
+				{
+				case '\b':
+				case '\f':
+				case '\n':
+				case '\r':
+				case '\t':
+					// 这些都是正常字符（JSON 认的常见控制字符）
+					continue;
+				case 0:
+					// 允许最后一个字符是 '\0' 空字符结尾
+					if (std::distance(i, data.cend()) == 1) continue;
+				default:
+					// 出现了别的控制字符，判定为不是字符串
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	// 单个 Component 
 	template<typename T> requires std::is_integral_v<T>
 	std::string ComponentToString(const T& v)
 	{
@@ -880,6 +918,22 @@ namespace UniformBitmap
 		}
 		else
 		{
+			if constexpr (std::is_same_v<T, uint8_t>)
+			{
+				if (IsLookLikeString(Components))
+				{
+					auto* beg = reinterpret_cast<const char*>(&Components.front());
+					auto str = std::string(beg, Components.size());
+					if (str.back() == '\0')
+					{
+						return std::string("\"") + str + "\\0\"";
+					}
+					else
+					{
+						return std::string("\"") + str + "\"";
+					}
+				}
+			}
 			std::stringstream ss;
 			ss << "[";
 			for (size_t i = 0; i < Components.size(); i++)
