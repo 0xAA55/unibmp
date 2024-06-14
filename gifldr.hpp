@@ -249,6 +249,10 @@ namespace CPPGIF
 
 	public:
 		ImageAnim(uint32_t Width, uint32_t Height);
+		uint32_t GetWidth() const;
+		uint32_t GetHeight() const;
+
+		void SaveSequencePNG(const std::string& OutputFile, bool TrueForVertical) const;
 	};
 }
 

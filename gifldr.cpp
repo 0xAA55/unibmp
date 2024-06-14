@@ -666,10 +666,46 @@ namespace CPPGIF
 	{
 		auto ret = ImageAnim(GetWidth(), GetHeight());
 		auto& BackgroundColor = LogicalScreenDescriptor.GetBackgroundColor();
+		auto BgColor = Pixel_RGBA8(BackgroundColor.R, BackgroundColor.G, BackgroundColor.B, 255);
 
+		const GraphicControlExtensionType* Prev = &GraphicControlExtension.at(0);
 		for (auto& Graphic : GraphicControlExtension)
 		{
-			ret.Frames.push_back(Graphic.ConvertToFrame(*this));
+			// 第一帧直接绘制
+			if (!ret.Frames.size()) ret.Frames.push_back(Graphic.ConvertToFrame(*this));
+			else
+			{ // 之后的帧看情况绘制
+				switch (Graphic.GetDisposalMethod())
+				{
+				default: // 得在前一帧的基础上绘制
+				case GraphicControlExtensionType::NoDisposalSpec:
+				case GraphicControlExtensionType::DoNotDispose:
+					ret.Frames.push_back(ret.Frames.back());
+					Graphic.DrawToFrame(ret.Frames.back(), *this);
+					break;
+				case GraphicControlExtensionType::RestoreToBackgroundColor:
+					do
+					{
+						ret.Frames.push_back(ret.Frames.back()); // 复制上一帧
+						auto& ToFill = ret.Frames.back(); // 在上一帧的基础上绘图
+						for (auto& ImgDesc : Prev->GetImageDescriptors())
+						{
+							ToFill.FillRect(
+								ImgDesc.GetLeft(),
+								ImgDesc.GetTop(),
+								ImgDesc.GetLeft() + ImgDesc.GetWidth() - 1,
+								ImgDesc.GetTop() + ImgDesc.GetHeight() - 1,
+								BgColor
+							);
+						}
+					} while (false);
+					break;
+				case GraphicControlExtensionType::RestoreToPrevious: // 恢复到最初，其实就是不基于上一帧来绘图。
+					ret.Frames.push_back(Graphic.ConvertToFrame(*this));
+					break;
+				}
+			}
+			Prev = &Graphic;
 		}
 
 		return ret;
@@ -732,5 +768,36 @@ namespace CPPGIF
 	ImageAnim::ImageAnim(uint32_t Width, uint32_t Height) :
 		Width(Width), Height(Height)
 	{
+	}
+
+	uint32_t ImageAnim::GetWidth() const
+	{
+		return Width;
+	}
+
+	uint32_t ImageAnim::GetHeight() const
+	{
+		return Height;
+	}
+
+	void ImageAnim::SaveSequencePNG(const std::string& OutputFile, bool TrueForVertical) const
+	{
+		auto numFrames = Frames.size();
+		auto CanvasW = TrueForVertical ? Width : Width * numFrames;
+		auto CanvasH = TrueForVertical ? Height * numFrames : Height;
+		auto Canvas = Image_RGBA8(CanvasW, CanvasH, Pixel_RGBA8(0, 0, 0, 0));
+
+		auto DrawX = 0;
+		auto DrawY = 0;
+		auto XToGo = TrueForVertical ? 0 : Width;
+		auto YToGo = TrueForVertical ? Height : 0;
+
+		for (auto& Frame : Frames)
+		{
+			Canvas.Paint(DrawX, DrawY, Width, Height, Frame, 0, 0);
+			DrawX += XToGo;
+			DrawY += YToGo;
+		}
+		Canvas.SaveToPNG(OutputFile);
 	}
 }
