@@ -127,6 +127,7 @@ namespace UniformBitmap
 	{
 	public:
 		using ChannelType = PixelType::ChannelType;
+		using PixType = PixelType;
 		using PXR = PixelRef<PixelType>;
 		using PXRHash = PXR::Hash;
 		using FloodFillEdgeType = std::unordered_set<PXR, PXRHash>;
