@@ -162,6 +162,7 @@ namespace CPPGIF
 	struct ApplicationExtensionType
 	{
 	public:
+		uint8_t BlockSize;
 		char Identifier[8];
 		char AuthenticationCode[3];
 		DataSubBlock ApplicationData;

@@ -312,8 +312,9 @@ namespace CPPGIF
 
 	ApplicationExtensionType::ApplicationExtensionType(std::istream& is)
 	{
-		Read(is, Identifier, 8);
-		Read(is, AuthenticationCode, 3);
+		Read(is, BlockSize);
+		Read(is, Identifier);
+		Read(is, AuthenticationCode);
 		ApplicationData = ReadDataSubBlock(is);
 	}
 
