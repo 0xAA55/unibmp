@@ -625,7 +625,7 @@ namespace UniformBitmap
 			auto spos = ifs.tellg();
 
 			uint32_t II_MM;
-			RB += ReadRaw(II_MM);
+			ReadRaw(II_MM);
 			switch (II_MM)
 			{
 			case 0x2A004949: IsMotorola = false; break;
@@ -634,7 +634,7 @@ namespace UniformBitmap
 			}
 
 			uint32_t OffsetOfIFD;
-			RB += Read(OffsetOfIFD);
+			Read(OffsetOfIFD);
 			ifs.seekg(spos, std::ios::beg);
 			ifs.seekg(OffsetOfIFD, std::ios::cur);
 
