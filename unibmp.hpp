@@ -288,6 +288,9 @@ namespace UniformBitmap
 
 		bool WidthIs2N() const;
 		bool HeightIs2N() const;
+		bool WidthHeightIs2N() const;
+
+
 	};
 
 	extern template class Image<Pixel_RGBA8>;
