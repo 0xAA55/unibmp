@@ -37,6 +37,3 @@ namespace ImageAnimation
 		void SaveSequencePNG(const std::string& OutputFile, bool TrueForVertical) const;
 	};
 };
-
-#include "gifldr.hpp"
-
