@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <cinttypes>
 
-#define DEBUG_TIFFHeader 1
+// #define DEBUG_TIFFHeader 1
 
 namespace UniformBitmap
 {
