@@ -1,10 +1,11 @@
+#include "unibmp.hpp"
+
 #include <fstream>
 #include <sstream>
 #include <type_traits>
 #include <limits>
 #include <cstring>
-
-#include "unibmp.hpp"
+#include <algorithm>
 
 namespace UniformBitmap
 {
@@ -1021,6 +1022,47 @@ namespace UniformBitmap
 				dst_row[x + ix] = src_row[src_x + ix];
 			}
 		}
+	}
+
+	template<typename PixelType>
+	void Image<PixelType>::FlipH()
+	{
+		int HalfWidth = int(Width >> 1);
+		int MaxX = int(Width - 1);
+#pragma omp parallel for
+		for (int y = 0; y < int(Height); y++)
+		{
+			auto& row = RowPointers[y];
+			for (int x = 0; x < HalfWidth; x++)
+			{
+				std::swap(row[x], row[MaxX - x]);
+			}
+		}
+	}
+
+	template<typename PixelType>
+	void Image<PixelType>::FlipV()
+	{
+		int HalfHeight = int(Height >> 1);
+		int MaxY = int(Height - 1);
+		auto RowBuffers = std::make_unique<PixelType[]>(int(Width) * HalfHeight);
+		auto RowLength = size_t(Width) * sizeof(PixelType);
+#pragma omp parallel for
+		for (int y = 0; y < HalfHeight; y++)
+		{
+			auto& row1 = RowPointers[y];
+			auto& row2 = RowPointers[MaxY - y];
+			auto& rowb = RowBuffers[int(Width) * y];
+			memcpy(rowb, row1, RowLength);
+			memcpy(row1, row2, RowLength);
+			memcpy(row2, rowb, RowLength);
+		}
+	}
+
+	template<typename PixelType>
+	void Image<PixelType>::FlipV_RowPtrs()
+	{
+		std::reverse(RowPointers.cbegin(), RowPointers.cend());
 	}
 
 	template<typename PixelType, typename T>
