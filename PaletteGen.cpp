@@ -44,26 +44,19 @@ namespace PaletteGeneratorLib
 		}
 	}
 
-	void GetDeepestNonLeafNode(ColorNode& Node, int CurLevel, int& MaxLevel, ColorNode*& MaxLevelNode)
-	{
-		if (CurLevel > MaxLevel)
-		{
-			MaxLevel = CurLevel;
-			MaxLevelNode = &Node;
-		}
-		for (int i = 0; i < 8; i++)
-		{
-			if (!Node.SubNodes[i]) continue;
-			if (Node.SubNodes[i]->IsLeaf) continue;
-			GetDeepestNonLeafNode(*Node.SubNodes[i], CurLevel + 1, MaxLevel, MaxLevelNode);
-		}
-	}
-
 	bool PaletteGenerator::ReduceTree()
 	{
 		int MaxLevel = 0;
 		ColorNode* NodePtr = nullptr;
-		GetDeepestNonLeafNode(RootNode, 0, MaxLevel, NodePtr);
+
+		for (int i = 0; i < 8; i++)
+		{
+			if (!ReducibleNodes[i].size()) continue;
+			auto it = ReducibleNodes[i].begin();
+			NodePtr = *it;
+			ReducibleNodes[i].erase(it);
+			break;
+		}
 		if (NodePtr)
 			return ReduceNode(*NodePtr);
 		else
