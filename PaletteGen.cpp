@@ -94,6 +94,10 @@ namespace PaletteGeneratorLib
 					if (NodeCreated) NumColors++;
 					break;
 				}
+				else
+				{
+					ReducibleNodes[i].insert(NodePtr);
+			}
 			}
 			else
 			{
