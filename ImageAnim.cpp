@@ -1,7 +1,13 @@
 #include "ImageAnim.hpp"
 
+#include "gifldr.hpp"
+#include "PaletteGen.hpp"
+
 namespace ImageAnimation
 {
+	using namespace CPPGIF;
+	using namespace PaletteGeneratorLib;
+
 	ImageAnimFrame::ImageAnimFrame(const Image_RGBA8& c, int Duration) :
 		Image_RGBA8(c), Duration(Duration)
 	{
@@ -72,7 +78,43 @@ namespace ImageAnimation
 		ofs.exceptions(std::ios::badbit | std::ios::failbit);
 		SaveGIF(ofs, options);
 	}
-	}
 
+	void ImageAnim::SaveGIF(std::ostream& ofs, SaveGIFOptions options) const
+	{
+		ofs.write("gif89a", 6);
+
+		std::shared_ptr<ColorTableArray> GlobalColorTable = nullptr;
+
+		if (!options.UseLocalPalettes)
+		{
+			GlobalColorTable = std::make_shared<ColorTableArray>();
+
+			auto PalGen = PaletteGenerator(256);
+			for (auto& Frame : Frames)
+			{
+				for (int y = 0; y < Frame.GetHeight(); y++)
+				{
+					auto rowptr = Frame.GetBitmapRowPtr(y);
+					for (int x = 0; x < Frame.GetWidth(); x++)
+					{
+						auto& Pix = rowptr[x];
+						PalGen.AddPixel(Pix.R, Pix.G, Pix.B);
+					}
+				}
+			}
+
+			auto Palette = PalGen.GetColors();
+			for (size_t i = 0; i < Palette.size(); i++)
+			{
+				auto& Color = Palette[i];
+				GlobalColorTable.get()->operator[](i) = ColorTableItem(Color.R, Color.G, Color.B);
+			}
+		}
+
+		auto LSD = LogicalScreenDescriptorType(Width, Height,
+			LogicalScreenDescriptorType::MakeBitfields(GlobalColorTable ?  true: false, 8, false, 256),
+			255, GlobalColorTable);
+
+		LSD.WriteFile(ofs);
 	}
 }
