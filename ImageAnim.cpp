@@ -92,10 +92,10 @@ namespace ImageAnimation
 			auto PalGen = PaletteGenerator(256);
 			for (auto& Frame : Frames)
 			{
-				for (int y = 0; y < Frame.GetHeight(); y++)
+				for (int y = 0; y < int(Frame.GetHeight()); y++)
 				{
 					auto rowptr = Frame.GetBitmapRowPtr(y);
-					for (int x = 0; x < Frame.GetWidth(); x++)
+					for (int x = 0; x < int(Frame.GetWidth()); x++)
 					{
 						auto& Pix = rowptr[x];
 						PalGen.AddPixel(Pix.R, Pix.G, Pix.B);
@@ -116,5 +116,7 @@ namespace ImageAnimation
 			255, GlobalColorTable);
 
 		LSD.WriteFile(ofs);
+
+
 	}
 }
