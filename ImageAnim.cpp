@@ -79,11 +79,46 @@ namespace ImageAnimation
 		SaveGIF(ofs, options);
 	}
 
+	using PaletteToIndexMap = std::array<std::array<std::array<int, 256>, 256>, 256>;
+	static std::shared_ptr<PaletteToIndexMap> BuildPaletteToIndexMap(const ColorTableItem* ColorTable, int NumColors)
+	{
+		auto ret = std::make_shared<PaletteToIndexMap>();
+
+#pragma omp parallel for
+		for (int R = 0; R < 256; R++)
+		{
+			for (int G = 0; G < 256; G++)
+			{
+				for (int B = 0; B < 256; B++)
+				{
+					int MinDiff = 0x7fffffff;
+					int MinDiffI = 0;
+					for (int i = 0; i < NumColors; i++)
+					{
+						int RD = R - ColorTable[i].R;
+						int GD = R - ColorTable[i].R;
+						int BD = R - ColorTable[i].R;
+						int Diff = RD * RD + GD * GD + BD * BD;
+						if (Diff < MinDiff)
+						{
+							MinDiff = Diff;
+							MinDiffI = i;
+						}
+					}
+					(*ret)[B][G][R] = MinDiffI;
+				}
+			}
+		}
+
+		return ret;
+	}
+
 	void ImageAnim::SaveGIF(std::ostream& ofs, SaveGIFOptions options) const
 	{
-		ofs.write("gif89a", 6);
+		ofs.write("GIF89a", 6);
 
 		std::shared_ptr<ColorTableArray> GlobalColorTable = nullptr;
+		std::shared_ptr<PaletteToIndexMap> GlobalColorTableMap = nullptr;
 
 		if (!options.UseLocalPalettes)
 		{
@@ -109,6 +144,8 @@ namespace ImageAnimation
 				auto& Color = Palette[i];
 				GlobalColorTable.get()->operator[](i) = ColorTableItem(Color.R, Color.G, Color.B);
 			}
+
+			GlobalColorTableMap = BuildPaletteToIndexMap(&GlobalColorTable->front(), int(Palette.size()));
 		}
 
 		auto LSD = LogicalScreenDescriptorType(Width, Height,
@@ -117,6 +154,67 @@ namespace ImageAnimation
 
 		LSD.WriteFile(ofs);
 
+		for (size_t i = 0; i < Frames.size(); i++)
+		{
+			auto& Frame = Frames[i];
+			auto& Frame1st = Frames[0];
+			uint8_t Bitfields = 0;
 
+			if (i == 0)
+				Bitfields = GraphicControlExtensionType::MakeBitfields(GraphicControlExtensionType::DisposalMethodEnum::DoNotDispose, false, false);
+			else
+				Bitfields = GraphicControlExtensionType::MakeBitfields(GraphicControlExtensionType::DisposalMethodEnum::DoNotDispose, false, false);
+
+			auto GCE = GraphicControlExtensionType(4, Bitfields, options.Interval, 0xFE);
+
+			std::shared_ptr<ColorTableArray> LocalColorTable = nullptr;
+			std::shared_ptr<PaletteToIndexMap> ColorTableMap = nullptr;
+			if (options.UseLocalPalettes)
+			{
+				auto Palette = PaletteGenerator::GetColors(Frame, 256);
+				LocalColorTable = std::make_shared<ColorTableArray>();
+				for (size_t i = 0; i < Palette.size(); i++)
+				{
+					auto& Color = Palette[i];
+					LocalColorTable.get()->operator[](i) = ColorTableItem(Color.R, Color.G, Color.B);
+				}
+				ColorTableMap = BuildPaletteToIndexMap(&LocalColorTable->front(), Palette.size());
+			}
+			else
+			{
+				LocalColorTable = GlobalColorTable;
+				ColorTableMap = GlobalColorTableMap;
+			}
+
+			auto FrameData = DataSubBlock();
+			FrameData.resize(size_t(Width) * Height);
+
+			for (int y = 0; y < int(Height); y++)
+			{
+				auto DstRowPtr = &FrameData[y * Width];
+				auto SrcRowPtr = Frame.GetBitmapRowPtr(y);
+				for (int x = 0; x < int(Width); x++)
+				{
+					DstRowPtr[x] = uint8_t(rand());
+				}
+			}
+
+			auto ID = ImageDescriptorType
+			{
+				0, 0,
+				uint16_t(Width), uint16_t(Height),
+				ImageDescriptorType::MakeBitfields(options.UseLocalPalettes, false, false, 256),
+				LocalColorTable,
+				std::move(FrameData)
+			};
+
+			GCE.GetImageDescriptors().push_back(ID);
+
+			Write(ofs, uint8_t(0x21));
+			Write(ofs, uint8_t(0xF9));
+			GCE.WriteFile(ofs, 8);
+		}
+
+		Write(ofs, uint8_t(0x3B));
 	}
 }
