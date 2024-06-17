@@ -2,6 +2,8 @@
 
 #include "unibmp.hpp"
 
+#include <fstream>
+
 namespace ImageAnimation
 {
 	using namespace UniformBitmap;
@@ -45,5 +47,6 @@ namespace ImageAnimation
 		void SaveSequencePNG(const std::string& OutputFile, bool TrueForVertical) const;
 
 		void SaveGIF(const std::string& OutputFile, SaveGIFOptions options) const;
+		void SaveGIF(std::ostream& ofs, SaveGIFOptions options) const;
 	};
 };
