@@ -210,6 +210,8 @@ namespace CPPGIF
 		DataSubBlock ApplicationData;
 
 		ApplicationExtensionType(std::istream& is);
+		ApplicationExtensionType(uint8_t BlockSize, const char* Identifier, const char * AuthenticationCode, DataSubBlock ApplicationData);
+		void WriteFile(std::ostream& WriteTo) const;
 	};
 
 	class GIFLoader

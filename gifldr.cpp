@@ -875,6 +875,21 @@ namespace CPPGIF
 		ApplicationData = ReadDataSubBlock(is);
 	}
 
+	ApplicationExtensionType::ApplicationExtensionType(uint8_t BlockSize, const char* Identifier, const char* AuthenticationCode, DataSubBlock ApplicationData):
+		BlockSize(BlockSize), ApplicationData(ApplicationData)
+	{
+		memcpy(this->Identifier, Identifier, sizeof this->Identifier);
+		memcpy(this->AuthenticationCode, AuthenticationCode, sizeof this->AuthenticationCode);
+	}
+
+	void ApplicationExtensionType::WriteFile(std::ostream& WriteTo) const
+	{
+		Write(WriteTo, BlockSize);
+		Write(WriteTo, Identifier);
+		Write(WriteTo, AuthenticationCode);
+		WriteDataSubBlock(WriteTo, ApplicationData);
+	}
+
 	uint8_t GraphicControlExtensionType::MakeBitfields(DisposalMethodEnum DisposalMethod, bool ReactToUserInput, bool HasTransparency)
 	{
 		if (DisposalMethod < 0 || DisposalMethod >= 4)
