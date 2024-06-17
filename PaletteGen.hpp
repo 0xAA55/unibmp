@@ -19,7 +19,6 @@ namespace PaletteGeneratorLib
 		bool IsLeaf = false;
 
 		std::array<std::shared_ptr<ColorNode>, 8> SubNodes;
-		ColorNode* Sibling = nullptr;
 
 		ColorNode() = default;
 	};
