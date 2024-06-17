@@ -165,6 +165,7 @@ namespace CPPGIF
 		uint16_t GetDelayTime() const;
 		uint8_t GetTransparentColorIndex() const;
 		const std::vector<ImageDescriptorType>& GetImageDescriptors() const;
+		std::vector<ImageDescriptorType>& GetImageDescriptors();
 
 	public:
 		GraphicControlExtensionType(std::istream& is);

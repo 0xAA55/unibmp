@@ -921,6 +921,11 @@ namespace CPPGIF
 		return ImageDescriptors;
 	}
 
+	std::vector<ImageDescriptorType>& GraphicControlExtensionType::GetImageDescriptors()
+	{
+		return ImageDescriptors;
+	}
+
 	GIFLoader::GIFLoader(const std::string& LoadFrom, bool Verbose) :
 		Name(std::filesystem::path(LoadFrom).filename().string()),
 		Verbose(Verbose)
