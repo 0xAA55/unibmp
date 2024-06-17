@@ -48,7 +48,7 @@ namespace CPPGIF
 		{
 			uint8_t u8[4];
 			uint32_t u32;
-		}ret;
+		}ret = {};
 
 		ret.u8[0] = R;
 		ret.u8[1] = G;
@@ -63,7 +63,7 @@ namespace CPPGIF
 		{
 			uint8_t u8[4];
 			uint32_t u32;
-		}ret;
+		}ret = {};
 
 		ret.u8[0] = B;
 		ret.u8[1] = G;
