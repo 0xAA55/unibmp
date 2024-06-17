@@ -164,6 +164,7 @@ namespace CPPGIF
 
 	public:
 		GraphicControlExtensionType(std::istream& is);
+		void WriteFile(std::ostream& WriteTo, uint8_t LZW_MinCodeSize = 9) const;
 
 		void DrawToFrame(ImageAnimFrame& DrawTo, const GIFLoader& ldr) const;
 		ImageAnimFrame ConvertToFrame(const GIFLoader& ldr, bool Verbose) const;

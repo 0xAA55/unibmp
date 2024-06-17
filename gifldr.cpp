@@ -734,6 +734,22 @@ namespace CPPGIF
 		}
 	}
 
+	void GraphicControlExtensionType::WriteFile(std::ostream& WriteTo, uint8_t LZW_MinCodeSize) const
+	{
+		Write(WriteTo, BlockSize);
+		Write(WriteTo, Bitfields);
+		Write(WriteTo, DelayTime);
+		Write(WriteTo, TransparentColorIndex);
+		uint8_t Terminator = 0;
+		Write(WriteTo, Terminator);
+		for (auto& ID : ImageDescriptors)
+		{
+			uint8_t Introducer = 0x2C;
+			Write(WriteTo, Introducer);
+			ID.WriteFile(WriteTo, LZW_MinCodeSize);
+		}
+	}
+
 	void GraphicControlExtensionType::DrawToFrame(ImageAnimFrame& DrawTo, const GIFLoader& ldr) const
 	{
 		// 每一个帧是由多个子图像构成的
