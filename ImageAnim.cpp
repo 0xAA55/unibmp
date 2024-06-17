@@ -50,5 +50,6 @@ namespace ImageAnimation
 
 	void ImageAnim::SaveGIF(const std::string& OutputFile, SaveGIFOptions options) const
 	{
+
 	}
 }
