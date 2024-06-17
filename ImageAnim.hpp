@@ -18,6 +18,14 @@ namespace ImageAnimation
 		int GetDuration() const;
 	};
 
+	struct SaveGIFOptions
+	{
+		bool UseLocalPalettes = false;
+		bool UseOrderedPattern = true;
+		bool UseFloydSteinberg = true;
+		int Interval = 0;
+	};
+
 	class ImageAnim
 	{
 	protected:
@@ -35,13 +43,6 @@ namespace ImageAnimation
 		uint32_t GetHeight() const;
 
 		void SaveSequencePNG(const std::string& OutputFile, bool TrueForVertical) const;
-
-		struct SaveGIFOptions
-		{
-			bool UseLocalPalettes = false;
-			bool UseOrderedPattern = true;
-			bool UseFloydSteinberg = true;
-		};
 
 		void SaveGIF(const std::string& OutputFile, SaveGIFOptions options) const;
 	};
