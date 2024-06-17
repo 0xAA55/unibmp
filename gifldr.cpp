@@ -347,6 +347,21 @@ namespace CPPGIF
 		}
 	}
 
+	void ImageDescriptorType::WriteFile(std::ostream& WriteTo, uint8_t LZW_MinCodeSize) const
+	{
+		Write(WriteTo, Left);
+		Write(WriteTo, Top);
+		Write(WriteTo, Width);
+		Write(WriteTo, Height);
+		Write(WriteTo, Bitfields);
+		if (HasLocalColorTable())
+		{
+			Write(WriteTo, &LocalColorTable.get()[0], SizeOfLocalColorTable());
+		}
+		Write(WriteTo, LZW_MinCodeSize);
+		WriteDataSubBlock(WriteTo, CompressLZW(ImageData, LZW_MinCodeSize));
+	}
+
 	DataSubBlock ImageDescriptorType::CompressLZW(const DataSubBlock& Data, uint8_t LZW_MinCodeSize)
 	{
 		// https://giflib.sourceforge.net/whatsinagif/lzw_image_data.html

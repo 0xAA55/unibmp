@@ -127,6 +127,7 @@ namespace CPPGIF
 
 	public:
 		ImageDescriptorType(std::istream& is);
+		void WriteFile(std::ostream& WriteTo, uint8_t LZW_MinCodeSize = 9) const;
 	};
 
 	struct GraphicControlExtensionType
