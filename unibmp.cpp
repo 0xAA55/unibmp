@@ -1851,7 +1851,12 @@ namespace UniformBitmap
 	template<typename PixelType>
 	void Image<PixelType>::Paint(const Image& Src, int x, int y, int w, int h, int srcx, int srcy)
 	{
-		Paint(Src, x, y, w, h, srcx, srcy, [](PXR& dst, const CPXR& src) {dst.Pixel = src.Pixel; });
+		Paint(Src, x, y, w, h, srcx, srcy,
+			[](PXR& dst, const CPXR& src)
+			{
+				dst.Pixel = src.Pixel;
+			}
+		);
 	}
 
 	template<typename PixelType>
