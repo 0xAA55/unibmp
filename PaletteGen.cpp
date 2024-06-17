@@ -17,6 +17,41 @@ namespace PaletteGeneratorLib
 		return ret;
 	}
 
+	bool PaletteItem::operator<(const PaletteItem& Other) const
+	{
+		return ToRGBA(0) < Other.ToRGBA(0);
+	}
+
+	uint32_t PaletteItem::ToRGBA(uint8_t A) const
+	{
+		union
+		{
+			uint8_t u8[4];
+			uint32_t u32;
+		}ret = {};
+
+		ret.u8[0] = R;
+		ret.u8[1] = G;
+		ret.u8[2] = B;
+		ret.u8[3] = A;
+		return ret.u32;
+	}
+
+	uint32_t PaletteItem::ToBGRA(uint8_t A) const
+	{
+		union
+		{
+			uint8_t u8[4];
+			uint32_t u32;
+		}ret = {};
+
+		ret.u8[0] = B;
+		ret.u8[1] = G;
+		ret.u8[2] = R;
+		ret.u8[3] = A;
+		return ret.u32;
+	}
+
 	bool PaletteGenerator::ReduceNode(ColorNode& Node)
 	{
 		if (Node.IsLeaf)
