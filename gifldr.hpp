@@ -50,6 +50,10 @@ namespace CPPGIF
 		uint8_t R;
 		uint8_t G;
 		uint8_t B;
+
+		bool operator < (const ColorTableItem& Other) const;
+		uint32_t ToRGBA(uint8_t A) const;
+		uint32_t ToBGRA(uint8_t A) const;
 	};
 
 	constexpr size_t MaxColorTableItems = 256;

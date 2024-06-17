@@ -37,6 +37,41 @@ namespace CPPGIF
 		{ 256, 7 },
 	};
 
+	bool ColorTableItem::operator<(const ColorTableItem& Other) const
+	{
+		return ToRGBA(0) < Other.ToRGBA(0);
+	}
+
+	uint32_t ColorTableItem::ToRGBA(uint8_t A) const
+	{
+		union
+		{
+			uint8_t u8[4];
+			uint32_t u32;
+		}ret;
+
+		ret.u8[0] = R;
+		ret.u8[1] = G;
+		ret.u8[2] = B;
+		ret.u8[3] = A;
+		return ret.u32;
+	}
+
+	uint32_t ColorTableItem::ToBGRA(uint8_t A) const
+	{
+		union
+		{
+			uint8_t u8[4];
+			uint32_t u32;
+		}ret;
+
+		ret.u8[0] = B;
+		ret.u8[1] = G;
+		ret.u8[2] = R;
+		ret.u8[3] = A;
+		return ret.u32;
+	}
+
 	template<typename T>
 	static size_t Read(std::istream& is, T& out)
 	{
