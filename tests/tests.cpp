@@ -70,12 +70,16 @@ void test_savegif(const std::string& pngfile, const std::string& gif_file, int s
 
 void test_savegif()
 {
-	test_loadgif("test.gif", "test4.png");
-	test_savegif("test4.png", "testout.gif", 68, 0);
+	// test_loadgif("test.gif", "test4.png");
+	// test_savegif("test4.png", "testout.gif", 68, 0);
+	test_loadgif("sample_1.gif", "testsample.png");
+	test_savegif("testsample.png", "testout.gif", 10, 0);
+	test_loadgif("testout.gif", "test5.png");
 }
 
 int main(int argc, char** argv)
 {
+	test_getpalette();
 	test_savegif();
 	return 0;
 }
