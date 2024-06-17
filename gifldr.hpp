@@ -88,6 +88,7 @@ namespace CPPGIF
 
 	public:
 		LogicalScreenDescriptorType(std::istream& LoadFrom);
+		void WriteFile(std::ostream& WriteTo) const;
 	};
 
 	struct ImageDescriptorType
