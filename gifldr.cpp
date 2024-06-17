@@ -84,6 +84,55 @@ namespace CPPGIF
 		return ret;
 	}
 
+	template<typename T>
+	static size_t Write(std::ostream& os, const T& data)
+	{
+		os.write(reinterpret_cast<const char*>(&data), sizeof(data));
+		return sizeof(data);
+	}
+
+	template<typename T>
+	static size_t Write(std::ostream& os, const T* data_ptr, size_t count)
+	{
+		auto BytesWrite = sizeof(T) * count;
+		os.write(reinterpret_cast<const char*>(data_ptr), BytesWrite);
+		return BytesWrite;
+	}
+
+	template<typename T>
+	static size_t WriteVector(std::ostream& os, std::vector<T>& data)
+	{
+		auto BytesWrite = sizeof(T) * data.size();
+		os.write(reinterpret_cast<const char*>(&data[0]), BytesWrite);
+		return BytesWrite;
+	}
+
+	template<typename T>
+	static size_t WriteVector(std::ostream& os, std::vector<T>& data, size_t count)
+	{
+		data.resize(count);
+		auto BytesWrite = sizeof(T) * count;
+		os.write(reinterpret_cast<const char*>(&data[0]), BytesWrite);
+		return BytesWrite;
+	}
+
+	static size_t WriteDataSubBlock(std::ostream& os, const DataSubBlock& dsb)
+	{
+		const uint8_t* data_ptr = &dsb[0];
+		size_t bytes_to_write = dsb.size();
+		size_t cb_write = 0;
+		while (bytes_to_write > 255)
+		{
+			cb_write += Write(os, uint8_t(255));
+			cb_write += Write(os, data_ptr, 255);
+			data_ptr += 255;
+			bytes_to_write -= 255;
+		}
+		cb_write += Write(os, uint8_t(bytes_to_write));
+		if (bytes_to_write) cb_write += Write(os, data_ptr, bytes_to_write);
+		return cb_write;
+	}
+
 	LogicalScreenDescriptorType::LogicalScreenDescriptorType(uint16_t LogicalScreenWidth, uint16_t LogicalScreenHeight, uint8_t Bitfields, uint8_t BackgroundColorIndex, std::shared_ptr<ColorTableArray> GlobalColorTable) :
 		LogicalScreenWidth(LogicalScreenWidth),
 		LogicalScreenHeight(LogicalScreenHeight),
