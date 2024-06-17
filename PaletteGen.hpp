@@ -47,8 +47,9 @@ namespace PaletteGeneratorLib
 		PaletteGenerator(size_t MaxColors);
 
 		void AddPixel(uint8_t R, uint8_t G, uint8_t B);
-
 		std::vector<PaletteItem> GetColors();
+
+		static std::vector<PaletteItem> GetColors(const UniformBitmap::Image_RGBA8& image, size_t MaxColors);
 	};
 };
 
