@@ -1035,53 +1035,6 @@ namespace UniformBitmap
 	}
 
 	template<typename PixelType>
-	void Image<PixelType>::Paint(int x, int y, int w, int h, const Image& Src, int src_x, int src_y)
-	{
-		const int src_w = Src.Width;
-		const int src_h = Src.Height;
-		if (x < 0)
-		{
-			src_x -= x;
-			w += x;
-			x = 0;
-		}
-		if (y < 0)
-		{
-			src_y -= y;
-			h += y;
-			y = 0;
-		}
-		if (src_x < 0)
-		{
-			x -= src_x;
-			w += src_x;
-			src_x = 0;
-		}
-		if (src_y < 0)
-		{
-			y -= src_y;
-			h += src_y;
-			src_y = 0;
-		}
-		if (src_x + w > src_w) w = src_w - src_x;
-		if (src_y + h > src_h) h = src_h - src_y;
-		if (w <= 0 || h <= 0) return;
-		if (src_x >= src_w || src_y >= src_h) return;
-#if PROFILE_MultithreadingImageRastering
-#pragma omp parallel for
-#endif
-		for (int iy = 0; iy < h; iy++)
-		{
-			auto src_row = Src.RowPointers[src_y + iy];
-			auto dst_row = RowPointers[y + iy];
-			for (int ix = 0; ix < w; ix++)
-			{
-				dst_row[x + ix] = src_row[src_x + ix];
-			}
-		}
-	}
-
-	template<typename PixelType>
 	void Image<PixelType>::FlipH()
 	{
 		int HalfWidth = int(Width >> 1);
@@ -1862,6 +1815,70 @@ namespace UniformBitmap
 
 		// 插入新的头部数据
 		memcpy(&JpegFile[2], &ExifHeader[0], ExifHeader.size());
+	}
+
+	template<typename PixelType>
+	void Image<PixelType>::Paint(int x, int y, int w, int h, const Image<PixelType>& Src, int srcx, int srcy)
+	{
+		Paint(Src, x, y, w, h, srcx, srcy, [](PXR& dst, const PXR& src) {dst.Pixel = src.Pixel});
+	}
+
+	template<typename PixelType>
+	void Image<PixelType>::Paint(const Image<PixelType>& Src, int x, int y, int w, int h, int srcx, int srcy)
+	{
+		Paint(Src, x, y, w, h, srcx, srcy, [](PXR& dst, const PXR& src) {dst.Pixel = src.Pixel});
+	}
+
+	template<typename PixelType>
+	void Image<PixelType>::Paint(const Image<PixelType>& Src, int x, int y, int w, int h, int srcx, int srcy, void(*on_pixel)(PXR& dst, const PXR& src))
+	{
+		if (x < 0)
+		{
+			srcx -= x;
+			w -= x;
+			x = 0;
+		}
+		if (y < 0)
+		{
+			srcy -= y;
+			h -= y;
+			y = 0;
+		}
+		if (src_x < 0)
+		{
+			x -= src_x;
+			w += src_x;
+			src_x = 0;
+		}
+		if (src_y < 0)
+		{
+			y -= src_y;
+			h += src_y;
+			src_y = 0;
+		}
+		int srcw = Src.GetWidth() - srcx;
+		int srch = Src.GetHeight() - srcy;
+		if (x + w > Width) w = Width - x;
+		if (y + h > Height) h = Height - y;
+		if (srcw <= 0 || srch <= 0) return;
+		if (srcx + w > srcw) w = srcw - srcx;
+		if (srcy + h > srch) h = srch - srcy;
+		if (w <= 0 || h <= 0) return;
+
+#if PROFILE_MultithreadingImageRastering
+#pragma omp parallel for
+#endif
+		for (int py = 0; py < srch; py++)
+		{
+			auto srcrow = Src.GetBitmapRowPtr(srcy + py);
+			auto dstrow = Src.GetBitmapRowPtr(y + py);
+			for (int px = 0; px < srcw; px++)
+			{
+				auto srcp = PixelRef(srcx + px, srcy + py, srcrow[srcx + px]);
+				auto dstp = PixelRef(x + px, y + py, dstrow[x + px]);
+				on_pixel(dstp, srcp);
+			}
+		}
 	}
 }
 
