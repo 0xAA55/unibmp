@@ -81,15 +81,17 @@ namespace PaletteGeneratorLib
 
 			if (!NodePtr->IsLeaf)
 			{
+				bool NodeCreated = false;
 				if (!NodePtr->SubNodes[index])
 				{
+					NodeCreated = true;
 					NodePtr->SubNodes[index] = std::make_shared<ColorNode>();
 				}
 				NodePtr = NodePtr->SubNodes[index].get();
 				if (i == 0)
 				{
 					NodePtr->IsLeaf = true;
-					NumColors++;
+					if (NodeCreated) NumColors++;
 					break;
 				}
 			}
