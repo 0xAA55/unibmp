@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <memory>
 #include <array>
+#include <set>
 
 namespace PaletteGeneratorLib
 {
@@ -34,6 +35,8 @@ namespace PaletteGeneratorLib
 	{
 	protected:
 		ColorNode RootNode;
+		std::array<std::set<ColorNode*>, 8> ReducibleNodes;
+
 		uint64_t NumPixels = 0;
 		size_t NumColors = 0;
 		size_t MaxColors = 256;
