@@ -48,6 +48,24 @@ namespace ImageAnimation
 		Canvas.SaveToPNG(OutputFile);
 	}
 
+	template<typename T>
+	static void WriteVector(std::ostream& ofs, const std::vector<T>& value)
+	{
+		ofs.write(reinterpret_cast<const char*>(&value[0]), (sizeof value[0]) * value.size());
+	}
+
+	template<typename T>
+	static void Write(std::ostream& ofs, const T& value)
+	{
+		ofs.write(reinterpret_cast<const char*>(&value), sizeof value);
+	}
+
+	template<typename T>
+	static void Write(std::ostream& ofs, const T* value, size_t bytes)
+	{
+		ofs.write(reinterpret_cast<const char*>(value), sizeof bytes);
+	}
+
 	void ImageAnim::SaveGIF(const std::string& OutputFile, SaveGIFOptions options) const
 	{
 
