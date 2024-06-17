@@ -12,13 +12,16 @@ void test_gif(const std::string& gif_file, const std::string& png_file)
 	Gif.ConvertToImageAnim().SaveSequencePNG(png_file, false);
 }
 
-int main(int argc, char** argv)
+void test_loadgif()
 {
 	test_gif("sample_1.gif", "test1.png");
 	test_gif("Rotating_earth_(large).gif", "test2.png");
 	test_gif("testre.gif", "test3.png");
 	test_gif("test.gif", "test4.png");
+}
 
+void test_getpalette()
+{
 	auto Colorful = Image_RGBA8("testcolorful.png", true);
 	auto PalGen = PaletteGenerator(256);
 	for (uint32_t y = 0; y < Colorful.GetHeight(); y++)
@@ -45,6 +48,10 @@ int main(int argc, char** argv)
 		if (i >= Palette.size()) break;
 	}
 	PalImage.SaveToPNG("testpalette.png");
+}
+
+int main(int argc, char** argv)
+{
 
 	return 0;
 }
