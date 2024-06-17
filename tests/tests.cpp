@@ -1,6 +1,7 @@
 #include "gifldr.hpp"
 #include "unibmp.hpp"
 #include "PaletteGen.hpp"
+#include "ImageAnim.hpp"
 
 using namespace CPPGIF;
 using namespace PaletteGeneratorLib;
@@ -50,9 +51,20 @@ void test_getpalette()
 	PalImage.SaveToPNG("testpalette.png");
 }
 
+void test_savegif(const std::string& pngfile, const std::string& gif_file, int interval)
+{
+	auto options = SaveGIFOptions();
+}
+
+void test_savegif()
+{
+	test_loadgif("test.gif", "test4.png");
+	test_savegif("test4.png", "testout.gif", 0);
+}
+
 int main(int argc, char** argv)
 {
-
+	test_savegif();
 	return 0;
 }
 
