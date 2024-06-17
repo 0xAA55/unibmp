@@ -137,12 +137,11 @@ namespace CPPGIF
 		uint8_t Bitfields = 0;
 		uint16_t DelayTime = 0;
 		uint8_t TransparentColorIndex = 0;
-		DataSubBlock SubBlockData;
 		std::vector<ImageDescriptorType> ImageDescriptors;
 
 	public:
 		GraphicControlExtensionType() = default;
-		GraphicControlExtensionType(uint8_t BlockSize, uint8_t Bitfields, uint16_t DelayTime, uint8_t TransparentColorIndex, DataSubBlock* SubBlock_Optional);
+		GraphicControlExtensionType(uint8_t BlockSize, uint8_t Bitfields, uint16_t DelayTime, uint8_t TransparentColorIndex);
 
 		enum DisposalMethodEnum
 		{

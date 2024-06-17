@@ -713,10 +713,9 @@ namespace CPPGIF
 		return ImageData;
 	}
 
-	GraphicControlExtensionType::GraphicControlExtensionType(uint8_t BlockSize, uint8_t Bitfields, uint16_t DelayTime, uint8_t TransparentColorIndex, DataSubBlock* SubBlock_Optional) :
+	GraphicControlExtensionType::GraphicControlExtensionType(uint8_t BlockSize, uint8_t Bitfields, uint16_t DelayTime, uint8_t TransparentColorIndex) :
 		BlockSize(BlockSize), Bitfields(Bitfields), DelayTime(DelayTime), TransparentColorIndex(TransparentColorIndex)
 	{
-		if (SubBlock_Optional) SubBlockData = *SubBlock_Optional;
 	}
 
 	GraphicControlExtensionType::GraphicControlExtensionType(std::istream& is)
@@ -725,7 +724,8 @@ namespace CPPGIF
 		Read(is, Bitfields);
 		Read(is, DelayTime);
 		Read(is, TransparentColorIndex);
-		SubBlockData = ReadDataSubBlock(is);
+		uint8_t Terminator;
+		Read(is, Terminator);
 		while (is.peek() == 0x2C)
 		{
 			auto Label = uint8_t(0);
