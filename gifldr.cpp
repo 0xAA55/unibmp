@@ -157,6 +157,20 @@ namespace CPPGIF
 		}
 	}
 
+	void LogicalScreenDescriptorType::WriteFile(std::ostream& WriteTo) const
+	{
+		Write(WriteTo, LogicalScreenWidth);
+		Write(WriteTo, LogicalScreenHeight);
+		Write(WriteTo, Bitfields);
+		Write(WriteTo, BackgroundColorIndex);
+		Write(WriteTo, PixelAspectRatio);
+		if (HasGlobalColorTable())
+		{
+			auto& ColorTable = *GlobalColorTable;
+			Write(WriteTo, &ColorTable[0], SizeOfGlobalColorTable());
+		}
+	}
+
 	uint8_t LogicalScreenDescriptorType::MakeBitfields(bool HasGlobalColorTable, uint8_t ColorResolution, bool ColorIsSorted, size_t SizeOfGlobalColorTable)
 	{
 		uint8_t ret = 0;
