@@ -5,6 +5,7 @@
 
 using namespace CPPGIF;
 using namespace PaletteGeneratorLib;
+using namespace ImageAnimation;
 
 void test_loadgif(const std::string& gif_file, const std::string& png_file)
 {
@@ -51,15 +52,26 @@ void test_getpalette()
 	PalImage.SaveToPNG("testpalette.png");
 }
 
-void test_savegif(const std::string& pngfile, const std::string& gif_file, int interval)
+void test_savegif(const std::string& pngfile, const std::string& gif_file, int slice_width, int interval)
 {
 	auto options = SaveGIFOptions();
+	options.Interval = interval;
+
+	auto PngFile = Image_RGBA8(pngfile, true);
+	auto ImgAnim = ImageAnim(slice_width, PngFile.GetHeight(), "test", true);
+	for (int x = 0; x <= int(PngFile.GetWidth()) - slice_width; x += slice_width)
+	{
+		auto Frame = ImageAnimFrame(Image_RGBA8(slice_width, PngFile.GetHeight(), ImgAnim.Name + "_frame_" + std::to_string(ImgAnim.Frames.size()), true), interval);
+		Frame.Paint(PngFile, 0, 0, slice_width, PngFile.GetHeight(), x, 0);
+		ImgAnim.Frames.push_back(Frame);
+	}
+	ImgAnim.SaveGIF(gif_file, options);
 }
 
 void test_savegif()
 {
 	test_loadgif("test.gif", "test4.png");
-	test_savegif("test4.png", "testout.gif", 0);
+	test_savegif("test4.png", "testout.gif", 68, 0);
 }
 
 int main(int argc, char** argv)
