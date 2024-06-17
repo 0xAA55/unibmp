@@ -113,9 +113,10 @@ namespace PaletteGeneratorLib
 		Node.BSum += B;
 		Node.NumPixels++;
 		NumPixels++;
-		while (NumColors > MaxColors)
+		for(int i = 0; i < 8; i++)
 		{
-			ReduceTree();
+			if (NumColors > MaxColors) ReduceTree();
+			else break;
 		}
 	}
 
