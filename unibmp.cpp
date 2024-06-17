@@ -1894,15 +1894,17 @@ namespace UniformBitmap
 		if (srcx + w > srcw) w = srcw - srcx;
 		if (srcy + h > srch) h = srch - srcy;
 		if (w <= 0 || h <= 0) return;
+		if (w > srcw) w = srcw;
+		if (h > srch) h = srch;
 
 #if PROFILE_MultithreadingImageRastering
 #pragma omp parallel for
 #endif
-		for (int py = 0; py < srch; py++)
+		for (int py = 0; py < h; py++)
 		{
 			auto srcrow = Src.GetBitmapRowPtr(srcy + py);
 			auto dstrow = GetBitmapRowPtr(y + py);
-			for (int px = 0; px < srcw; px++)
+			for (int px = 0; px < w; px++)
 			{
 				auto srcp = CPXR(uint32_t(srcx + px), uint32_t(srcy + py), srcrow[srcx + px]);
 				auto dstp = PXR(uint32_t(x + px), uint32_t(y + py), dstrow[x + px]);
