@@ -43,6 +43,7 @@ namespace PaletteGeneratorLib
 		uint64_t NumPixels = 0;
 		size_t NumColors = 0;
 		size_t MaxColors = 256;
+		bool DoPaletteExactFit = false;
 
 		bool ReduceNode(ColorNode& Node);
 		bool ReduceTree();
@@ -54,6 +55,7 @@ namespace PaletteGeneratorLib
 
 		void AddPixel(uint8_t R, uint8_t G, uint8_t B);
 		std::vector<PaletteItem> GetColors();
+		bool IsPaletteExactFit() const;
 
 		static std::vector<PaletteItem> GetColors(const UniformBitmap::Image_RGBA8& image, size_t MaxColors);
 	};

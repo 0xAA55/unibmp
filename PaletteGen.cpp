@@ -84,6 +84,8 @@ namespace PaletteGeneratorLib
 		int MaxLevel = 0;
 		ColorNode* NodePtr = nullptr;
 
+		DoPaletteExactFit = false;
+
 		int i;
 		for (i = 0; i < 8; i++)
 		{
@@ -184,6 +186,10 @@ namespace PaletteGeneratorLib
 		auto Palette = std::vector<PaletteItem>();
 		GetColors(RootNode, Palette);
 		return Palette;
+	}
+	bool PaletteGenerator::IsPaletteExactFit() const
+	{
+		return DoPaletteExactFit;
 	}
 	std::vector<PaletteItem> PaletteGenerator::GetColors(const UniformBitmap::Image_RGBA8& image, size_t MaxColors)
 	{
