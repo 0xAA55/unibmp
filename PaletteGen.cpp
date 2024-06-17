@@ -25,6 +25,7 @@ namespace PaletteGeneratorLib
 		}
 		else
 		{
+			auto PrevNumColors = NumColors;
 			for (int j = 0; j < 8; j++)
 			{
 				if (!Node.SubNodes[j]) continue;
@@ -35,11 +36,11 @@ namespace PaletteGeneratorLib
 				Node.BSum += Sub.BSum;
 				Node.NumPixels += Sub.NumPixels;
 				Node.SubNodes[j].reset();
+				NumColors -= 1;
 			}
-			Node.Sibling = nullptr;
 			Node.IsLeaf = true;
-			NumColors = GetNumColors(RootNode);
-			return true;
+			NumColors += 1;
+			return NumColors < PrevNumColors;
 		}
 	}
 
