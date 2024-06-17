@@ -5,7 +5,7 @@
 using namespace CPPGIF;
 using namespace PaletteGeneratorLib;
 
-void test_gif(const std::string& gif_file, const std::string& png_file)
+void test_loadgif(const std::string& gif_file, const std::string& png_file)
 {
 	std::cout << gif_file << "\n";
 	auto Gif = GIFLoader(gif_file, true);
@@ -14,10 +14,10 @@ void test_gif(const std::string& gif_file, const std::string& png_file)
 
 void test_loadgif()
 {
-	test_gif("sample_1.gif", "test1.png");
-	test_gif("Rotating_earth_(large).gif", "test2.png");
-	test_gif("testre.gif", "test3.png");
-	test_gif("test.gif", "test4.png");
+	test_loadgif("sample_1.gif", "test1.png");
+	test_loadgif("Rotating_earth_(large).gif", "test2.png");
+	test_loadgif("testre.gif", "test3.png");
+	test_loadgif("test.gif", "test4.png");
 }
 
 void test_getpalette()
