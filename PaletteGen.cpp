@@ -49,7 +49,8 @@ namespace PaletteGeneratorLib
 		int MaxLevel = 0;
 		ColorNode* NodePtr = nullptr;
 
-		for (int i = 0; i < 8; i++)
+		int i;
+		for (i = 0; i < 8; i++)
 		{
 			if (!ReducibleNodes[i].size()) continue;
 			auto it = ReducibleNodes[i].begin();
@@ -57,6 +58,7 @@ namespace PaletteGeneratorLib
 			ReducibleNodes[i].erase(it);
 			break;
 		}
+		assert(i < 8);
 		if (NodePtr)
 			return ReduceNode(*NodePtr);
 		else
