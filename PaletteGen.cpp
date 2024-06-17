@@ -64,10 +64,9 @@ namespace PaletteGeneratorLib
 		ColorNode* NodePtr = nullptr;
 		GetDeepestNonLeafNode(RootNode, 0, MaxLevel, NodePtr);
 		if (NodePtr)
-		{
 			return ReduceNode(*NodePtr);
-		}
-		return false;
+		else
+			return false;
 	}
 
 	PaletteGenerator::PaletteGenerator(size_t MaxColors) :
