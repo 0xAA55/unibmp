@@ -843,7 +843,7 @@ namespace CPPGIF
 
 	ImageAnim GIFLoader::ConvertToImageAnim() const
 	{
-		auto ret = ImageAnim(GetWidth(), GetHeight(), Verbose);
+		auto ret = ImageAnim(GetWidth(), GetHeight(), Name, Verbose);
 		auto& BackgroundColor = LogicalScreenDescriptor.GetBackgroundColor();
 		auto BgColor = Pixel_RGBA8(BackgroundColor.R, BackgroundColor.G, BackgroundColor.B, 255);
 
