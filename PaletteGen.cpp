@@ -147,4 +147,18 @@ namespace PaletteGeneratorLib
 		GetColors(RootNode, Palette);
 		return Palette;
 	}
+	std::vector<PaletteItem> PaletteGenerator::GetColors(const UniformBitmap::Image_RGBA8& image, size_t MaxColors)
+	{
+		auto PalGen = PaletteGenerator(MaxColors);
+		for (int y = 0; y < image.GetHeight(); y++)
+		{
+			auto rowptr = image.GetBitmapRowPtr(y);
+			for (int x = 0; x < image.GetWidth(); x++)
+			{
+				auto& Pix = rowptr[x];
+				PalGen.AddPixel(Pix.R, Pix.G, Pix.B);
+			}
+		}
+		return PalGen.GetColors();
+	}
 };
