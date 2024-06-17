@@ -164,7 +164,11 @@ namespace CPPGIF
 			bytes_to_write -= 255;
 		}
 		cb_write += Write(os, uint8_t(bytes_to_write));
-		if (bytes_to_write) cb_write += Write(os, data_ptr, bytes_to_write);
+		if (bytes_to_write)
+		{
+			cb_write += Write(os, data_ptr, bytes_to_write);
+			cb_write += Write(os, uint8_t(0));
+		}
 		return cb_write;
 	}
 
