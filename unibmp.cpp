@@ -385,13 +385,38 @@ namespace UniformBitmap
 	PixelRef<PixelType>::PixelRef(uint32_t x, uint32_t y, PixelType& p) : x(x), y(y), Pixel(p)
 	{}
 	template<typename PixelType>
-	bool PixelRef<PixelType>::operator == (const PixelRef& p) const
+	bool PixelRef<PixelType>::operator == (const PixelRef & p) const
+	{
+		return &Pixel == &p.Pixel;
+	}
+	template<typename PixelType>
+	bool PixelRef<PixelType>::operator == (const CPixelRef<PixelType>& p) const
 	{
 		return &Pixel == &p.Pixel;
 	}
 
 	template<typename PixelType>
 	size_t PixelRef<PixelType>::Hash::operator()(const PixelRef<PixelType>& p) const
+	{
+		return reinterpret_cast<size_t>(&p.Pixel);
+	}
+
+	template<typename PixelType>
+	CPixelRef<PixelType>::CPixelRef(uint32_t x, uint32_t y, const PixelType& p) : x(x), y(y), Pixel(p)
+	{}
+	template<typename PixelType>
+	bool CPixelRef<PixelType>::operator == (const PixelRef<PixelType>& p) const
+	{
+		return &Pixel == &p.Pixel;
+	}
+	template<typename PixelType>
+	bool CPixelRef<PixelType>::operator == (const CPixelRef&p) const
+	{
+		return &Pixel == &p.Pixel;
+	}
+
+	template<typename PixelType>
+	size_t CPixelRef<PixelType>::Hash::operator()(const CPixelRef<PixelType>& p) const
 	{
 		return reinterpret_cast<size_t>(&p.Pixel);
 	}
@@ -1818,19 +1843,19 @@ namespace UniformBitmap
 	}
 
 	template<typename PixelType>
-	void Image<PixelType>::Paint(int x, int y, int w, int h, const Image<PixelType>& Src, int srcx, int srcy)
+	void Image<PixelType>::Paint(int x, int y, int w, int h, const Image& Src, int srcx, int srcy)
 	{
-		Paint(Src, x, y, w, h, srcx, srcy, [](PXR& dst, const PXR& src) {dst.Pixel = src.Pixel});
+		Paint(Src, x, y, w, h, srcx, srcy, [](PXR& dst, const CPXR& src) {dst.Pixel = src.Pixel; });
 	}
 
 	template<typename PixelType>
-	void Image<PixelType>::Paint(const Image<PixelType>& Src, int x, int y, int w, int h, int srcx, int srcy)
+	void Image<PixelType>::Paint(const Image& Src, int x, int y, int w, int h, int srcx, int srcy)
 	{
-		Paint(Src, x, y, w, h, srcx, srcy, [](PXR& dst, const PXR& src) {dst.Pixel = src.Pixel});
+		Paint(Src, x, y, w, h, srcx, srcy, [](PXR& dst, const CPXR& src) {dst.Pixel = src.Pixel; });
 	}
 
 	template<typename PixelType>
-	void Image<PixelType>::Paint(const Image<PixelType>& Src, int x, int y, int w, int h, int srcx, int srcy, void(*on_pixel)(PXR& dst, const PXR& src))
+	void Image<PixelType>::Paint(const Image& Src, int x, int y, int w, int h, int srcx, int srcy, void(*on_pixel)(PXR& dst, const CPXR& src))
 	{
 		if (x < 0)
 		{
@@ -1844,22 +1869,22 @@ namespace UniformBitmap
 			h -= y;
 			y = 0;
 		}
-		if (src_x < 0)
+		if (srcx < 0)
 		{
-			x -= src_x;
-			w += src_x;
-			src_x = 0;
+			x -= srcx;
+			w += srcx;
+			srcx = 0;
 		}
-		if (src_y < 0)
+		if (srcy < 0)
 		{
-			y -= src_y;
-			h += src_y;
-			src_y = 0;
+			y -= srcy;
+			h += srcy;
+			srcy = 0;
 		}
 		int srcw = Src.GetWidth() - srcx;
 		int srch = Src.GetHeight() - srcy;
-		if (x + w > Width) w = Width - x;
-		if (y + h > Height) h = Height - y;
+		if (x + w > int(Width)) w = Width - x;
+		if (y + h > int(Height)) h = Height - y;
 		if (srcw <= 0 || srch <= 0) return;
 		if (srcx + w > srcw) w = srcw - srcx;
 		if (srcy + h > srch) h = srch - srcy;
@@ -1871,11 +1896,11 @@ namespace UniformBitmap
 		for (int py = 0; py < srch; py++)
 		{
 			auto srcrow = Src.GetBitmapRowPtr(srcy + py);
-			auto dstrow = Src.GetBitmapRowPtr(y + py);
+			auto dstrow = GetBitmapRowPtr(y + py);
 			for (int px = 0; px < srcw; px++)
 			{
-				auto srcp = PixelRef(srcx + px, srcy + py, srcrow[srcx + px]);
-				auto dstp = PixelRef(x + px, y + py, dstrow[x + px]);
+				auto srcp = CPXR(uint32_t(srcx + px), uint32_t(srcy + py), srcrow[srcx + px]);
+				auto dstp = PXR(uint32_t(x + px), uint32_t(y + py), dstrow[x + px]);
 				on_pixel(dstp, srcp);
 			}
 		}

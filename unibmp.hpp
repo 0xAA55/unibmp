@@ -115,6 +115,9 @@ namespace UniformBitmap
 		};
 	};
 
+	template<typename PixelType> class PixelRef;
+	template<typename PixelType> class CPixelRef;
+
 	template<typename PixelType>
 	class PixelRef
 	{
@@ -124,10 +127,28 @@ namespace UniformBitmap
 		PixelRef() = delete;
 		PixelRef(uint32_t x, uint32_t y, PixelType& p);
 		bool operator == (const PixelRef& p) const;
+		bool operator == (const CPixelRef<PixelType>& p) const;
 
 		struct Hash
 		{
 			size_t operator()(const PixelRef<PixelType>& p) const;
+		};
+	};
+
+	template<typename PixelType>
+	class CPixelRef
+	{
+	public:
+		uint32_t x, y;
+		const PixelType& Pixel;
+		CPixelRef() = delete;
+		CPixelRef(uint32_t x, uint32_t y, const PixelType& p);
+		bool operator == (const PixelRef<PixelType>& p) const;
+		bool operator == (const CPixelRef& p) const;
+
+		struct Hash
+		{
+			size_t operator()(const CPixelRef<PixelType>& p) const;
 		};
 	};
 
@@ -155,6 +176,7 @@ namespace UniformBitmap
 		using ChannelType = PixelType::ChannelType;
 		using PixType = PixelType;
 		using PXR = PixelRef<PixelType>;
+		using CPXR = CPixelRef<PixelType>;
 		using PXRHash = PXR::Hash;
 		using FloodFillEdgeType = std::unordered_set<PXR, PXRHash>;
 
@@ -316,7 +338,7 @@ namespace UniformBitmap
 	public:
 		void Paint(int x, int y, int w, int h, const Image& Src, int srcx, int srcy);
 		void Paint(const Image& Src, int x, int y, int w, int h, int srcx, int srcy);
-		void Paint(const Image& Src, int x, int y, int w, int h, int srcx, int srcy, void(*on_pixel)(PXR& dst, const PXR& src));
+		void Paint(const Image& Src, int x, int y, int w, int h, int srcx, int srcy, void(*on_pixel)(PXR& dst, const CPXR& src));
 
 	public:
 		bool Verbose = true;
