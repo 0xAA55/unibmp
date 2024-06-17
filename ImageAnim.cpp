@@ -68,6 +68,11 @@ namespace ImageAnimation
 
 	void ImageAnim::SaveGIF(const std::string& OutputFile, SaveGIFOptions options) const
 	{
+		auto ofs = std::ofstream(OutputFile, std::ios::binary);
+		ofs.exceptions(std::ios::badbit | std::ios::failbit);
+		SaveGIF(ofs, options);
+	}
+	}
 
 	}
 }
