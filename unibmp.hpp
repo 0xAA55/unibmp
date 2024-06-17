@@ -243,7 +243,6 @@ namespace UniformBitmap
 		void BGR2RGB();
 
 		void FillRect(int l, int t, int r, int b, const PixelType& Color);
-		void Paint(int x, int y, int w, int h, const Image& Src, int src_x, int src_y);
 
 		size_t SaveToBmp24(const std::string& FilePath, bool InverseLineOrder) const;
 		size_t SaveToBmp32(const std::string& FilePath, bool InverseLineOrder) const;
@@ -313,6 +312,11 @@ namespace UniformBitmap
 	protected:
 		static PixelType LinearSample(uint32_t Width, uint32_t Height, const std::vector<PixelType*> RowPointers, float u, float v);
 		static PixelType GetAvreage(int x0, int y0, int x1, int y1, const std::vector<PixelType*> RowPointers);
+
+	public:
+		void Paint(int x, int y, int w, int h, const Image& Src, int src_x, int src_y);
+		void Paint(const Image<PixelType>& Src, int x, int y, int w, int h, int srcx, int srcy);
+		void Paint(const Image<PixelType>& Src, int x, int y, int w, int h, int srcx, int srcy, void(*on_pixel)(PXR& dst, const PXR& src));
 
 	public:
 		bool Verbose = true;
