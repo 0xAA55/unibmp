@@ -12,8 +12,8 @@ namespace ImageAnimation
 		return Duration;
 	}
 
-	ImageAnim::ImageAnim(uint32_t Width, uint32_t Height, bool Verbose) :
-		Width(Width), Height(Height), Verbose(Verbose)
+	ImageAnim::ImageAnim(uint32_t Width, uint32_t Height, const std::string& Name, bool Verbose) :
+		Width(Width), Height(Height), Name(Name), Verbose(Verbose)
 	{
 	}
 

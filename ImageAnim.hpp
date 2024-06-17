@@ -38,7 +38,7 @@ namespace ImageAnimation
 		bool Verbose = true;
 
 	public:
-		ImageAnim(uint32_t Width, uint32_t Height, bool Verbose);
+		ImageAnim(uint32_t Width, uint32_t Height, const std::string& Name, bool Verbose);
 		uint32_t GetWidth() const;
 		uint32_t GetHeight() const;
 
