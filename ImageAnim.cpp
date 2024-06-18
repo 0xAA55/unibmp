@@ -113,6 +113,76 @@ namespace ImageAnimation
 		return ret;
 	}
 
+	struct RGBInt
+	{
+		int R = 0;
+		int G = 0;
+		int B = 0;
+
+		RGBInt operator +(const RGBInt& other)
+		{
+			return RGBInt
+			{
+				R + other.R,
+				G + other.G,
+				B + other.B,
+			};
+		}
+		RGBInt operator -(const RGBInt& other)
+		{
+			return RGBInt
+			{
+				R - other.R,
+				G - other.G,
+				B - other.B,
+			};
+		}
+		RGBInt operator +(int other)
+		{
+			return RGBInt
+			{
+				R + other,
+				G + other,
+				B + other,
+	};
+		}
+		RGBInt operator -(int other)
+		{
+			return RGBInt
+			{
+				R - other,
+				G - other,
+				B - other,
+			};
+		}
+		RGBInt& operator +=(const RGBInt& other)
+		{
+			*this = *this + other;
+			return *this;
+		}
+		RGBInt& operator -=(const RGBInt& other)
+		{
+			*this = *this - other;
+			return *this;
+		}
+		RGBInt& operator +=(int other)
+		{
+			*this = *this + other;
+			return *this;
+		}
+		RGBInt& operator -=(int other)
+		{
+			*this = *this - other;
+			return *this;
+		}
+		void Clamp()
+		{
+			if (R < 0) R = 0; else if (R > 255) R = 255;
+			if (G < 0) G = 0; else if (G > 255) G = 255;
+			if (B < 0) B = 0; else if (B > 255) B = 255;
+		}
+	};
+
 	void ImageAnim::SaveGIF(std::ostream& ofs, SaveGIFOptions options) const
 	{
 		ofs.write("GIF89a", 6);
