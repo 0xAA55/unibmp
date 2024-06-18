@@ -954,16 +954,6 @@ namespace CPPGIF
 		return TransparentColorIndex;
 	}
 
-	const std::vector<ImageDescriptorType>& GraphicControlExtensionType::GetImageDescriptors() const
-	{
-		return ImageDescriptors;
-	}
-
-	std::vector<ImageDescriptorType>& GraphicControlExtensionType::GetImageDescriptors()
-	{
-		return ImageDescriptors;
-	}
-
 	GIFLoader::GIFLoader(const std::string& LoadFrom, bool Verbose) :
 		Name(std::filesystem::path(LoadFrom).filename().string()),
 		Verbose(Verbose)
@@ -1098,15 +1088,65 @@ namespace CPPGIF
 						throw UnexpectedData(buf);
 					} while (0);
 				}
+		}
+	}
+	GIFFrameType::GIFFrameType(std::istream& is)
+	{
+		for(;;)
+		{
+			auto Label = uint8_t();
+			switch (is.peek())
+			{
+			case 0x01:
+			case 0x2C:
+			case 0xF9:
+			case 0xFE:
+			case 0xFF:
+				Read(is, Label);
 				break;
-			case 0x3B: ReadToTrailer = true; break;
 			default:
-				do
+				return;
+			}
+			switch (Label)
+			{
+			case 0x01:
+				GraphicData.push_back(GraphicDataType());
+				GraphicData.back().PlainTextExtension = std::make_shared<PlainTextExtensionType>(is);
+				break;
+			case 0x2C:
+				GraphicData.push_back(GraphicDataType());
+				GraphicData.back().ImageDescriptor = std::make_shared<ImageDescriptorType>(is); break;
+			case 0xF9: GraphicControlExtension = std::make_shared<GraphicControlExtensionType>(is);
+				break;
+			case 0xFE: CommentExtension = std::make_shared<CommentExtensionType>(is); break;
+			case 0xFF: ApplicationExtension = std::make_shared<ApplicationExtensionType>(is); break;
+			}
+		}
+	}
+
+	void GIFFrameType::WriteFile(std::ostream& WriteTo, uint8_t LZW_MinCodeSize) const
+	{
+		auto Label = uint8_t();
+
+		if (GraphicControlExtension)
+		{
+			Write(WriteTo, uint8_t(0x21));
+			Write(WriteTo, uint8_t(0xF9));
+			GraphicControlExtension->WriteFile(WriteTo);
+		}
+
+		for(auto& GD: GraphicData)
+		{
+			Write(WriteTo, uint8_t(0x21));
+			if (GD.ImageDescriptor)
+			{
+				Write(WriteTo, uint8_t(0x2C));
+				GD.ImageDescriptor->WriteFile(WriteTo, LZW_MinCodeSize);
+			}
+			else if (GD.PlainTextExtension)
 				{
-					char buf[256];
-					snprintf(buf, sizeof buf, "GIF: Read error: got unknown introducer (0x%02X) here.", Introducer);
-					throw UnexpectedData(buf);
-				} while (0);
+				Write(WriteTo, uint8_t(0x01));
+				GD.PlainTextExtension->WriteFile(WriteTo);
 			}
 		}
 	}

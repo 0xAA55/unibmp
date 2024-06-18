@@ -159,7 +159,6 @@ namespace CPPGIF
 		uint8_t Bitfields = 0;
 		uint16_t DelayTime = 0;
 		uint8_t TransparentColorIndex = 0;
-		std::vector<ImageDescriptorType> ImageDescriptors;
 
 	public:
 		GraphicControlExtensionType() = default;
@@ -182,8 +181,6 @@ namespace CPPGIF
 
 		uint16_t GetDelayTime() const;
 		uint8_t GetTransparentColorIndex() const;
-		const std::vector<ImageDescriptorType>& GetImageDescriptors() const;
-		std::vector<ImageDescriptorType>& GetImageDescriptors();
 
 	public:
 		GraphicControlExtensionType(std::istream& is);
@@ -216,16 +213,36 @@ namespace CPPGIF
 		void WriteFile(std::ostream& WriteTo) const;
 	};
 
+	struct GraphicDataType
+	{
+		std::shared_ptr<ImageDescriptorType> ImageDescriptor = nullptr;
+		std::shared_ptr<PlainTextExtensionType> PlainTextExtension = nullptr;
+	};
+
+	struct GIFFrameType
+	{
+	public:
+		std::shared_ptr<GraphicControlExtensionType> GraphicControlExtension; // 绘图控制描述符
+		std::vector<GraphicDataType> GraphicData;
+
+		std::shared_ptr<CommentExtensionType> CommentExtension;
+		std::shared_ptr<ApplicationExtensionType> ApplicationExtension;
+
+		GIFFrameType(std::istream& is);
+		void WriteFile(std::ostream& WriteTo, uint8_t LZW_MinCodeSize) const;
+
+		ImageAnimFrame ConvertToFrame(const GIFLoader& ldr, bool Verbose) const;
+		void DrawToFrame(Image_RGBA8& DrawTo, const ColorTableArray* GlobalColorTablePtr = nullptr) const;
+		void DrawImageDesc(Image_RGBA8& DrawTo, const ImageDescriptorType& ImgDesc, const ColorTableArray* GlobalColorTablePtr) const;
+	};
+
 	class GIFLoader
 	{
 	public:
 		std::string Version; // gif87a / gif89a
 		LogicalScreenDescriptorType LogicalScreenDescriptor; // 逻辑屏幕描述符
-		std::vector<GraphicControlExtensionType> GraphicControlExtension; // 绘图控制描述符
-		std::vector<PlainTextExtensionType> PlainTextExtension;
+		std::vector<GIFFrameType> GIFFrames;
 		bool ReadToTrailer = false; // 是否一直读到文件结束符
-		std::vector<CommentExtensionType> CommentExtension;
-		std::vector<ApplicationExtensionType> ApplicationExtension;
 
 		std::string Name;
 		bool Verbose = true;
