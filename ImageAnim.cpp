@@ -253,7 +253,7 @@ namespace ImageAnimation
 					{
 						if (DstRowPtr[x] == LstRowPtr[x])
 						{
-							DstRowPtr[x] = 0xFF;
+							// DstRowPtr[x] = 0xFF;
 						}
 					}
 				}
