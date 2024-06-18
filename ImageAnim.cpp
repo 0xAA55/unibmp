@@ -351,14 +351,23 @@ namespace ImageAnimation
 						{
 							if (options.UseOrderedPattern)
 							{
-
+								int D = DitherMatrix[y & 0xF][x & 0xF];
+								D = D * 32 / 256 - 16;
+								SrcRGB += D;
+								SrcRGB.Clamp();
 								DstRowPtr[x] = uint8_t(ColorMap[SrcRGB.B][SrcRGB.G][SrcRGB.R]);
 							}
-							DstRowPtr[x] = uint8_t(ColorMap[SrcPix.B][SrcPix.G][SrcPix.R]);
+							else
+							{
+								DstRowPtr[x] = uint8_t(index);
+							}
 						}
 						else if (options.UseOrderedPattern)
 						{
-							DstRowPtr[x] = uint8_t(ColorMap[SrcPix.B][SrcPix.G][SrcPix.R]);
+							int D = DitherMatrix[y & 0xF][x & 0xF];
+							D = D * 32 / 256 - 16;
+							SrcRGB += D;
+							SrcRGB.Clamp();
 							DstRowPtr[x] = uint8_t(ColorMap[SrcRGB.B][SrcRGB.G][SrcRGB.R]);
 						}
 						else
