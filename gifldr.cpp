@@ -1092,7 +1092,14 @@ namespace CPPGIF
 			switch (Introducer)
 			{
 			case '!':
-				GIFFrames.push_back(GIFFrameType(is));
+				if (!GIFFrames.size() || GIFFrames.back().GraphicData.size())
+					GIFFrames.push_back(GIFFrameType(is));
+				else
+				{
+					CommentExtension = GIFFrames.back().CommentExtension;
+					ApplicationExtension = GIFFrames.back().ApplicationExtension;
+					GIFFrames.back() = GIFFrameType(is);
+				}
 				break;
 			case 0x3B: ReadToTrailer = true; break;
 			default:
@@ -1130,7 +1137,8 @@ namespace CPPGIF
 				break;
 			case 0x2C:
 				GraphicData.push_back(GraphicDataType());
-				GraphicData.back().ImageDescriptor = std::make_shared<ImageDescriptorType>(is); break;
+				GraphicData.back().ImageDescriptor = std::make_shared<ImageDescriptorType>(is);
+				break;
 			case 0xF9: GraphicControlExtension = std::make_shared<GraphicControlExtensionType>(is);
 				break;
 			case 0xFE: CommentExtension = std::make_shared<CommentExtensionType>(is); break;

@@ -238,6 +238,9 @@ namespace CPPGIF
 		std::vector<GIFFrameType> GIFFrames;
 		bool ReadToTrailer = false; // 是否一直读到文件结束符
 
+		std::shared_ptr<CommentExtensionType> CommentExtension;
+		std::shared_ptr<ApplicationExtensionType> ApplicationExtension;
+
 		std::string Name;
 		bool Verbose = true;
 
