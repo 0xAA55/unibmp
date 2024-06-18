@@ -167,7 +167,6 @@ namespace ImageAnimation
 		for (size_t i = 0; i < Frames.size(); i++)
 		{
 			auto& Frame = Frames[i];
-			auto& Frame1st = Frames[0];
 			uint8_t Bitfields = 0;
 
 			if (i == 0)
