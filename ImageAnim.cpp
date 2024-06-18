@@ -160,6 +160,10 @@ namespace ImageAnimation
 		Write(ofs, uint8_t(0x21));
 		Write(ofs, uint8_t(0xFF));
 		AE.WriteFile(ofs);
+
+		auto FramesData = std::vector<DataSubBlock>();
+		FramesData.resize(Frames.size());
+
 		for (size_t i = 0; i < Frames.size(); i++)
 		{
 			auto& Frame = Frames[i];
