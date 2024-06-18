@@ -1072,10 +1072,6 @@ namespace CPPGIF
 				Prev = &Frame;
 			}
 		}
-		else
-		{
-
-		}
 
 		return ret;
 	}
