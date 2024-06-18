@@ -193,6 +193,7 @@ namespace ImageAnimation
 			{
 				LocalColorTable = GlobalColorTable;
 				ColorTableMap = GlobalColorTableMap;
+				ColorTableIsExact = GlobalColorTableIsExact;
 			}
 
 			auto FrameData = DataSubBlock();
