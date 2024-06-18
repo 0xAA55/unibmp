@@ -96,8 +96,8 @@ namespace ImageAnimation
 					for (int i = 0; i < NumColors; i++)
 					{
 						int RD = R - ColorTable[i].R;
-						int GD = R - ColorTable[i].R;
-						int BD = R - ColorTable[i].R;
+						int GD = G - ColorTable[i].G;
+						int BD = B - ColorTable[i].B;
 						int Diff = RD * RD + GD * GD + BD * BD;
 						if (Diff < MinDiff)
 						{
