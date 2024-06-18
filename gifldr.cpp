@@ -770,7 +770,7 @@ namespace CPPGIF
 		Read(is, TransparentColorIndex);
 		uint8_t Terminator;
 		Read(is, Terminator);
-		}
+	}
 
 	void GraphicControlExtensionType::WriteFile(std::ostream& WriteTo) const
 	{
@@ -780,7 +780,7 @@ namespace CPPGIF
 		Write(WriteTo, TransparentColorIndex);
 		uint8_t Terminator = 0;
 		Write(WriteTo, Terminator);
-		}
+	}
 
 	ImageAnimFrame GIFFrameType::ConvertToFrame(const GIFLoader& ldr, bool Verbose) const
 	{
@@ -1015,44 +1015,66 @@ namespace CPPGIF
 		auto& BackgroundColor = LogicalScreenDescriptor.GetBackgroundColor();
 		auto BgColor = Pixel_RGBA8(BackgroundColor.R, BackgroundColor.G, BackgroundColor.B, 255);
 
-		const GraphicControlExtensionType* Prev = &GraphicControlExtension.at(0);
-		for (auto& Graphic : GraphicControlExtension)
+		if (GIFFrames.size())
 		{
-			// 第一帧直接绘制
-			if (!ret.Frames.size()) ret.Frames.push_back(Graphic.ConvertToFrame(*this, Verbose));
-			else
-			{ // 之后的帧看情况绘制
-				switch (Graphic.GetDisposalMethod())
-				{
-				default: // 得在前一帧的基础上绘制
-				case GraphicControlExtensionType::NoDisposalSpec:
-				case GraphicControlExtensionType::DoNotDispose:
-					ret.Frames.push_back(ret.Frames.back());
-					Graphic.DrawToFrame(ret.Frames.back(), *this);
-					break;
-				case GraphicControlExtensionType::RestoreToBackgroundColor:
-					do
+			auto* Prev = &GIFFrames.at(0);
+			for (auto& Frame : GIFFrames)
+			{
+				// 第一帧直接绘制
+				if (!ret.Frames.size()) ret.Frames.push_back(Frame.ConvertToFrame(*this, Verbose));
+				else
+				{ // 之后的帧看情况绘制
+					auto DisposalMethod = GraphicControlExtensionType::DisposalMethodEnum::NoDisposalSpec;
+					if (Frame.GraphicControlExtension) DisposalMethod = Frame.GraphicControlExtension->GetDisposalMethod();
+					switch (DisposalMethod)
 					{
-						ret.Frames.push_back(ret.Frames.back()); // 复制上一帧
-						auto& ToFill = ret.Frames.back(); // 在上一帧的基础上绘图
-						for (auto& ImgDesc : Prev->GetImageDescriptors())
+					default: // 得在前一帧的基础上绘制
+					case GraphicControlExtensionType::NoDisposalSpec:
+					case GraphicControlExtensionType::DoNotDispose:
+						ret.Frames.push_back(ret.Frames.back());
+						Frame.DrawToFrame(ret.Frames.back(), GetGlobalColorTable());
+						break;
+					case GraphicControlExtensionType::RestoreToBackgroundColor:
+						do
 						{
-							ToFill.FillRect(
-								ImgDesc.GetLeft(),
-								ImgDesc.GetTop(),
-								ImgDesc.GetLeft() + ImgDesc.GetWidth() - 1,
-								ImgDesc.GetTop() + ImgDesc.GetHeight() - 1,
-								BgColor
-							);
-						}
-					} while (false);
-					break;
-				case GraphicControlExtensionType::RestoreToPrevious: // 恢复到最初，其实就是不基于上一帧来绘图。
-					ret.Frames.push_back(Graphic.ConvertToFrame(*this, Verbose));
-					break;
+							ret.Frames.push_back(ret.Frames.back()); // 复制上一帧
+							auto& ToFill = ret.Frames.back(); // 在上一帧的基础上绘图
+							for (auto& ImgDesc : Prev->GraphicData)
+							{
+								int l, t, w, h, r, b;
+								if (ImgDesc.ImageDescriptor)
+								{
+									l = ImgDesc.ImageDescriptor->GetLeft();
+									t = ImgDesc.ImageDescriptor->GetTop();
+									w = ImgDesc.ImageDescriptor->GetWidth();
+									h = ImgDesc.ImageDescriptor->GetHeight();
+									r = l + w - 1;
+									b = t + h - 1;
+								}
+								else if (ImgDesc.PlainTextExtension)
+								{
+									l = ImgDesc.PlainTextExtension->TextGridLeftPosition;
+									t = ImgDesc.PlainTextExtension->TextGridTopPosition;
+									w = ImgDesc.PlainTextExtension->TextGridWidth;
+									h = ImgDesc.PlainTextExtension->TextGridHeight;
+									r = l + w - 1;
+									b = t + h - 1;
+								}
+								ToFill.FillRect(l, t, r, b, BgColor);
+							}
+						} while (false);
+						break;
+					case GraphicControlExtensionType::RestoreToPrevious: // 恢复到最初，其实就是不基于上一帧来绘图。
+						ret.Frames.push_back(Frame.ConvertToFrame(*this, Verbose));
+						break;
+					}
 				}
+				Prev = &Frame;
 			}
-			Prev = &Graphic;
+		}
+		else
+		{
+
 		}
 
 		return ret;
@@ -1075,14 +1097,14 @@ namespace CPPGIF
 				GIFFrames.push_back(GIFFrameType(is));
 				break;
 			case 0x3B: ReadToTrailer = true; break;
-				default:
-					do
-					{
-						char buf[256];
+			default:
+				do
+				{
+					char buf[256];
 					snprintf(buf, sizeof buf, "GIF: Read error: got unknown introducer (0x%02X) here.", Introducer);
-						throw UnexpectedData(buf);
-					} while (0);
-				}
+					throw UnexpectedData(buf);
+				} while (0);
+			}
 		}
 	}
 	GIFFrameType::GIFFrameType(std::istream& is)
@@ -1139,7 +1161,7 @@ namespace CPPGIF
 				GD.ImageDescriptor->WriteFile(WriteTo, LZW_MinCodeSize);
 			}
 			else if (GD.PlainTextExtension)
-				{
+			{
 				Write(WriteTo, uint8_t(0x01));
 				GD.PlainTextExtension->WriteFile(WriteTo);
 			}
