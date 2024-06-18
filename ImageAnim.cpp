@@ -172,7 +172,7 @@ namespace ImageAnimation
 			if (i == 0)
 				Bitfields = GraphicControlExtensionType::MakeBitfields(GraphicControlExtensionType::DisposalMethodEnum::DoNotDispose, false, false);
 			else
-				Bitfields = GraphicControlExtensionType::MakeBitfields(GraphicControlExtensionType::DisposalMethodEnum::DoNotDispose, false, false);
+				Bitfields = GraphicControlExtensionType::MakeBitfields(GraphicControlExtensionType::DisposalMethodEnum::DoNotDispose, false, true);
 
 			auto GCE = GraphicControlExtensionType(4, Bitfields, options.Interval, 0xFE);
 
