@@ -201,6 +201,12 @@ namespace ImageAnimation
 			auto& FrameData = FramesData[i];
 			FrameData.resize(size_t(Width) * Height);
 
+			DataSubBlock* LastFramePtr = nullptr;
+			if (i) LastFramePtr = &FramesData[i - 1];
+			else LastFramePtr = &FramesData[i];
+
+			auto& LastFrame = *LastFramePtr;
+
 			for (int y = 0; y < int(Height); y++)
 			{
 				auto DstRowPtr = &FrameData[y * Width];
