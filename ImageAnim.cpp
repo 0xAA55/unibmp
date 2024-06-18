@@ -171,7 +171,7 @@ namespace ImageAnimation
 			auto& Frame = Frames[i];
 			uint8_t Bitfields = 0;
 
-				Bitfields = GraphicControlExtensionType::MakeBitfields(GraphicControlExtensionType::DisposalMethodEnum::DoNotDispose, false, true);
+			Bitfields = GraphicControlExtensionType::MakeBitfields(GraphicControlExtensionType::DisposalMethodEnum::DoNotDispose, false, true);
 
 			auto GCE = GraphicControlExtensionType(4, Bitfields, options.Interval, 0xFF);
 
@@ -218,7 +218,7 @@ namespace ImageAnimation
 					if (ColorTableIsExact)
 					{
 						DstRowPtr[x] = uint8_t(ColorMap[SrcPix.B][SrcPix.G][SrcPix.R]);
-			} 
+					}
 					else
 					{
 						// TODO
@@ -249,8 +249,8 @@ namespace ImageAnimation
 				{
 					auto DstRowPtr = &OFD[y * Width];
 					auto LstRowPtr = &LastFrame[y * Width];
-				for (int x = 0; x < int(Width); x++)
-				{
+					for (int x = 0; x < int(Width); x++)
+					{
 						if (DstRowPtr[x] == LstRowPtr[x])
 						{
 							DstRowPtr[x] = 0xFF;
