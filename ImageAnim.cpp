@@ -156,6 +156,10 @@ namespace ImageAnimation
 
 		LSD.WriteFile(ofs);
 
+		auto AE = ApplicationExtensionType{ 0x0B, "NETSCAPE", "2.0", {1, 0, 0} };
+		Write(ofs, uint8_t(0x21));
+		Write(ofs, uint8_t(0xFF));
+		AE.WriteFile(ofs);
 		for (size_t i = 0; i < Frames.size(); i++)
 		{
 			auto& Frame = Frames[i];
