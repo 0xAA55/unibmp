@@ -268,11 +268,12 @@ namespace ImageAnimation
 				std::move(OFD)
 			};
 
-			GCE.GetImageDescriptors().push_back(ID);
-
 			Write(ofs, uint8_t(0x21));
 			Write(ofs, uint8_t(0xF9));
-			GCE.WriteFile(ofs, 8);
+			GCE.WriteFile(ofs);
+
+			Write(ofs, uint8_t(0x2C));
+			ID.WriteFile(ofs, 8);
 		}
 
 		Write(ofs, uint8_t(0x3B));
