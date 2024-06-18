@@ -180,6 +180,24 @@ namespace ImageAnimation
 				B - other,
 			};
 		}
+		RGBInt operator *(int other)
+		{
+			return RGBInt
+			{
+				R * other,
+				G * other,
+				B * other,
+			};
+		}
+		RGBInt operator /(int other)
+		{
+			return RGBInt
+			{
+				R / other,
+				G / other,
+				B / other,
+			};
+		}
 		RGBInt& operator +=(const RGBInt& other)
 		{
 			*this = *this + other;
