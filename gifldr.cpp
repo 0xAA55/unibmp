@@ -1041,15 +1041,13 @@ namespace CPPGIF
 							auto& ToFill = ret.Frames.back(); // 在上一帧的基础上绘图
 							for (auto& ImgDesc : Prev->GraphicData)
 							{
-								int l, t, w, h, r, b;
+								int l = 0, t = 0, w = 0, h = 0, r, b;
 								if (ImgDesc.ImageDescriptor)
 								{
 									l = ImgDesc.ImageDescriptor->GetLeft();
 									t = ImgDesc.ImageDescriptor->GetTop();
 									w = ImgDesc.ImageDescriptor->GetWidth();
 									h = ImgDesc.ImageDescriptor->GetHeight();
-									r = l + w - 1;
-									b = t + h - 1;
 								}
 								else if (ImgDesc.PlainTextExtension)
 								{
@@ -1057,9 +1055,9 @@ namespace CPPGIF
 									t = ImgDesc.PlainTextExtension->TextGridTopPosition;
 									w = ImgDesc.PlainTextExtension->TextGridWidth;
 									h = ImgDesc.PlainTextExtension->TextGridHeight;
-									r = l + w - 1;
-									b = t + h - 1;
 								}
+								r = l + w - 1;
+								b = t + h - 1;
 								ToFill.FillRect(l, t, r, b, BgColor);
 							}
 						} while (false);
