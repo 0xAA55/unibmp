@@ -1066,26 +1066,20 @@ namespace CPPGIF
 		LogicalScreenDescriptor = LogicalScreenDescriptorType(is);
 
 		auto Introducer = uint8_t();
-		auto Label = uint8_t();
 		for(;!ReadToTrailer;)
 		{
 			Read(is, Introducer);
 			switch (Introducer)
 			{
 			case '!':
-				Read(is, Label);
-				switch (Label)
-				{
-				case 0x01: PlainTextExtension.push_back(PlainTextExtensionType(is)); break;
-				case 0x2C: throw UnexpectedData(std::string("GIF: Read error: got an unexpectd Image Descriptor (0x2C) here."));
-				case 0xF9: GraphicControlExtension.push_back(GraphicControlExtensionType(is)); break;
-				case 0xFE: CommentExtension.push_back(CommentExtensionType(is)); break;
-				case 0xFF: ApplicationExtension.push_back(ApplicationExtensionType(is)); break;
+				GIFFrames.push_back(GIFFrameType(is));
+				break;
+			case 0x3B: ReadToTrailer = true; break;
 				default:
 					do
 					{
 						char buf[256];
-						snprintf(buf, sizeof buf, "GIF: Read error: got unknown label (0x%02X) here.", Label);
+					snprintf(buf, sizeof buf, "GIF: Read error: got unknown introducer (0x%02X) here.", Introducer);
 						throw UnexpectedData(buf);
 					} while (0);
 				}
