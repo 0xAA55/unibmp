@@ -405,6 +405,8 @@ namespace CPPGIF
 	{
 		// https://giflib.sourceforge.net/whatsinagif/lzw_image_data.html
 
+		if (!LZW_MinCodeSize) return Data;
+
 		// 编码流，以及其哈希类
 		using CodeType = uint16_t;
 		using CodeStreamType = std::vector<CodeType>;
@@ -549,9 +551,10 @@ namespace CPPGIF
 				{
 					Encoder.IncreaseCodeSize();
 					if (Encoder.CurCodeSize > MaxCodeSize)
-					{ // 要以 FirstCodeSize 编码 ClearCode
-						Encoder.CurCodeSize = FirstCodeSize;
+					{ // 编码 ClearCode
+						Encoder.CurCodeSize = MaxCodeSize;
 						Encoder.Encode(CodeTable.ClearCode);
+						Encoder.CurCodeSize = FirstCodeSize;
 						CodeTable.InitCodeTable();
 					}
 				}
@@ -713,7 +716,8 @@ namespace CPPGIF
 							if (CurCodeSize > MaxCodeSize)
 							{
 								ExpectCC = true;
-								CurCodeSize = FirstCodeSize;
+								CurCodeSize = MaxCodeSize;
+								// CurCodeSize = FirstCodeSize;
 							}
 							CurCodeMaxVal = (1 << CurCodeSize) - 1;
 						}
