@@ -196,7 +196,7 @@ namespace ImageAnimation
 				ColorTableIsExact = GlobalColorTableIsExact;
 			}
 
-			auto FrameData = DataSubBlock();
+			auto& ColorMap = *ColorTableMap;
 			FrameData.resize(size_t(Width) * Height);
 
 			for (int y = 0; y < int(Height); y++)
