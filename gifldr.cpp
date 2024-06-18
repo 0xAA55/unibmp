@@ -821,15 +821,19 @@ namespace CPPGIF
 		if (!ImgData.size()) return;
 
 		// 透明色
-		int KeyColor = HasTransparency() ? TransparentColorIndex : -1;
+		int KeyColor = -1;
+		if (GraphicControlExtension && GraphicControlExtension->HasTransparency())
+		{
+			KeyColor = GraphicControlExtension->GetTransparentColorIndex();
+		}
 
 		// 颜色数
 		size_t numColors = 0;
 
 		// 调色板
-		auto& ColorTable = ImgDesc.HasLocalColorTable() ?
-			ImgDesc.GetLocalColorTable(numColors) :
-			ldr.GetGlobalColorTable(numColors);
+		auto ColorTable = ImgDesc.HasLocalColorTable() ?
+			ImgDesc.GetLocalColorTable() :
+			GlobalColorTablePtr;
 
 		// 画图位置
 		int dx = ImgDesc.GetLeft();
@@ -844,7 +848,7 @@ namespace CPPGIF
 			{
 				int ci = ImgData.at(row + x);
 				if (ci == KeyColor) continue; // 跳过透明色
-				auto& c = ColorTable.at(ci); // 色表取色
+				auto& c = ColorTable->at(ci); // 色表取色
 				DrawTo.PutPixel(x + dx, y + dy, Pixel_RGBA8(c.R, c.G, c.B, 255));
 			}
 		}
