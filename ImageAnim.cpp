@@ -119,6 +119,7 @@ namespace ImageAnimation
 
 		std::shared_ptr<ColorTableArray> GlobalColorTable = nullptr;
 		std::shared_ptr<PaletteToIndexMap> GlobalColorTableMap = nullptr;
+		bool GlobalColorTableIsExact = false;
 
 		if (!options.UseLocalPalettes)
 		{
@@ -145,6 +146,7 @@ namespace ImageAnimation
 				GlobalColorTable.get()->operator[](i) = ColorTableItem(Color.R, Color.G, Color.B);
 			}
 
+			GlobalColorTableIsExact = PalGen.IsPaletteExactFit();
 			GlobalColorTableMap = BuildPaletteToIndexMap(&GlobalColorTable->front(), int(Palette.size()));
 		}
 
