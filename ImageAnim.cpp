@@ -139,6 +139,11 @@ namespace ImageAnimation
 		int G = 0;
 		int B = 0;
 
+		RGBInt() = default;
+		RGBInt(const RGBInt& c) = default;
+		RGBInt(const ColorTableItem& c) : R(c.R), G(c.G), B(c.B) {}
+		RGBInt(int R, int G, int B) : R(R), G(G), B(B) {}
+
 		RGBInt operator +(const RGBInt& other)
 		{
 			return RGBInt
