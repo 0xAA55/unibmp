@@ -350,6 +350,12 @@ namespace ImageAnimation
 						{
 							SrcRGB += NextPix;
 							SrcRGB += NextLine[x];
+							if (options.UseOrderedPattern)
+							{
+								int D = DitherMatrix[y & 0xF][x & 0xF];
+								D = D * 32 / 256 - 16;
+								SrcRGB += D;
+							}
 							RGBInt Clamped = SrcRGB;
 							Clamped.Clamp();
 							int index = ColorMap[Clamped.B][Clamped.G][Clamped.R];
@@ -365,18 +371,7 @@ namespace ImageAnimation
 							DownPix[0] = DownPix[1] + ErrRGB * 3 / 16;
 							DownPix[1] = DownPix[2] + ErrRGB * 5 / 16;
 							DownPix[2] = ErrRGB * 1 / 16;
-							if (options.UseOrderedPattern)
-							{
-								int D = DitherMatrix[y & 0xF][x & 0xF];
-								D = D * 32 / 256 - 16;
-								SrcRGB += D;
-								SrcRGB.Clamp();
-								DstRowPtr[x] = uint8_t(ColorMap[SrcRGB.B][SrcRGB.G][SrcRGB.R]);
-							}
-							else
-							{
-								DstRowPtr[x] = uint8_t(index);
-							}
+							DstRowPtr[x] = uint8_t(index);
 						}
 						else if (options.UseOrderedPattern)
 						{
