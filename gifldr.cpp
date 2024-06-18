@@ -279,14 +279,14 @@ namespace CPPGIF
 		return PixelAspectRatio;
 	}
 
-	const ColorTableArray& LogicalScreenDescriptorType::GetGlobalColorTable() const
+	const ColorTableArray* LogicalScreenDescriptorType::GetGlobalColorTable() const
 	{
-		return *GlobalColorTable;
+		return GlobalColorTable.get();
 	}
 
 	const ColorTableItem& LogicalScreenDescriptorType::GetBackgroundColor() const
 	{
-		return GetGlobalColorTable().at(BackgroundColorIndex);
+		return GetGlobalColorTable()->at(BackgroundColorIndex);
 	}
 
 	ImageDescriptorType::ImageDescriptorType(uint16_t Left, uint16_t Top, uint16_t Width, uint16_t Height, uint8_t Bitfields, std::shared_ptr<ColorTableArray> LocalColorTable, DataSubBlock ImageData):
@@ -741,10 +741,15 @@ namespace CPPGIF
 		return Output;
 	}
 
-	const ColorTableArray& ImageDescriptorType::GetLocalColorTable(size_t& numColorsOut) const
+	const ColorTableArray* ImageDescriptorType::GetLocalColorTable() const
+	{
+		return LocalColorTable.get();
+	}
+
+	const ColorTableArray* ImageDescriptorType::GetLocalColorTable(size_t& numColorsOut) const
 	{
 		numColorsOut = SizeOfLocalColorTable();
-		return *LocalColorTable;
+		return LocalColorTable.get();
 	}
 
 	const DataSubBlock& ImageDescriptorType::GetImageData() const

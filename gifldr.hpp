@@ -87,7 +87,7 @@ namespace CPPGIF
 		uint16_t GetLogicalScreenHeight() const;
 		uint8_t GetBackgroundColorIndex() const;
 		uint8_t GetPixelAspectRatio() const;
-		const ColorTableArray& GetGlobalColorTable() const;
+		const ColorTableArray* GetGlobalColorTable() const;
 		const ColorTableItem& GetBackgroundColor() const;
 
 	public:
@@ -123,7 +123,8 @@ namespace CPPGIF
 		uint16_t GetWidth() const;
 		uint16_t GetHeight() const;
 
-		const ColorTableArray& GetLocalColorTable(size_t& numColorsOut) const;
+		const ColorTableArray* GetLocalColorTable() const;
+		const ColorTableArray* GetLocalColorTable(size_t& numColorsOut) const;
 		const DataSubBlock& GetImageData() const;
 
 		static DataSubBlock CompressLZW(const DataSubBlock& Data, uint8_t LZW_MinCodeSize);
