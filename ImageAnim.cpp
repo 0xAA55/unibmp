@@ -177,9 +177,10 @@ namespace ImageAnimation
 
 			std::shared_ptr<ColorTableArray> LocalColorTable = nullptr;
 			std::shared_ptr<PaletteToIndexMap> ColorTableMap = nullptr;
+			bool ColorTableIsExact = false;
 			if (options.UseLocalPalettes)
 			{
-				auto Palette = PaletteGenerator::GetColors(Frame, 256);
+				auto Palette = PaletteGenerator::GetColors(Frame, 256, ColorTableIsExact);
 				LocalColorTable = std::make_shared<ColorTableArray>();
 				for (size_t i = 0; i < Palette.size(); i++)
 				{
