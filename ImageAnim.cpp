@@ -257,7 +257,7 @@ namespace ImageAnimation
 					auto& Color = Palette[i];
 					LocalColorTable.get()->operator[](i) = ColorTableItem(Color.R, Color.G, Color.B);
 				}
-				ColorTableMap = BuildPaletteToIndexMap(&LocalColorTable->front(), Palette.size());
+				ColorTableMap = BuildPaletteToIndexMap(&LocalColorTable->front(), int(Palette.size()));
 			}
 			else
 			{
