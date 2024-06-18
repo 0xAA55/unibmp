@@ -191,7 +191,7 @@ namespace PaletteGeneratorLib
 	{
 		return DoPaletteExactFit;
 	}
-	std::vector<PaletteItem> PaletteGenerator::GetColors(const UniformBitmap::Image_RGBA8& image, size_t MaxColors)
+	std::vector<PaletteItem> PaletteGenerator::GetColors(const UniformBitmap::Image_RGBA8& image, size_t MaxColors, bool& PaletteIsExact)
 	{
 		auto PalGen = PaletteGenerator(MaxColors);
 		for (int y = 0; y < int(image.GetHeight()); y++)
@@ -203,6 +203,7 @@ namespace PaletteGeneratorLib
 				PalGen.AddPixel(Pix.R, Pix.G, Pix.B);
 			}
 		}
+		PaletteIsExact = PalGen.IsPaletteExactFit();
 		return PalGen.GetColors();
 	}
 };
