@@ -346,9 +346,25 @@ namespace ImageAnimation
 					}
 					else
 					{
-						// TODO
 						if (options.UseFloydSteinberg)
 						{
+							SrcRGB += NextPix;
+							SrcRGB += NextLine[x];
+							RGBInt Clamped = SrcRGB;
+							Clamped.Clamp();
+							int index = ColorMap[Clamped.B][Clamped.G][Clamped.R];
+							RGBInt NewRGB =
+							{
+								ColorTable[index].R,
+								ColorTable[index].G,
+								ColorTable[index].B
+							};
+							RGBInt ErrRGB = SrcRGB - NewRGB;
+							NextPix = ErrRGB * 7 / 16;
+							if (x) NextLine[x - 1] = DownPix[0];
+							DownPix[0] = DownPix[1] + ErrRGB * 3 / 16;
+							DownPix[1] = DownPix[2] + ErrRGB * 5 / 16;
+							DownPix[2] = ErrRGB * 1 / 16;
 							if (options.UseOrderedPattern)
 							{
 								int D = DitherMatrix[y & 0xF][x & 0xF];
