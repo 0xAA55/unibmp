@@ -321,6 +321,11 @@ namespace ImageAnimation
 
 			auto& LastFrame = *LastFramePtr;
 
+			auto NextPix = RGBInt();
+			auto NextLine = std::vector<RGBInt>();
+			NextLine.resize(Width);
+			auto DownPix = std::array<RGBInt, 3>();
+
 			for (int y = 0; y < int(Height); y++)
 			{
 				auto DstRowPtr = &FrameData[y * Width];
