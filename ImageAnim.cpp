@@ -265,7 +265,7 @@ namespace ImageAnimation
 				uint16_t(Width), uint16_t(Height),
 				ImageDescriptorType::MakeBitfields(options.UseLocalPalettes, false, false, 256),
 				LocalColorTable,
-				std::move(FrameData)
+				std::move(OFD)
 			};
 
 			GCE.GetImageDescriptors().push_back(ID);
