@@ -197,6 +197,8 @@ namespace ImageAnimation
 			}
 
 			auto& ColorMap = *ColorTableMap;
+
+			auto& FrameData = FramesData[i];
 			FrameData.resize(size_t(Width) * Height);
 
 			for (int y = 0; y < int(Height); y++)
