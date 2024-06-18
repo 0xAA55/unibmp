@@ -1891,8 +1891,8 @@ namespace UniformBitmap
 		if (x + w > int(Width)) w = Width - x;
 		if (y + h > int(Height)) h = Height - y;
 		if (srcw <= 0 || srch <= 0) return;
-		if (srcx + w > srcw) w = srcw - srcx;
-		if (srcy + h > srch) h = srch - srcy;
+		if (srcx + srcw > Src.GetWidth()) srcw = Src.GetWidth() - srcx;
+		if (srcy + srch > Src.GetHeight()) srch = Src.GetHeight() - srcy;
 		if (w <= 0 || h <= 0) return;
 		if (w > srcw) w = srcw;
 		if (h > srch) h = srch;
