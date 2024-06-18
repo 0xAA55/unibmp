@@ -309,6 +309,7 @@ namespace ImageAnimation
 				ColorTableIsExact = GlobalColorTableIsExact;
 			}
 
+			auto& ColorTable = *LocalColorTable;
 			auto& ColorMap = *ColorTableMap;
 
 			auto& FrameData = FramesData[i];
