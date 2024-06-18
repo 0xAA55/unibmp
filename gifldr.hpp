@@ -184,13 +184,7 @@ namespace CPPGIF
 
 	public:
 		GraphicControlExtensionType(std::istream& is);
-		void WriteFile(std::ostream& WriteTo, uint8_t LZW_MinCodeSize) const;
-
-		void DrawToFrame(ImageAnimFrame& DrawTo, const GIFLoader& ldr) const;
-		ImageAnimFrame ConvertToFrame(const GIFLoader& ldr, bool Verbose) const;
-
-	protected:
-		void DrawImageDesc(Image_RGBA8& DrawTo, const ImageDescriptorType& ImgDesc, const GIFLoader& ldr) const;
+		void WriteFile(std::ostream& WriteTo) const;
 	};
 
 	struct CommentExtensionType

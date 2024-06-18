@@ -770,15 +770,9 @@ namespace CPPGIF
 		Read(is, TransparentColorIndex);
 		uint8_t Terminator;
 		Read(is, Terminator);
-		while (is.peek() == 0x2C)
-		{
-			auto Label = uint8_t(0);
-			Read(is, Label);
-			ImageDescriptors.push_back(ImageDescriptorType(is));
 		}
-	}
 
-	void GraphicControlExtensionType::WriteFile(std::ostream& WriteTo, uint8_t LZW_MinCodeSize) const
+	void GraphicControlExtensionType::WriteFile(std::ostream& WriteTo) const
 	{
 		Write(WriteTo, BlockSize);
 		Write(WriteTo, Bitfields);
@@ -786,13 +780,7 @@ namespace CPPGIF
 		Write(WriteTo, TransparentColorIndex);
 		uint8_t Terminator = 0;
 		Write(WriteTo, Terminator);
-		for (auto& ID : ImageDescriptors)
-		{
-			uint8_t Introducer = 0x2C;
-			Write(WriteTo, Introducer);
-			ID.WriteFile(WriteTo, LZW_MinCodeSize);
 		}
-	}
 
 	void GraphicControlExtensionType::DrawToFrame(ImageAnimFrame& DrawTo, const GIFLoader& ldr) const
 	{
