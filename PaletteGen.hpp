@@ -57,7 +57,7 @@ namespace PaletteGeneratorLib
 		std::vector<PaletteItem> GetColors();
 		bool IsPaletteExactFit() const;
 
-		static std::vector<PaletteItem> GetColors(const UniformBitmap::Image_RGBA8& image, size_t MaxColors);
+		static std::vector<PaletteItem> GetColors(const UniformBitmap::Image_RGBA8& image, size_t MaxColors, bool& PaletteIsExact);
 	};
 };
 
