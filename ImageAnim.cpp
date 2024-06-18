@@ -211,9 +211,51 @@ namespace ImageAnimation
 			{
 				auto DstRowPtr = &FrameData[y * Width];
 				auto SrcRowPtr = Frame.GetBitmapRowPtr(y);
+				auto LstRowPtr = &LastFrame[y * Width];
 				for (int x = 0; x < int(Width); x++)
 				{
-					DstRowPtr[x] = uint8_t(rand());
+					auto& SrcPix = SrcRowPtr[x];
+					if (ColorTableIsExact)
+					{
+						DstRowPtr[x] = uint8_t(ColorMap[SrcPix.B][SrcPix.G][SrcPix.R]);
+			} 
+					else
+					{
+						// TODO
+						if (options.UseFloydSteinberg)
+						{
+							if (options.UseOrderedPattern)
+							{
+
+							}
+							DstRowPtr[x] = uint8_t(ColorMap[SrcPix.B][SrcPix.G][SrcPix.R]);
+						}
+						else if (options.UseOrderedPattern)
+						{
+							DstRowPtr[x] = uint8_t(ColorMap[SrcPix.B][SrcPix.G][SrcPix.R]);
+						}
+						else
+						{
+							DstRowPtr[x] = uint8_t(ColorMap[SrcPix.B][SrcPix.G][SrcPix.R]);
+						}
+					}
+				}
+			}
+
+			DataSubBlock OFD = FrameData;
+			if (i && !options.UseLocalPalettes)
+			{
+				for (int y = 0; y < int(Height); y++)
+				{
+					auto DstRowPtr = &OFD[y * Width];
+					auto LstRowPtr = &LastFrame[y * Width];
+				for (int x = 0; x < int(Width); x++)
+				{
+						if (DstRowPtr[x] == LstRowPtr[x])
+						{
+							DstRowPtr[x] = 0xFF;
+						}
+					}
 				}
 			}
 
