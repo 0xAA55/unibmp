@@ -25,7 +25,7 @@ namespace ImageAnimation
 		bool UseLocalPalettes = false;
 		bool UseOrderedPattern = true;
 		bool UseFloydSteinberg = true;
-		int Interval = 0;
+		int Interval = 1;
 	};
 
 	class ImageAnim
