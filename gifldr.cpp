@@ -782,29 +782,38 @@ namespace CPPGIF
 		Write(WriteTo, Terminator);
 		}
 
-	void GraphicControlExtensionType::DrawToFrame(ImageAnimFrame& DrawTo, const GIFLoader& ldr) const
-	{
-		// 每一个帧是由多个子图像构成的
-		for (auto& ImgDesc : ImageDescriptors)
-		{
-			DrawImageDesc(DrawTo, ImgDesc, ldr);
-		}
-	}
-
-	ImageAnimFrame GraphicControlExtensionType::ConvertToFrame(const GIFLoader& ldr, bool Verbose) const
+	ImageAnimFrame GIFFrameType::ConvertToFrame(const GIFLoader& ldr, bool Verbose) const
 	{
 		auto Img = ImageAnimFrame(ldr.GetWidth(), ldr.GetHeight(), Pixel_RGBA8(0, 0, 0, 0), "GIF file", Verbose);
 
-		DrawToFrame(Img, ldr);
+		DrawToFrame(Img, ldr.GetGlobalColorTable());
 
 		// 设置帧属性
-		Img.Duration = DelayTime;
+		if (GraphicControlExtension)
+		{
+			Img.Duration = GraphicControlExtension->GetDelayTime();
+		}
+		else
+		{
+			Img.Duration = 0;
+		}
 
 		// 返回帧
 		return Img;
 	}
 
-	void GraphicControlExtensionType::DrawImageDesc(Image_RGBA8& DrawTo, const ImageDescriptorType& ImgDesc, const GIFLoader& ldr) const
+	void GIFFrameType::DrawToFrame(Image_RGBA8& DrawTo, const ColorTableArray* GlobalColorTablePtr) const
+	{
+		for (auto& GD : GraphicData)
+		{
+			if (GD.ImageDescriptor)
+			{
+				DrawImageDesc(DrawTo, *GD.ImageDescriptor, GlobalColorTablePtr);
+			}
+		}
+	}
+
+	void GIFFrameType::DrawImageDesc(Image_RGBA8& DrawTo, const ImageDescriptorType& ImgDesc, const ColorTableArray* GlobalColorTablePtr) const
 	{
 		auto& ImgData = ImgDesc.GetImageData();
 
