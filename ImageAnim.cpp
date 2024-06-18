@@ -334,9 +334,15 @@ namespace ImageAnimation
 				for (int x = 0; x < int(Width); x++)
 				{
 					auto& SrcPix = SrcRowPtr[x];
+					RGBInt SrcRGB =
+					{
+						SrcPix.R,
+						SrcPix.G,
+						SrcPix.B
+					};
 					if (ColorTableIsExact)
 					{
-						DstRowPtr[x] = uint8_t(ColorMap[SrcPix.B][SrcPix.G][SrcPix.R]);
+						DstRowPtr[x] = uint8_t(ColorMap[SrcRGB.B][SrcRGB.G][SrcRGB.R]);
 					}
 					else
 					{
@@ -346,16 +352,18 @@ namespace ImageAnimation
 							if (options.UseOrderedPattern)
 							{
 
+								DstRowPtr[x] = uint8_t(ColorMap[SrcRGB.B][SrcRGB.G][SrcRGB.R]);
 							}
 							DstRowPtr[x] = uint8_t(ColorMap[SrcPix.B][SrcPix.G][SrcPix.R]);
 						}
 						else if (options.UseOrderedPattern)
 						{
 							DstRowPtr[x] = uint8_t(ColorMap[SrcPix.B][SrcPix.G][SrcPix.R]);
+							DstRowPtr[x] = uint8_t(ColorMap[SrcRGB.B][SrcRGB.G][SrcRGB.R]);
 						}
 						else
 						{
-							DstRowPtr[x] = uint8_t(ColorMap[SrcPix.B][SrcPix.G][SrcPix.R]);
+							DstRowPtr[x] = uint8_t(ColorMap[SrcRGB.B][SrcRGB.G][SrcRGB.R]);
 						}
 					}
 				}
