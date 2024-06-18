@@ -867,6 +867,20 @@ namespace CPPGIF
 		PlainTextData = ReadDataSubBlock(is);
 	}
 
+	void PlainTextExtensionType::WriteFile(std::ostream& WriteTo) const
+	{
+		Write(WriteTo, BlockSize);
+		Write(WriteTo, TextGridLeftPosition);
+		Write(WriteTo, TextGridTopPosition);
+		Write(WriteTo, TextGridWidth);
+		Write(WriteTo, TextGridHeight);
+		Write(WriteTo, CharacterCellWidth);
+		Write(WriteTo, CharacterCellHeight);
+		Write(WriteTo, TextForegroundColorIndex);
+		Write(WriteTo, TextBackgroundColorIndex);
+		WriteDataSubBlock(WriteTo, PlainTextData);
+	}
+
 	CommentExtensionType::CommentExtensionType(std::istream& is) :
 		CommentData(ReadDataSubBlock(is))
 	{

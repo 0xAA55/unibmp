@@ -95,6 +95,23 @@ namespace CPPGIF
 		void WriteFile(std::ostream& WriteTo) const;
 	};
 
+	struct PlainTextExtensionType
+	{
+		uint8_t BlockSize = 0x0C;
+		uint16_t TextGridLeftPosition = 0;
+		uint16_t TextGridTopPosition = 0;
+		uint16_t TextGridWidth = 0;
+		uint16_t TextGridHeight = 0;
+		uint8_t CharacterCellWidth = 0;
+		uint8_t CharacterCellHeight = 0;
+		uint8_t TextForegroundColorIndex = 0;
+		uint8_t TextBackgroundColorIndex = 0;
+		DataSubBlock PlainTextData;
+
+		PlainTextExtensionType(std::istream& is);
+		void WriteFile(std::ostream& WriteTo) const;
+	};
+
 	struct ImageDescriptorType
 	{
 	protected:
@@ -177,22 +194,6 @@ namespace CPPGIF
 
 	protected:
 		void DrawImageDesc(Image_RGBA8& DrawTo, const ImageDescriptorType& ImgDesc, const GIFLoader& ldr) const;
-	};
-
-	struct PlainTextExtensionType
-	{
-		uint8_t BlockSize = 0x0C;
-		uint16_t TextGridLeftPosition = 0;
-		uint16_t TextGridTopPosition = 0;
-		uint16_t TextGridWidth = 0;
-		uint16_t TextGridHeight = 0;
-		uint8_t CharacterCellWidth = 0;
-		uint8_t CharacterCellHeight = 0;
-		uint8_t TextForegroundColorIndex = 0;
-		uint8_t TextBackgroundColorIndex = 0;
-		DataSubBlock PlainTextData;
-
-		PlainTextExtensionType(std::istream& is);
 	};
 
 	struct CommentExtensionType
