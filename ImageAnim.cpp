@@ -164,6 +164,8 @@ namespace ImageAnimation
 		auto FramesData = std::vector<DataSubBlock>();
 		FramesData.resize(Frames.size());
 
+		bool DoFirstFrameHasTransparent = false;
+
 		for (size_t i = 0; i < Frames.size(); i++)
 		{
 			auto& Frame = Frames[i];
