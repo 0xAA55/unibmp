@@ -173,7 +173,7 @@ namespace ImageAnimation
 
 				Bitfields = GraphicControlExtensionType::MakeBitfields(GraphicControlExtensionType::DisposalMethodEnum::DoNotDispose, false, true);
 
-			auto GCE = GraphicControlExtensionType(4, Bitfields, options.Interval, 0xFE);
+			auto GCE = GraphicControlExtensionType(4, Bitfields, options.Interval, 0xFF);
 
 			std::shared_ptr<ColorTableArray> LocalColorTable = nullptr;
 			std::shared_ptr<PaletteToIndexMap> ColorTableMap = nullptr;
