@@ -238,7 +238,8 @@ namespace CPPGIF
 		const std::string& GetVersion() const;
 		const uint16_t GetWidth() const;
 		const uint16_t GetHeight() const;
-		const ColorTableArray& GetGlobalColorTable(size_t& numColorsOut) const;
+		const ColorTableArray* GetGlobalColorTable() const;
+		const ColorTableArray* GetGlobalColorTable(size_t& numColorsOut) const;
 		const LogicalScreenDescriptorType& GetLogicalScreenDescriptor() const;
 		
 	public:

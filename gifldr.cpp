@@ -1002,9 +1002,14 @@ namespace CPPGIF
 		return LogicalScreenDescriptor.GetLogicalScreenHeight();
 	}
 
-	const ColorTableArray& GIFLoader::GetGlobalColorTable(size_t& numColorsOut) const
+	const ColorTableArray* GIFLoader::GetGlobalColorTable(size_t& numColorsOut) const
 	{
 		numColorsOut = LogicalScreenDescriptor.SizeOfGlobalColorTable();
+		return LogicalScreenDescriptor.GetGlobalColorTable();
+	}
+
+	const ColorTableArray* GIFLoader::GetGlobalColorTable() const
+	{
 		return LogicalScreenDescriptor.GetGlobalColorTable();
 	}
 
