@@ -12,6 +12,8 @@ OBJS=
 OBJS+=tiffhdr.o
 OBJS+=unibmp.o
 OBJS+=gifldr.o
+OBJS+=ImageAnim.o
+OBJS+=PaletteGen.o
 
 all: ubtest libunibmp.a
 
