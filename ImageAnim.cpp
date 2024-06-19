@@ -269,7 +269,7 @@ namespace ImageAnimation
 
 		LSD.WriteFile(ofs);
 
-		auto AE = ApplicationExtensionType{ 0x0B, "NETSCAPE", "2.0", {1, 0, 0} };
+		auto AE = ApplicationExtensionType{ 0x0B, "NETSCAPE", "2.0", {1, uint8_t(options.numLoops & 0xFF), uint8_t((options.numLoops & 0xFF00) >> 8)} };
 		Write(ofs, uint8_t(0x21));
 		Write(ofs, uint8_t(0xFF));
 		AE.WriteFile(ofs);
