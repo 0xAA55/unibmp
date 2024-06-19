@@ -553,7 +553,7 @@ namespace CPPGIF
 				{
 					Encoder.IncreaseCodeSize();
 					if (Encoder.CurCodeSize > MaxCodeSize)
-					{ // 编码 ClearCode
+					{ // 使用当前单词大小编码 ClearCode，然后再重置单词大小。
 						Encoder.CurCodeSize = MaxCodeSize;
 						Encoder.Encode(CodeTable.ClearCode);
 						Encoder.CurCodeSize = FirstCodeSize;
@@ -718,8 +718,7 @@ namespace CPPGIF
 							if (CurCodeSize > MaxCodeSize)
 							{
 								ExpectCC = true;
-								CurCodeSize = MaxCodeSize;
-								// CurCodeSize = FirstCodeSize;
+								CurCodeSize = MaxCodeSize; // 此时的 CC 长度应为最大单词长度。
 							}
 							CurCodeMaxVal = (1 << CurCodeSize) - 1;
 						}
