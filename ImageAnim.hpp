@@ -26,6 +26,7 @@ namespace ImageAnimation
 		bool UseOrderedPattern = true;
 		bool UseFloydSteinberg = true;
 		int Interval = 1;
+		int numLoops = 0;
 	};
 
 	class ImageAnim
