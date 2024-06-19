@@ -1935,7 +1935,7 @@ namespace UniformBitmap
 		PixelType* Pixels;
 		int Width;
 		int Height;
-		STBITakeOver(int& w, int& h, void *data):
+		STBITakeOver(int& w, int& h, void* data) :
 			Width(w), Height(h), Pixels(reinterpret_cast<PixelType*>(data))
 		{
 			if (!data) throw LoadImageError(stbi_failure_reason());
