@@ -11,7 +11,7 @@ namespace ImageAnimation
 	class ImageAnimFrame : public Image_RGBA8
 	{
 	public:
-		int Duration = 0;
+		int Duration = -1;
 
 	public:
 		ImageAnimFrame(const Image_RGBA8& c, int Duration);
