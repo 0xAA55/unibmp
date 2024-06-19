@@ -70,7 +70,8 @@ void test_savegif(const std::string& pngfile, const std::string& gif_file, int s
 
 void test_savegif()
 {
-	test_savegif("testcolorful.png", "testout.gif", 512, 1);
+	test_loadgif("testre.gif", "test4.png");
+	test_savegif("test4.png", "testout.gif", 200, 1);
 }
 
 int main(int argc, char** argv)
