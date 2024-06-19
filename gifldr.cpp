@@ -3,6 +3,8 @@
 #include <filesystem>
 #include <type_traits>
 #include <unordered_map>
+
+#include <cstring>
 namespace CPPGIF
 {
 	EncodeError::EncodeError(const std::string& what) noexcept :
